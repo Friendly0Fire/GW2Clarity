@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{7EFE6DCC-544A-4116-9EF2-13C0431356E6}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>GW2Clarity</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>GW2Clarity</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(ProjectDir)include\;$(ProjectDir);$(ProjectDir)common\ZipLib\Source\ZipLib;$(ProjectDir)common\include;$(ProjectDir)common\imgui;$(ProjectDir)common\d3d9_wrapper\include;$(ProjectDir)common\loader-core\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <SourcePath>$(ProjectDir)src\;$(SourcePath)</SourcePath>
+    <TargetName>gw2addon_gw2clarity</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(ProjectDir)include\;$(ProjectDir);$(ProjectDir)common\ZipLib\Source\ZipLib;$(ProjectDir)common\include;$(ProjectDir)common\imgui;$(ProjectDir)common\d3d9_wrapper\include;$(ProjectDir)common\loader-core\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <SourcePath>$(ProjectDir)src\;$(SourcePath)</SourcePath>
+    <TargetName>gw2addon_gw2clarity</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>IMGUI_USER_CONFIG=&lt;imcfg.h&gt;;D3D_DEBUG_INFO;_DEBUG;GW2Clarity_EXPORTS;_WINDOWS;_USRDLL;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;SHADERS_DIR=LR"sd($(ProjectDir)shaders\)sd";_WIN32_WINNT=0x0600;$(GitHubDefs);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ModuleDefinitionFile>main.def</ModuleDefinitionFile>
+      <AdditionalDependencies>Wininet.lib;Shlwapi.lib;d3dcompiler.lib;WindowsCodecs.lib;$(ProjectDir)common\$(Platform)\$(Configuration)\BaseResource.res;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>if exist "$(GW2CLARITY_TARGET_DIR)" (
+  copy /Y $(TargetPath) "$(GW2CLARITY_TARGET_DIR)\addons\gw2clarity\gw2addon_gw2clarity.dll"
+  copy /Y $(OutDir)$(TargetName).pdb "$(GW2CLARITY_TARGET_DIR)\addons\gw2clarity\gw2addon_gw2clarity.pdb"
+) else (
+  echo No target defined, skipping copy. To setup automatic copy, define environment variable GW2CLARITY_TARGET_DIR to your GW2 root install directory.
+)</Command>
+    </PostBuildEvent>
+    <FxCompile>
+      <ObjectFileOutput>$(ProjectDir)int\%(Filename).cso</ObjectFileOutput>
+      <ShaderModel>3.0</ShaderModel>
+    </FxCompile>
+    <PreBuildEvent>
+      <Command>mkdir "$(ProjectDir)int"
+del "$(ProjectDir)int\Shaders.zip"
+cd "$(ProjectDir)shaders"
+"$(SolutionDir)tools\zip.exe" "$(ProjectDir)int\Shaders.zip"  *.*
+
+echo | set /p dummyName="#define GIT_HASH " &gt; "$(ProjectDir)include\git.h"
+git describe --always --dirty --match "NOT A TAG" &gt;&gt; "$(ProjectDir)include\git.h"</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>IMGUI_USER_CONFIG=&lt;imcfg.h&gt;;IMGUI_USER_CONFIG=&lt;imcfg.h&gt;;NDEBUG;GW2Clarity_EXPORTS;_WINDOWS;_USRDLL;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;SHADERS_DIR=LR"sd($(ProjectDir)shaders\)sd";_WIN32_WINNT=0x0600;$(GitHubDefs);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ModuleDefinitionFile>main.def</ModuleDefinitionFile>
+      <AdditionalDependencies>Wininet.lib;Shlwapi.lib;d3dcompiler.lib;WindowsCodecs.lib;$(ProjectDir)common\$(Platform)\$(Configuration)\BaseResource.res;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>if exist "$(GW2CLARITY_TARGET_DIR)" (
+  copy /Y $(TargetPath) "$(GW2CLARITY_TARGET_DIR)\addons\gw2clarity\gw2addon_gw2clarity.dll"
+  copy /Y $(OutDir)$(TargetName).pdb "$(GW2CLARITY_TARGET_DIR)\addons\gw2clarity\gw2addon_gw2clarity.pdb"
+) else (
+  echo No target defined, skipping copy. To setup automatic copy, define environment variable GW2CLARITY_TARGET_DIR to your GW2 root install directory.
+)</Command>
+    </PostBuildEvent>
+    <FxCompile>
+      <ObjectFileOutput>$(ProjectDir)int\%(Filename).cso</ObjectFileOutput>
+      <ShaderModel>3.0</ShaderModel>
+    </FxCompile>
+    <PreBuildEvent>
+      <Command>mkdir "$(ProjectDir)int"
+del "$(ProjectDir)int\Shaders.zip"
+cd "$(ProjectDir)shaders"
+"$(SolutionDir)tools\zip.exe" "$(ProjectDir)int\Shaders.zip"  *.*</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Core.cpp" />
+    <ClCompile Include="src\CustomWheel.cpp" />
+    <ClCompile Include="src\Main.cpp" />
+    <ClCompile Include="src\Marker.cpp" />
+    <ClCompile Include="src\Mount.cpp" />
+    <ClCompile Include="src\Novelty.cpp" />
+    <ClCompile Include="src\VSCB.cpp" />
+    <ClCompile Include="src\Wheel.cpp">
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">IMGUI_USER_CONFIG=&lt;imcfg.h&gt;;D3D_DEBUG_INFO;_DEBUG;GW2Clarity_EXPORTS;_WINDOWS;_USRDLL;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;SHADERS_DIR=LR"sd($(ProjectDir)shaders\)sd";_WIN32_WINNT=0x0600;$(GitHubDefs);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile Include="src\WheelElement.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\Core.h" />
+    <ClInclude Include="include\CustomWheel.h" />
+    <ClInclude Include="include\Enums.h" />
+    <ClInclude Include="include\Main.h" />
+    <ClInclude Include="include\Marker.h" />
+    <ClInclude Include="include\Mount.h" />
+    <ClInclude Include="include\Novelty.h" />
+    <ClInclude Include="include\Resource.h" />
+    <ClInclude Include="include\Tag.h" />
+    <ClInclude Include="include\Version.h" />
+    <ClInclude Include="include\VSCB.h" />
+    <ClInclude Include="include\Wheel.h" />
+    <ClInclude Include="include\WheelElement.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="..\readme.md">
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+    </CopyFileToFolders>
+    <None Include="art\finals\rcdata1.bin" />
+    <None Include="Main.def" />
+    <None Include="rt_rcdat.bin" />
+    <None Include="shaders\common.hlsli" />
+    <None Include="vcpkg.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\Cursor.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="shaders\DelayIndicator.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="shaders\Wheel.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="shaders\WheelElement.hlsl">
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DisableOptimizations>
+      <EnableDebuggingInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</EnableDebuggingInformation>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </EntryPointName>
+      <FileType>Document</FileType>
+    </None>
+    <None Include="shaders\ScreenQuad.hlsl">
+      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DisableOptimizations>
+      <EnableDebuggingInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</EnableDebuggingInformation>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </EntryPointName>
+      <FileType>Document</FileType>
+    </None>
+    <None Include="shaders\noise.hlsl">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Library</ShaderType>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Library</ShaderType>
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="art\Finals\arrow_marker.dds" />
+    <Image Include="art\Finals\Background.dds" />
+    <Image Include="art\Finals\Beetle.dds" />
+    <Image Include="art\Finals\chair.dds" />
+    <Image Include="art\Finals\circle_marker.dds" />
+    <Image Include="art\Finals\clear_markers.dds" />
+    <Image Include="art\Finals\Griffon.dds" />
+    <Image Include="art\Finals\hand.dds" />
+    <Image Include="art\Finals\heart_marker.dds" />
+    <Image Include="art\Finals\Jackal.dds" />
+    <Image Include="art\Finals\music.dds" />
+    <Image Include="art\Finals\Raptor.dds" />
+    <Image Include="art\Finals\Skimmer.dds" />
+    <Image Include="art\Finals\Skyscale.dds" />
+    <Image Include="art\Finals\spiral_marker.dds" />
+    <Image Include="art\Finals\Springer.dds" />
+    <Image Include="art\Finals\square_marker.dds" />
+    <Image Include="art\Finals\star_marker.dds" />
+    <Image Include="art\Finals\tonic.dds" />
+    <Image Include="art\Finals\travel.dds" />
+    <Image Include="art\Finals\triangle_marker.dds" />
+    <Image Include="art\Finals\Turtle.dds" />
+    <Image Include="art\Finals\Warclaw.dds" />
+    <Image Include="art\Finals\x_marker.dds" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="common\GW2Common.vcxproj">
+      <Project>{1ad7929b-fe1e-4fa2-be57-df9b0fc1526d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="common\ziplib\Source\ZipLib\ZipLib.vcxproj">
+      <Project>{5c9fd859-ddf9-4510-8397-b329b0ae8c48}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+  <Import Condition=" '$(VCPKG_INSTALLATION_ROOT)' != '' " Project="$(VCPKG_INSTALLATION_ROOT)\scripts\buildsystems\msbuild\vcpkg.targets" />
+</Project>

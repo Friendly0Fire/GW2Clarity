@@ -37,7 +37,7 @@ jobs:
         run: powershell "${env:GITHUB_WORKSPACE}\Version.ps1" -ref "${{github.ref}}" -sha "${{github.sha}}"
 
       - name: Build
-        run: msbuild.exe "${env:GITHUB_WORKSPACE}\GW2Radial.sln" /t:Build /p:Configuration=Release /p:Platform=x64 /p:GitHubDefs=USE_GITHUB_VER
+        run: msbuild.exe "${env:GITHUB_WORKSPACE}\GW2Clarity.sln" /t:Build /p:Configuration=Release /p:Platform=x64 /p:GitHubDefs=USE_GITHUB_VER
 
       - name: Save nightly build from master
         uses: actions/upload-artifact@v2
@@ -45,19 +45,19 @@ jobs:
         with:
           name: nightly-${{ github.sha }}
           path: |
-            x64/Release/gw2addon_gw2radial.dll
+            x64/Release/gw2addon_gw2clarity.dll
             x64/Release/readme.md
       - name: Move files for tag
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
-          mkdir -p x64/Release/gw2radial
-          mv x64/Release/gw2addon_gw2radial.dll x64/Release/gw2radial/
-          mv x64/Release/readme.md x64/Release/gw2radial/
+          mkdir -p x64/Release/gw2clarity
+          mv x64/Release/gw2addon_gw2clarity.dll x64/Release/gw2clarity/
+          mv x64/Release/readme.md x64/Release/gw2clarity/
       - name: Zip files for tag
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           cd x64/Release
-          7z a ../../gw2radial.zip gw2radial/
+          7z a ../../gw2clarity.zip gw2clarity/
           cd ../..
       - name: Create release draft for tag
         if: startsWith(github.ref, 'refs/tags/v')
@@ -66,5 +66,5 @@ jobs:
           body_path: CHANGELOG.md
           draft: true
           prerelease: ${{ contains(github.ref, '-pre') }}
-          files: gw2radial.zip
+          files: gw2clarity.zip
 
