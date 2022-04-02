@@ -13,5 +13,5 @@
 #define XSTRINGIFY(v) STRINGIFY(v)
 #endif
 
-#define GW2RADIAL_VER "nightly (" XSTRINGIFY(GIT_HASH) ")"
+#define GW2CLARITY_VER "nightly (" XSTRINGIFY(GIT_HASH) ")"
 #endif

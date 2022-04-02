@@ -6,13 +6,13 @@
 #include <Tag.h>
 #include <Version.h>
 
-const char* GetAddonName() { return "GW2Radial"; }
-const wchar_t* GetAddonNameW() { return L"GW2Radial"; }
-const char* GetAddonVersionString() { return GW2RADIAL_VER; }
+const char* GetAddonName() { return "GW2Clarity"; }
+const wchar_t* GetAddonNameW() { return L"GW2Clarity"; }
+const char* GetAddonVersionString() { return GW2CLARITY_VER; }
 const semver::version& GetAddonVersion() { return CurrentVersion; }
 BaseCore& GetBaseCore()
 {
-	return GW2Radial::Core::i();
+	return GW2Clarity::Core::i();
 }
 
 gw2al_addon_dsc gAddonDeps[] = {
@@ -22,8 +22,8 @@ gw2al_addon_dsc gAddonDeps[] = {
 };
 
 gw2al_addon_dsc gAddonDsc = {
-	L"gw2radial",
-	L"Radial menu overlay to select mount, novelty and more on fly",
+	L"gw2clarity",
+	L"GUI customization overlay",
 	2,
 	2,
 	1,
@@ -55,9 +55,9 @@ bool WINAPI DllMain(HMODULE hModule, DWORD fdwReason, LPVOID lpReserved)
 	switch (fdwReason)
 	{
 	case DLL_PROCESS_ATTACH:
-	    g_logStream = std::ofstream("gw2radial.log");
+	    g_logStream = std::ofstream("gw2clarity.log");
 
-		GW2Radial::Core::Init(hModule);
+		GW2Clarity::Core::Init(hModule);
 		break;
 	case DLL_PROCESS_DETACH:
 		break;

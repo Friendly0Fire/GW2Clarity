@@ -87,8 +87,8 @@
     </Link>
     <PostBuildEvent>
       <Command>if exist "$(GW2CLARITY_TARGET_DIR)" (
-  copy /Y $(TargetPath) "$(GW2CLARITY_TARGET_DIR)\addons\gw2clarity\gw2addon_gw2clarity.dll"
-  copy /Y $(OutDir)$(TargetName).pdb "$(GW2CLARITY_TARGET_DIR)\addons\gw2clarity\gw2addon_gw2clarity.pdb"
+  echo f | xcopy /F /Y $(TargetPath) "$(GW2CLARITY_TARGET_DIR)\addons\gw2clarity\gw2addon_gw2clarity.dll"
+  echo f | xcopy /F /Y $(OutDir)$(TargetName).pdb "$(GW2CLARITY_TARGET_DIR)\addons\gw2clarity\gw2addon_gw2clarity.pdb"
 ) else (
   echo No target defined, skipping copy. To setup automatic copy, define environment variable GW2CLARITY_TARGET_DIR to your GW2 root install directory.
 )</Command>
@@ -150,31 +150,14 @@ cd "$(ProjectDir)shaders"
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Core.cpp" />
-    <ClCompile Include="src\CustomWheel.cpp" />
     <ClCompile Include="src\Main.cpp" />
-    <ClCompile Include="src\Marker.cpp" />
-    <ClCompile Include="src\Mount.cpp" />
-    <ClCompile Include="src\Novelty.cpp" />
-    <ClCompile Include="src\VSCB.cpp" />
-    <ClCompile Include="src\Wheel.cpp">
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">IMGUI_USER_CONFIG=&lt;imcfg.h&gt;;D3D_DEBUG_INFO;_DEBUG;GW2Clarity_EXPORTS;_WINDOWS;_USRDLL;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;SHADERS_DIR=LR"sd($(ProjectDir)shaders\)sd";_WIN32_WINNT=0x0600;$(GitHubDefs);%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-    <ClCompile Include="src\WheelElement.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Core.h" />
-    <ClInclude Include="include\CustomWheel.h" />
-    <ClInclude Include="include\Enums.h" />
     <ClInclude Include="include\Main.h" />
-    <ClInclude Include="include\Marker.h" />
-    <ClInclude Include="include\Mount.h" />
-    <ClInclude Include="include\Novelty.h" />
     <ClInclude Include="include\Resource.h" />
     <ClInclude Include="include\Tag.h" />
     <ClInclude Include="include\Version.h" />
-    <ClInclude Include="include\VSCB.h" />
-    <ClInclude Include="include\Wheel.h" />
-    <ClInclude Include="include\WheelElement.h" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="..\readme.md">
@@ -193,12 +176,6 @@ cd "$(ProjectDir)shaders"
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\Cursor.hlsl">
-      <FileType>Document</FileType>
-    </None>
-    <None Include="shaders\DelayIndicator.hlsl">
-      <FileType>Document</FileType>
-    </None>
-    <None Include="shaders\Wheel.hlsl">
       <FileType>Document</FileType>
     </None>
     <None Include="shaders\WheelElement.hlsl">
@@ -223,41 +200,6 @@ cd "$(ProjectDir)shaders"
       </EntryPointName>
       <FileType>Document</FileType>
     </None>
-    <None Include="shaders\noise.hlsl">
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Library</ShaderType>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Library</ShaderType>
-      <FileType>Document</FileType>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="art\Finals\arrow_marker.dds" />
-    <Image Include="art\Finals\Background.dds" />
-    <Image Include="art\Finals\Beetle.dds" />
-    <Image Include="art\Finals\chair.dds" />
-    <Image Include="art\Finals\circle_marker.dds" />
-    <Image Include="art\Finals\clear_markers.dds" />
-    <Image Include="art\Finals\Griffon.dds" />
-    <Image Include="art\Finals\hand.dds" />
-    <Image Include="art\Finals\heart_marker.dds" />
-    <Image Include="art\Finals\Jackal.dds" />
-    <Image Include="art\Finals\music.dds" />
-    <Image Include="art\Finals\Raptor.dds" />
-    <Image Include="art\Finals\Skimmer.dds" />
-    <Image Include="art\Finals\Skyscale.dds" />
-    <Image Include="art\Finals\spiral_marker.dds" />
-    <Image Include="art\Finals\Springer.dds" />
-    <Image Include="art\Finals\square_marker.dds" />
-    <Image Include="art\Finals\star_marker.dds" />
-    <Image Include="art\Finals\tonic.dds" />
-    <Image Include="art\Finals\travel.dds" />
-    <Image Include="art\Finals\triangle_marker.dds" />
-    <Image Include="art\Finals\Turtle.dds" />
-    <Image Include="art\Finals\Warclaw.dds" />
-    <Image Include="art\Finals\x_marker.dds" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="common\GW2Common.vcxproj">

@@ -8,14 +8,8 @@
     <Filter Include="Source Files">
       <UniqueIdentifier>{cad8217e-51ec-44e9-9e81-95b3f68e501c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files\Assets">
-      <UniqueIdentifier>{8aecf9fe-356d-4cc7-bf13-297bcef89f0f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resource Files\Shaders">
       <UniqueIdentifier>{8ca3937f-5abb-4da6-a977-a0b326981260}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Claritys">
-      <UniqueIdentifier>{8fa92bfb-91a9-4631-9e79-04259d80efbd}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Versioning">
       <UniqueIdentifier>{5066aeab-7442-4db0-8d6e-c7f444556d3b}</UniqueIdentifier>
@@ -28,27 +22,6 @@
     <ClCompile Include="src\Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Wheel.cpp">
-      <Filter>Source Files\Claritys</Filter>
-    </ClCompile>
-    <ClCompile Include="src\WheelElement.cpp">
-      <Filter>Source Files\Claritys</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Mount.cpp">
-      <Filter>Source Files\Claritys</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Novelty.cpp">
-      <Filter>Source Files\Claritys</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Marker.cpp">
-      <Filter>Source Files\Claritys</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CustomWheel.cpp">
-      <Filter>Source Files\Claritys</Filter>
-    </ClCompile>
-    <ClCompile Include="src\VSCB.cpp">
-      <Filter>Source Files\Claritys</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Resource.h">
@@ -57,38 +30,14 @@
     <ClInclude Include="include\Core.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\Enums.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\Main.h">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Wheel.h">
-      <Filter>Source Files\Claritys</Filter>
-    </ClInclude>
-    <ClInclude Include="include\WheelElement.h">
-      <Filter>Source Files\Claritys</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Mount.h">
-      <Filter>Source Files\Claritys</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Novelty.h">
-      <Filter>Source Files\Claritys</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Marker.h">
-      <Filter>Source Files\Claritys</Filter>
-    </ClInclude>
-    <ClInclude Include="include\CustomWheel.h">
-      <Filter>Source Files\Claritys</Filter>
     </ClInclude>
     <ClInclude Include="include\Tag.h">
       <Filter>Source Files\Versioning</Filter>
     </ClInclude>
     <ClInclude Include="include\Version.h">
       <Filter>Source Files\Versioning</Filter>
-    </ClInclude>
-    <ClInclude Include="include\VSCB.h">
-      <Filter>Source Files\Claritys</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -107,16 +56,7 @@
     <None Include="shaders\Cursor.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
-    <None Include="shaders\DelayIndicator.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
-    <None Include="shaders\noise.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
     <None Include="shaders\ScreenQuad.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
-    <None Include="shaders\Wheel.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="shaders\WheelElement.hlsl">
@@ -135,79 +75,5 @@
     <CopyFileToFolders Include="..\readme.md">
       <Filter>Resource Files</Filter>
     </CopyFileToFolders>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="art\Finals\arrow_marker.dds">
-      <Filter>Resource Files\Assets</Filter>
-    </Image>
-    <Image Include="art\Finals\Background.dds">
-      <Filter>Resource Files\Assets</Filter>
-    </Image>
-    <Image Include="art\Finals\Beetle.dds">
-      <Filter>Resource Files\Assets</Filter>
-    </Image>
-    <Image Include="art\Finals\chair.dds">
-      <Filter>Resource Files\Assets</Filter>
-    </Image>
-    <Image Include="art\Finals\circle_marker.dds">
-      <Filter>Resource Files\Assets</Filter>
-    </Image>
-    <Image Include="art\Finals\clear_markers.dds">
-      <Filter>Resource Files\Assets</Filter>
-    </Image>
-    <Image Include="art\Finals\Griffon.dds">
-      <Filter>Resource Files\Assets</Filter>
-    </Image>
-    <Image Include="art\Finals\hand.dds">
-      <Filter>Resource Files\Assets</Filter>
-    </Image>
-    <Image Include="art\Finals\heart_marker.dds">
-      <Filter>Resource Files\Assets</Filter>
-    </Image>
-    <Image Include="art\Finals\Jackal.dds">
-      <Filter>Resource Files\Assets</Filter>
-    </Image>
-    <Image Include="art\Finals\music.dds">
-      <Filter>Resource Files\Assets</Filter>
-    </Image>
-    <Image Include="art\Finals\Raptor.dds">
-      <Filter>Resource Files\Assets</Filter>
-    </Image>
-    <Image Include="art\Finals\Skimmer.dds">
-      <Filter>Resource Files\Assets</Filter>
-    </Image>
-    <Image Include="art\Finals\spiral_marker.dds">
-      <Filter>Resource Files\Assets</Filter>
-    </Image>
-    <Image Include="art\Finals\Springer.dds">
-      <Filter>Resource Files\Assets</Filter>
-    </Image>
-    <Image Include="art\Finals\square_marker.dds">
-      <Filter>Resource Files\Assets</Filter>
-    </Image>
-    <Image Include="art\Finals\star_marker.dds">
-      <Filter>Resource Files\Assets</Filter>
-    </Image>
-    <Image Include="art\Finals\tonic.dds">
-      <Filter>Resource Files\Assets</Filter>
-    </Image>
-    <Image Include="art\Finals\travel.dds">
-      <Filter>Resource Files\Assets</Filter>
-    </Image>
-    <Image Include="art\Finals\triangle_marker.dds">
-      <Filter>Resource Files\Assets</Filter>
-    </Image>
-    <Image Include="art\Finals\Warclaw.dds">
-      <Filter>Resource Files\Assets</Filter>
-    </Image>
-    <Image Include="art\Finals\x_marker.dds">
-      <Filter>Resource Files\Assets</Filter>
-    </Image>
-    <Image Include="art\Finals\Skyscale.dds">
-      <Filter>Resource Files\Assets</Filter>
-    </Image>
-    <Image Include="art\Finals\Turtle.dds">
-      <Filter>Resource Files\Assets</Filter>
-    </Image>
   </ItemGroup>
 </Project>

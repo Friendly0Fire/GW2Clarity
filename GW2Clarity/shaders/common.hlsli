@@ -1,8 +1,6 @@
 #define PI 3.14159f
 #define SQRT2 1.4142136f
 #define ONE_OVER_SQRT2 0.707107f
-#define WHEEL_MAX_ELEMENT_COUNT 12
-#include "noise.hlsl"
 
 cbuffer Wheel : register(b0)
 {
