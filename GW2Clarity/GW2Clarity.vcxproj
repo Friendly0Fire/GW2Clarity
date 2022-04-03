@@ -149,10 +149,13 @@ cd "$(ProjectDir)shaders"
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="common\imgui\misc\cpp\imgui_stdlib.cpp" />
+    <ClCompile Include="src\Buffs.cpp" />
     <ClCompile Include="src\Core.cpp" />
     <ClCompile Include="src\Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Buffs.h" />
     <ClInclude Include="include\Core.h" />
     <ClInclude Include="include\Main.h" />
     <ClInclude Include="include\Resource.h" />
@@ -208,6 +211,9 @@ cd "$(ProjectDir)shaders"
     <ProjectReference Include="common\ziplib\Source\ZipLib\ZipLib.vcxproj">
       <Project>{5c9fd859-ddf9-4510-8397-b329b0ae8c48}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="assets\boons.dds" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

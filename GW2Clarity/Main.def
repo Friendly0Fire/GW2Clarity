@@ -4,3 +4,5 @@ EXPORTS
     gw2addon_get_description
     gw2addon_load
     gw2addon_unload
+    get_init_addr
+    get_release_addr

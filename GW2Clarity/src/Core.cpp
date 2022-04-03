@@ -19,6 +19,8 @@
 #include <Version.h>
 #include <MiscTab.h>
 
+void RegisterArc();
+
 namespace GW2Clarity
 {
 
@@ -38,6 +40,31 @@ void Core::InnerInitPreImGui()
 void Core::InnerInitPostImGui()
 {
 	firstMessageShown_ = std::make_unique<ConfigurationOption<bool>>("", "first_message_shown_v1", "Core", false);
+
+	buffs_ = std::make_unique<Buffs>(device_);
+}
+
+uintptr_t Core::CombatEvent(cbtevent* ev, ag* src, ag* dst, char* skillname, uint64_t id, uint64_t revision)
+{
+	if (ev && ev->value)
+	{
+		if (ev->is_buffremove && src && src->self)
+			Core::i().RemoveBuff(ev->skillid, ev->result);
+		else if (ev->buff && !ev->buff_dmg)
+			Core::i().ApplyBuff(ev->skillid);
+	}
+
+	return 0;
+}
+
+void Core::ApplyBuff(int id)
+{
+	buffs_->ChangeBuff(id, 1);
+}
+
+void Core::RemoveBuff(int id, int count)
+{
+	buffs_->ChangeBuff(id, -count);
 }
 
 void Core::InnerInternalInit()
@@ -57,6 +84,11 @@ void Core::InnerShutdown()
 
 void Core::InnerUpdate()
 {
+	if (!arcInstalled_)
+	{
+		RegisterArc();
+		arcInstalled_ = true;
+	}
 }
 
 void Core::InnerDraw()
@@ -74,6 +106,8 @@ void Core::InnerDraw()
 				if (ImGui::Button("https://github.com/Friendly0Fire/GW2Clarity", ImVec2(windowSize.x * 0.8f, ImGui::GetFontSize() * 1.3f)))
 					ShellExecute(0, 0, L"https://github.com/Friendly0Fire/GW2Clarity", 0, 0, SW_SHOW);
 			}, [&]() { firstMessageShown_->value(true); });
+
+	buffs_->Draw(context_);
 }
 
 }
