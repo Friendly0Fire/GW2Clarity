@@ -6,12 +6,13 @@
 #include <map>
 #include <ConfigurationFile.h>
 #include <mutex>
+#include <span>
 
 namespace GW2Clarity
 {
 struct Buff
 {
-	int id;
+	uint id;
 	std::string name;
 	glm::vec2 uv;
 };
@@ -22,12 +23,7 @@ public:
 	Buffs(ComPtr<ID3D11Device>& dev);
 
 	void Draw(ComPtr<ID3D11DeviceContext>& ctx);
-
-	void ChangeBuff(int id, int amt)
-	{
-		std::unique_lock<std::mutex> lock{ buffsMutex_ };
-		buffsCount_[id] += amt;
-	}
+	void UpdateBuffsTable(StackedBuff* buffs);
 
 protected:
 	void Load();
@@ -67,11 +63,9 @@ protected:
 
 	const std::vector<Buff> buffs_;
 	const std::map<int, const Buff*> buffsMap_;
-	std::map<int, int> buffsCount_;
+	std::map<uint, int> activeBuffs_;
 
 	static std::vector<Buff> GenerateBuffsList();
 	static std::map<int, const Buff*> GenerateBuffsMap(const std::vector<Buff>& lst);
-
-	std::mutex buffsMutex_;
 };
 }

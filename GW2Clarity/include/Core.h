@@ -14,12 +14,11 @@ class ShaderManager;
 namespace GW2Clarity
 {
 
+using GetBuffsCallback = StackedBuff*(__cdecl*)();
+
 class Core : public BaseCore, public Singleton<Core>
 {
 public:
-	static uintptr_t CombatEvent(cbtevent* ev, ag* src, ag* dst, char* skillname, uint64_t id, uint64_t revision);
-	void ApplyBuff(int id);
-	void RemoveBuff(int id, int count);
 protected:
 	void InnerDraw() override;
 	void InnerUpdate() override;
@@ -27,6 +26,7 @@ protected:
 	void InnerInitPostImGui() override;
 	void InnerInternalInit() override;
 	void InnerShutdown() override;
+	void InnerFrequentUpdate() override;
 
 	uint GetShaderArchiveID() const override { return IDR_SHADERS; }
 	const wchar_t* GetShaderDirectory() const override { return SHADERS_DIR; }
@@ -34,6 +34,7 @@ protected:
 
 	std::unique_ptr<ConfigurationOption<bool>> firstMessageShown_;
 	std::unique_ptr<Buffs> buffs_;
-	bool arcInstalled_ = false;
+	HMODULE buffLib_ = nullptr;
+	GetBuffsCallback getBuffs_ = nullptr;
 };
 }

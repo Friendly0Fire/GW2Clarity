@@ -19,8 +19,6 @@
 #include <Version.h>
 #include <MiscTab.h>
 
-void RegisterArc();
-
 namespace GW2Clarity
 {
 
@@ -44,29 +42,6 @@ void Core::InnerInitPostImGui()
 	buffs_ = std::make_unique<Buffs>(device_);
 }
 
-uintptr_t Core::CombatEvent(cbtevent* ev, ag* src, ag* dst, char* skillname, uint64_t id, uint64_t revision)
-{
-	if (ev && ev->value)
-	{
-		if (ev->is_buffremove && src && src->self)
-			Core::i().RemoveBuff(ev->skillid, ev->result);
-		else if (ev->buff && !ev->buff_dmg)
-			Core::i().ApplyBuff(ev->skillid);
-	}
-
-	return 0;
-}
-
-void Core::ApplyBuff(int id)
-{
-	buffs_->ChangeBuff(id, 1);
-}
-
-void Core::RemoveBuff(int id, int count)
-{
-	buffs_->ChangeBuff(id, -count);
-}
-
 void Core::InnerInternalInit()
 {
 	ULONG_PTR contextToken;
@@ -75,20 +50,35 @@ void Core::InnerInternalInit()
 		if (hr != S_FALSE && hr != RPC_E_CHANGED_MODE && FAILED(hr))
 			CriticalMessageBox(L"Could not initialize COM library: error code 0x%X.", hr);
 	}
+
+	if (!buffLib_)
+	{
+		wchar_t fn[MAX_PATH];
+		GetModuleFileName(dllModule(), fn, MAX_PATH);
+
+		std::filesystem::path buffsPath = fn;
+		buffsPath = buffsPath.remove_filename() / "GW2Buffs.dll";
+		buffLib_ = LoadLibrary(buffsPath.wstring().c_str());
+		getBuffs_ = (decltype(getBuffs_))GetProcAddress(buffLib_, "GetCurrentPlayerStackedBuffs");
+	}
 }
 
 void Core::InnerShutdown()
 {
+	FreeLibrary(buffLib_);
+	buffLib_ = nullptr;
+
 	CoUninitialize();
+}
+
+void Core::InnerFrequentUpdate()
+{
+	if(getBuffs_)
+		buffs_->UpdateBuffsTable(getBuffs_());
 }
 
 void Core::InnerUpdate()
 {
-	if (!arcInstalled_)
-	{
-		RegisterArc();
-		arcInstalled_ = true;
-	}
 }
 
 void Core::InnerDraw()

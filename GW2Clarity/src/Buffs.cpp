@@ -141,7 +141,7 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 		{
 			for (const auto& [iid, i] : g.items)
 			{
-				int count = buffsCount_[i.buff->id];
+				int count = activeBuffs_[i.buff->id];
 				if (count == 0 && i.inactiveAlpha < 1.f / 255.f)
 					continue;
 				
@@ -158,6 +158,13 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 		}
 	}
 	ImGui::End();
+}
+
+void Buffs::UpdateBuffsTable(StackedBuff* buffs)
+{
+	activeBuffs_.clear();
+	for (size_t i = 0; buffs[i].id; i++)
+		activeBuffs_[buffs[i].id] = buffs[i].count;
 }
 
 void Buffs::Load()
