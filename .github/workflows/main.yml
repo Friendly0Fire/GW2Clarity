@@ -51,12 +51,14 @@ jobs:
           name: nightly-${{ github.sha }}
           path: |
             x64/Release/gw2addon_gw2clarity.dll
+            x64/Release/getbuffs.dll
             x64/Release/readme.md
       - name: Move files for tag
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           mkdir -p x64/Release/gw2clarity
           mv x64/Release/gw2addon_gw2clarity.dll x64/Release/gw2clarity/
+          mv x64/Release/getbuffs.dll x64/Release/gw2clarity/
           mv x64/Release/readme.md x64/Release/gw2clarity/
       - name: Zip files for tag
         if: startsWith(github.ref, 'refs/tags/v')
