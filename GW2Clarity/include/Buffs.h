@@ -8,6 +8,7 @@
 #include <mutex>
 #include <span>
 #include <imgui.h>
+#include <set>
 
 namespace GW2Clarity
 {
@@ -78,6 +79,8 @@ protected:
 #ifdef _DEBUG
 	int guildLogId_ = 3;
 	std::map<uint, std::string> buffNames_;
+	bool hideInactive_ = false;
+	std::set<uint> hiddenBuffs_;
 
 	void SaveNames();
 	void LoadNames();

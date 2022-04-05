@@ -245,16 +245,38 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 		ImGui::InputInt("Say in Guild", &guildLogId_, 1);
 		if (guildLogId_ < 0 || guildLogId_ > 5)
 			guildLogId_ = 1;
+
+		ImGui::Checkbox("Hide any inactive", &hideInactive_);
+		if (ImGui::Button("Hide currently inactive"))
+		{
+			for (auto& [id, buff] : activeBuffs_)
+				if (buff.first == 0)
+					hiddenBuffs_.insert(id);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Hide currently active"))
+		{
+			for (auto& [id, buff] : activeBuffs_)
+				if (buff.first > 0)
+					hiddenBuffs_.insert(id);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Unhide all"))
+			hiddenBuffs_.clear();
+
 		if (ImGui::BeginTable("Active Buffs", 5, ImGuiTableFlags_RowBg))
 		{
-			ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed, 1.f);
-			ImGui::TableSetupColumn("Count", ImGuiTableColumnFlags_WidthFixed, 1.f);
-			ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 8.f);
-			ImGui::TableSetupColumn("Max Duration", ImGuiTableColumnFlags_WidthStretch, 3.f);
+			ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed, 60.f);
+			ImGui::TableSetupColumn("Count", ImGuiTableColumnFlags_WidthFixed, 40.f);
+			ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 5.f);
+			ImGui::TableSetupColumn("Max Duration", ImGuiTableColumnFlags_WidthStretch, 2.f);
 			ImGui::TableSetupColumn("Chat Link", ImGuiTableColumnFlags_WidthStretch, 5.f);
 			ImGui::TableHeadersRow();
 			for (auto& [id, buff] : activeBuffs_)
 			{
+				if (buff.first == 0 && hideInactive_ || hiddenBuffs_.count(id) > 0)
+					continue;
+
 				ImGui::TableNextRow();
 				ImGui::TableSetColumnIndex(0);
 
