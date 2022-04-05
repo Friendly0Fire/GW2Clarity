@@ -14,7 +14,7 @@ struct Buff
 {
 	uint id;
 	std::string name;
-	glm::vec2 uv;
+	glm::vec4 uv;
 };
 
 class Buffs
@@ -29,8 +29,7 @@ protected:
 	void Load();
 	void Save();
 	static inline const glm::ivec2 GridDefaultSpacing{ 128, 128 };
-	static inline const glm::vec2 AtlasSize{ 1.f / 16.f - 1.f / 2048.f, 1.f / 16.f - 1.f / 2048.f };
-	static inline const Buff UnknownBuff{ 0, "Unknown", { 0, 0 } };
+	static inline const Buff UnknownBuff{ 0, "Unknown", { 0.f, 0.f, 0.f, 0.f } };
 
 	struct Item
 	{

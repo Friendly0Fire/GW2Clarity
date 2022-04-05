@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "AtlasTool": {
+      "commandName": "Project",
+      "commandLineArgs": "--directory \"$(SolutionDir)GW2Clarity\\assets\\atlas\" --output \"$(SolutionDir)GW2Clarity\\assets\\atlas.dds\" --verbose"
+    }
+  }
+}

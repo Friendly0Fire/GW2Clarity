@@ -19,10 +19,12 @@ using GetBuffsCallback = StackedBuff*(__cdecl*)();
 class Core : public BaseCore, public Singleton<Core>
 {
 public:
+	ImFont* fontBuffCounter() { return fontBuffCounter_; }
 protected:
 	void InnerDraw() override;
 	void InnerUpdate() override;
 	void InnerInitPreImGui() override;
+	void InnerInitPreFontImGui() override;
 	void InnerInitPostImGui() override;
 	void InnerInternalInit() override;
 	void InnerShutdown() override;
@@ -36,5 +38,7 @@ protected:
 	std::unique_ptr<Buffs> buffs_;
 	HMODULE buffLib_ = nullptr;
 	GetBuffsCallback getBuffs_ = nullptr;
+
+	ImFont* fontBuffCounter_ = nullptr;
 };
 }

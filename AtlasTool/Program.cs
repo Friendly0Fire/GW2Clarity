@@ -1,0 +1,108 @@
+﻿using CommandLine;
+using System.IO;
+using DirectXTexNet;
+using System.Text;
+
+class Program
+{
+    public class Options
+    {
+        [Option('d', "directory", Required = false, SetName = "dirmode", HelpText = "Specifies input directory.")]
+        public string InputDirectory { get; set; }
+
+        [Option('f', "files", Required = false, SetName = "filemode", Separator = ',', HelpText = "Comma-separated list of input files.")]
+        public IEnumerable<string> InputFiles { get; set; }
+
+        [Option('s', "size", Required = false, Default = 0, HelpText = "Size of individual atlas elements in pixels.")]
+        public int Size { get; set; }
+
+        [Option('b', "border", Required = false, Default = 1, HelpText = "Width of the border around each element in pixels.")]
+        public int Border { get; set; }
+
+        [Option('o', "output", Required = true, HelpText = "Specifies output file name.")]
+        public string OutputFile { get; set; }
+
+        [Option('v', "verbose", Required = false, HelpText = "Set output to verbose messages.")]
+        public bool Verbose { get; set; }
+    }
+
+    public static void Main(string[] args)
+    {
+        Console.WriteLine("Loading Atlas Tool...");
+        _ = Parser.Default.ParseArguments<Options>(args)
+            .WithParsed(o =>
+            {
+                IEnumerable<string> files;
+                if (o.InputFiles.Count() > 0)
+                { 
+                    files = o.InputFiles.Where(x => Path.GetExtension(x).ToLowerInvariant() == ".dds");
+                }
+                else
+                    files = Directory.EnumerateFiles(o.InputDirectory, "*.dds");
+                files = files.OrderBy(x => Path.GetFileName(x));
+
+                if(o.Verbose)
+                {
+                    Console.WriteLine("Using input files:");
+                    foreach (string file in files)
+                        Console.WriteLine($"\t{file}");
+                }
+
+                MakeAtlas(o.OutputFile, files, o.Size, o.Border, o.Verbose);
+            });
+    }
+
+    private static void MakeAtlas(string outputPath, IEnumerable<string> inputPaths, int size, int border, bool verbose)
+    {
+        var texHelper = TexHelper.Instance;
+        IEnumerable<ScratchImage> images = inputPaths.Select(f => texHelper.LoadFromDDSFile(f, DDS_FLAGS.NONE)) ?? new List<ScratchImage>();
+        if(size == 0)
+        {
+            size = images.Select(i => i.GetMetadata().Width).Max();
+            if(verbose)
+                Console.WriteLine($"Detected atlas element size: {size + border * 2}x{size + border * 2}.");
+        }
+        int sizeWithBorders = size + border * 2;
+        int squareEdge = (int)Math.Ceiling(Math.Sqrt(images.Count())) * sizeWithBorders;
+        if(verbose)
+            Console.WriteLine($"Final texture size: {squareEdge}x{squareEdge}.");
+
+        StringBuilder sidecar = new StringBuilder();
+
+        var output = texHelper.Initialize2D(DXGI_FORMAT.R8G8B8A8_UNORM, squareEdge, squareEdge, 1, 0, CP_FLAGS.NONE);
+        var output0 = output.GetImage(0);
+        int x = border, y = border;
+        foreach(var ip in images.Zip(inputPaths))
+        {
+            var i = ip.First;
+            var p = ip.Second;
+
+            Image i0;
+            if (texHelper.IsCompressed(i.GetMetadata().Format))
+                i0 = i.Decompress(DXGI_FORMAT.R8G8B8A8_UNORM).GetImage(0);
+            else
+                i0 = i.GetImage(0);
+            texHelper.CopyRectangle(i0, 0, 0, i0.Width, i0.Height, output0, TEX_FILTER_FLAGS.DEFAULT, x, y);
+
+            _ = sidecar.AppendLine($"{{ \"{Path.GetFileNameWithoutExtension(p).ToLowerInvariant()}\", {{ {(float)x / squareEdge}, {(float)y / squareEdge}, {(float)(x + i0.Width) / squareEdge}, {(float)(y + i0.Height) / squareEdge} }} }},");
+
+            x += sizeWithBorders;
+            if(x >= squareEdge)
+            { 
+                x = border;
+                y += sizeWithBorders;
+            }
+        }
+
+        var format = images.First().GetMetadata().Format;
+
+        output = output.GenerateMipMaps(TEX_FILTER_FLAGS.DEFAULT, 0);
+        var finalOutput = texHelper.IsCompressed(format) ? output.Compress(format, TEX_COMPRESS_FLAGS.DEFAULT, 0.5f) : output;
+
+        finalOutput.SaveToDDSFile(DDS_FLAGS.NONE, outputPath);
+
+        File.WriteAllText(Path.ChangeExtension(outputPath, ".inc"), sidecar.ToString());
+    }
+}
+
+

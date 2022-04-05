@@ -18,6 +18,7 @@
 #include <Log.h>
 #include <Version.h>
 #include <MiscTab.h>
+#include <common/baseresource.h>
 
 namespace GW2Clarity
 {
@@ -33,6 +34,17 @@ public:
 void Core::InnerInitPreImGui()
 {
 	ClarityMiscTab::init<ClarityMiscTab>();
+
+}
+
+void Core::InnerInitPreFontImGui()
+{
+	auto& imio = ImGui::GetIO();
+	auto fontCfg = ImFontConfig();
+	fontCfg.FontDataOwnedByAtlas = false;
+
+	if (const auto data = LoadResource(dllModule_, IDR_FONT_BLACK); data.data())
+		fontBuffCounter_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), int(data.size_bytes()), 128.f, &fontCfg);
 }
 
 void Core::InnerInitPostImGui()

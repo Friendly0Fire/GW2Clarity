@@ -1,3 +1,6 @@
+#define GLM_FORCE_SWIZZLE
+#include <glm/glm.hpp>
+
 #include <Buffs.h>
 #include <Core.h>
 #include <imgui.h>
@@ -107,7 +110,7 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 			{
 				for (auto& b : buffs_)
 				{
-					ImGui::Image(buffsAtlas_.srv.Get(), ImVec2(32, 32), ToImGui(b.uv), ToImGui(b.uv + AtlasSize));
+					ImGui::Image(buffsAtlas_.srv.Get(), ImVec2(32, 32), ToImGui(b.uv.xy), ToImGui(b.uv.zw));
 					ImGui::SameLine();
 					if (ImGui::Selectable(b.name.c_str(), false))
 						editItem.buff = &b;
@@ -137,6 +140,9 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 	ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
 	if (ImGui::Begin("Display Area", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollWithMouse))
 	{
+		auto* font = Core::i().fontBuffCounter();
+		ImGui::PushFont(font);
+		float origFontScale = font->Scale;
 		for (const auto& [gid, g] : grids_)
 		{
 			for (const auto& [iid, i] : g.items)
@@ -148,14 +154,27 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 				glm::vec2 pos = (g.attached ? mouse : screen * 0.5f) + glm::vec2(i.pos * g.spacing);
 
 				ImGui::SetCursorPos(ToImGui(pos));
-				ImGui::Image(buffsAtlas_.srv.Get(), AdjustToArea(128, 128, g.spacing.x), ToImGui(i.buff->uv), ToImGui(i.buff->uv + AtlasSize), ImVec4(1, 1, 1, count > 0 ? i.activeAlpha : i.inactiveAlpha));
+				ImGui::Image(buffsAtlas_.srv.Get(), AdjustToArea(128, 128, g.spacing.x), ToImGui(i.buff->uv.xy), ToImGui(i.buff->uv.zw), ImVec4(1, 1, 1, count > 0 ? i.activeAlpha : i.inactiveAlpha));
 				if (count > 1)
 				{
-					ImGui::SetCursorPos(ToImGui(pos));
-					ImGui::Text("%d", count);
+					pos += glm::vec2(g.spacing);
+					font->Scale = 0.01f * g.spacing.x;
+					auto countStr = std::format("{}", count);
+					auto dim = ImGui::CalcTextSize(countStr.c_str());
+					dim.y *= 0.85f;
+					dim.x += float(g.spacing.x) / 16;
+
+					ImGui::SetCursorPos(ToImGui(pos) - dim);
+					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 0, 0, 1));
+					ImGui::TextUnformatted(countStr.c_str());
+					ImGui::PopStyleColor();
+					ImGui::SetCursorPos(ToImGui(pos) - dim - ImVec2(font->Scale * 2.f, font->Scale * 2.f));
+					ImGui::TextUnformatted(countStr.c_str());
 				}
 			}
 		}
+		font->Scale = origFontScale;
+		ImGui::PopFont();
 	}
 	ImGui::End();
 }
@@ -169,6 +188,7 @@ void Buffs::UpdateBuffsTable(StackedBuff* buffs)
 
 void Buffs::Load()
 {
+#if 0
 	grids_.clear();
 
 	ConfigurationFile::i().Reload();
@@ -216,10 +236,12 @@ void Buffs::Load()
 			grids_[currentGridId_++] = loadedGrid;
 		}
 	}
+#endif
 }
 
 void Buffs::Save()
 {
+#if 0
 	auto& ini = ConfigurationFile::i().ini();
 
 	for (const auto& [gid, g] : grids_)
@@ -234,26 +256,35 @@ void Buffs::Save()
 	}
 
 	ConfigurationFile::i().Save();
+#endif
 }
 
 std::vector<Buff> Buffs::GenerateBuffsList()
 {
-	std::vector<Buff> buffs{
-		{ 743, "Aegis", {0.f, 0.f}},
-		{ 30328, "Alacrity", {1.f, 0.f}},
-		{ 725, "Fury", { 3.f, 0.f } },
-		{ 719, "Swiftness", {4.f, 0.f}},
-		{ 740, "Might", {5.f, 0.f}},
-		{ 717, "Protection", {6.f, 0.f}},
-		{ 1187, "Quickness", {7.f, 0.f}},
-		{ 718, "Regeneration", {8.f, 0.f}},
-		{ 26980, "Resistance", {9.f, 0.f}},
-		{ 873, "Resolution", {10.f, 0.f}},
-		{ 1122, "Stability", {11.f, 0.f}},
-		{ 726, "Vigor", {12.f, 0.f}},
+	const std::map<std::string, glm::vec4> atlasElements
+	{
+		#include <assets/atlas.inc>
+	};
+
+	std::vector<Buff> buffs {
+		{ 743, "Aegis" },
+		{ 30328, "Alacrity" },
+		{ 725, "Fury" },
+		{ 719, "Swiftness" },
+		{ 740, "Might" },
+		{ 717, "Protection" },
+		{ 1187, "Quickness" },
+		{ 718, "Regeneration" },
+		{ 26980, "Resistance" },
+		{ 873, "Resolution" },
+		{ 1122, "Stability" },
+		{ 726, "Vigor" },
 	};
 	for (auto& b : buffs)
-		b.uv = b.uv / 16.f + 0.5f / 2048.f;
+	{
+		auto it = atlasElements.find(ToLower(b.name));
+		b.uv = it != atlasElements.end() ? it->second : glm::vec4 { 0.f, 0.f, 0.f, 0.f };
+	}
 
 	std::ranges::sort(buffs, [](auto& a, auto& b) { return a.name < b.name; });
 
