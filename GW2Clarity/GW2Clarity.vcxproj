@@ -89,6 +89,7 @@
       <Command>if exist "$(GW2CLARITY_TARGET_DIR)" (
   echo f | xcopy /F /Y $(TargetPath) "$(GW2CLARITY_TARGET_DIR)\addons\gw2clarity\gw2addon_gw2clarity.dll"
   echo f | xcopy /F /Y $(OutDir)$(TargetName).pdb "$(GW2CLARITY_TARGET_DIR)\addons\gw2clarity\gw2addon_gw2clarity.pdb"
+  echo f | xcopy /F /Y $(OutDir)getbuffs.dll "$(GW2CLARITY_TARGET_DIR)\addons\gw2clarity\getbuffs.dll"
 ) else (
   echo No target defined, skipping copy. To setup automatic copy, define environment variable GW2CLARITY_TARGET_DIR to your GW2 root install directory.
 )</Command>
@@ -131,8 +132,9 @@ git describe --always --dirty --match "NOT A TAG" &gt;&gt; "$(ProjectDir)include
     </Link>
     <PostBuildEvent>
       <Command>if exist "$(GW2CLARITY_TARGET_DIR)" (
-  copy /Y $(TargetPath) "$(GW2CLARITY_TARGET_DIR)\addons\gw2clarity\gw2addon_gw2clarity.dll"
-  copy /Y $(OutDir)$(TargetName).pdb "$(GW2CLARITY_TARGET_DIR)\addons\gw2clarity\gw2addon_gw2clarity.pdb"
+  echo f | xcopy /F /Y $(TargetPath) "$(GW2CLARITY_TARGET_DIR)\addons\gw2clarity\gw2addon_gw2clarity.dll"
+  echo f | xcopy /F /Y $(OutDir)$(TargetName).pdb "$(GW2CLARITY_TARGET_DIR)\addons\gw2clarity\gw2addon_gw2clarity.pdb"
+  echo f | xcopy /F /Y $(OutDir)getbuffs.dll "$(GW2CLARITY_TARGET_DIR)\addons\gw2clarity\getbuffs.dll"
 ) else (
   echo No target defined, skipping copy. To setup automatic copy, define environment variable GW2CLARITY_TARGET_DIR to your GW2 root install directory.
 )</Command>
@@ -167,6 +169,11 @@ cd "$(ProjectDir)shaders"
       <FileType>Document</FileType>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\getbuffs.dll">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
     </CopyFileToFolders>
     <None Include="art\finals\rcdata1.bin" />
     <None Include="Main.def" />

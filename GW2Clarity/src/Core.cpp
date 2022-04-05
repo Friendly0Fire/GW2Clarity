@@ -69,7 +69,7 @@ void Core::InnerInternalInit()
 		GetModuleFileName(dllModule(), fn, MAX_PATH);
 
 		std::filesystem::path buffsPath = fn;
-		buffsPath = buffsPath.remove_filename() / "GW2Buffs.dll";
+		buffsPath = buffsPath.remove_filename() / "getbuffs.dll";
 		buffLib_ = LoadLibrary(buffsPath.wstring().c_str());
 		getBuffs_ = (decltype(getBuffs_))GetProcAddress(buffLib_, "GetCurrentPlayerStackedBuffs");
 	}

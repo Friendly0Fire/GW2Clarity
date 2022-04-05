@@ -8,6 +8,9 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <misc/cpp/imgui_stdlib.h>
 #include <SimpleIni.h>
+#include <cppcodec/base64_rfc4648.hpp>
+#include <skyr/percent_encoding/percent_encode.hpp>
+#include <shellapi.h>
 
 namespace GW2Clarity
 {
@@ -35,7 +38,62 @@ Buffs::Buffs(ComPtr<ID3D11Device>& dev)
 	buffsAtlas_ = CreateTextureFromResource(dev.Get(), Core::i().dllModule(), IDR_BOONS);
 
 	Load();
+#ifdef _DEBUG
+	LoadNames();
+#endif
 }
+
+#ifdef _DEBUG
+void Buffs::LoadNames()
+{
+	buffNames_.clear();
+
+	wchar_t fn[MAX_PATH];
+	GetModuleFileName(GetBaseCore().dllModule(), fn, MAX_PATH);
+
+	std::filesystem::path namesPath = fn;
+	namesPath = namesPath.remove_filename() / "names.tsv";
+
+	std::ifstream namesFile(namesPath);
+	if (namesFile.good())
+	{
+		std::string line;
+		std::vector<std::string> cols;
+		bool header = true;
+		while (std::getline(namesFile, line))
+		{
+			if (header)
+			{
+				header = false;
+				continue;
+			}
+
+			cols.clear();
+			SplitString(line.c_str(), "\t", std::back_inserter(cols));
+			GW2_ASSERT(cols.size() == 1 || cols.size() == 2);
+
+			buffNames_[std::atoi(cols[0].c_str())] = cols.size() == 2 ? cols[1] : "";
+		}
+	}
+}
+
+void Buffs::SaveNames()
+{
+	wchar_t fn[MAX_PATH];
+	GetModuleFileName(GetBaseCore().dllModule(), fn, MAX_PATH);
+
+	std::filesystem::path namesPath = fn;
+	namesPath = namesPath.remove_filename() / "names.tsv";
+
+	std::ofstream namesFile(namesPath, std::ofstream::trunc | std::ofstream::out);
+	if (namesFile.good())
+	{
+		namesFile << "ID\tName" << std::endl;
+		for (auto& n : buffNames_)
+			namesFile << n.first << "\t" << n.second << std::endl;
+	}
+}
+#endif
 
 void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 {
@@ -181,6 +239,128 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 		ImGui::Separator();
 		if (ImGui::Button("Save", ImVec2(128, 32)))
 			Save();
+
+#ifdef _DEBUG
+		ImGui::Separator();
+		ImGui::InputInt("Say in Guild", &guildLogId_, 1);
+		if (guildLogId_ < 0 || guildLogId_ > 5)
+			guildLogId_ = 1;
+		if (ImGui::BeginTable("Active Buffs", 5, ImGuiTableFlags_RowBg))
+		{
+			ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed, 1.f);
+			ImGui::TableSetupColumn("Count", ImGuiTableColumnFlags_WidthFixed, 1.f);
+			ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 8.f);
+			ImGui::TableSetupColumn("Max Duration", ImGuiTableColumnFlags_WidthStretch, 3.f);
+			ImGui::TableSetupColumn("Chat Link", ImGuiTableColumnFlags_WidthStretch, 5.f);
+			ImGui::TableHeadersRow();
+			for (auto& [id, buff] : activeBuffs_)
+			{
+				ImGui::TableNextRow();
+				ImGui::TableSetColumnIndex(0);
+
+				ImGui::Text("%u", id);
+
+				ImGui::TableNextColumn();
+
+				ImGui::Text("%d", buff.first);
+
+				ImGui::TableNextColumn();
+
+				if (auto it = buffsMap_.find(id); it != buffsMap_.end())
+					ImGui::TextUnformatted(it->second->name.c_str());
+				else {
+					auto& str = buffNames_[id];
+					if (ImGui::InputText(std::format("##Name{}", id).c_str(), &str))
+						SaveNames();
+				}
+
+				ImGui::TableNextColumn();
+
+				const int hourMS = 1000 * 60 * 60;
+				const int minuteMS = 1000 * 60;
+				const int secondMS = 1000;
+
+				int hours = buff.second / hourMS;
+				int minutes = (buff.second - hours * hourMS) / minuteMS;
+				int seconds = (buff.second - hours * hourMS - minutes * minuteMS) / secondMS;
+
+				std::string timeLeft = "";
+				if (hours > 0)
+					timeLeft += std::format("{} hours", hours);
+				if (minutes > 0)
+					timeLeft += std::format(" {} minutes", minutes);
+				if (seconds > 0)
+					timeLeft += std::format(" {} seconds", seconds);
+
+				ImGui::Text("%s", timeLeft.c_str());
+
+				ImGui::TableNextColumn();
+
+				byte chatCode[1 + 3 + 1];
+				chatCode[0] = 0x06;
+				chatCode[1 + 3] = 0x0;
+				chatCode[1] = id & 0xFF;
+				chatCode[2] = (id >> 8) & 0xFF;
+				chatCode[3] = (id >> 16) & 0xFF;
+
+				using base64 = cppcodec::base64_rfc4648;
+
+				std::string chatCodeStr = std::format("[&{}]", base64::encode(chatCode));
+
+				ImGui::TextUnformatted(chatCodeStr.c_str());
+				ImGui::SameLine();
+				if (ImGui::Button(("Copy##" + chatCodeStr).c_str()))
+					ImGui::SetClipboardText(chatCodeStr.c_str());
+				ImGui::SameLine();
+				if (ImGui::Button(std::format("Say in G{}##{}", guildLogId_, chatCodeStr).c_str()))
+				{
+					mstime currentTime = TimeInMilliseconds();
+					ImGui::SetClipboardText(std::format("/g{} {}: {}", guildLogId_, id, chatCodeStr).c_str());
+
+					auto wait = [](int i) { std::this_thread::sleep_for(std::chrono::milliseconds(i)); };
+					auto sendKeyEvent = [](uint vk, ScanCode sc, bool down) {
+						INPUT i;
+						ZeroMemory(&i, sizeof(INPUT));
+						i.type = INPUT_KEYBOARD;
+						i.ki.wVk = vk;
+						i.ki.wScan = ScanCode_t(sc);
+						i.ki.dwFlags = down ? 0 : KEYEVENTF_KEYUP;
+
+						SendInput(1, &i, sizeof(INPUT));
+					};
+
+					std::thread([=] {
+						wait(100);
+
+						sendKeyEvent(VK_RETURN, ScanCode::ENTER, true);
+						wait(50);
+						sendKeyEvent(VK_RETURN, ScanCode::ENTER, false);
+						wait(100);
+
+						sendKeyEvent(VK_CONTROL, ScanCode::CONTROLLEFT, true);
+						wait(50);
+						sendKeyEvent('V', ScanCode::V, true);
+						wait(100);
+
+						sendKeyEvent('V', ScanCode::V, false);
+						wait(50);
+						sendKeyEvent(VK_CONTROL, ScanCode::CONTROLLEFT, false);
+						wait(100);
+
+						sendKeyEvent(VK_RETURN, ScanCode::ENTER, true);
+						wait(50);
+						sendKeyEvent(VK_RETURN, ScanCode::ENTER, false);
+						}).detach();
+				}
+				ImGui::SameLine();
+				if (ImGui::Button(("Wiki##" + chatCodeStr).c_str()))
+				{
+					ShellExecute(0, 0, std::format(L"https://wiki.guildwars2.com/index.php?title=Special:Search&search={}", utf8_decode(skyr::percent_encode(chatCodeStr))).c_str(), 0, 0, SW_SHOW);
+				}
+			}
+			ImGui::EndTable();
+		}
+#endif
 	}
 	ImGui::End();
 
@@ -224,7 +404,7 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 		{
 			for (const auto& [iid, i] : g.items)
 			{
-				int count = activeBuffs_[i.buff->id];
+				int count = activeBuffs_[i.buff->id].first;
 				if (placingItem_ && selectedGridId_ == gid && selectedItemId_ == iid)
 					count = std::max(count, 1);
 
@@ -241,9 +421,14 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 
 void Buffs::UpdateBuffsTable(StackedBuff* buffs)
 {
+#ifdef _DEBUG
+	for (auto& b : activeBuffs_)
+		b.second = { 0, 0 };
+#else
 	activeBuffs_.clear();
+#endif
 	for (size_t i = 0; buffs[i].id; i++)
-		activeBuffs_[buffs[i].id] = buffs[i].count;
+		activeBuffs_[buffs[i].id] = { buffs[i].count, buffs[i].maxDuration };
 }
 
 void Buffs::Load()

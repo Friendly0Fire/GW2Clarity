@@ -64,7 +64,8 @@ protected:
 
 	const std::vector<Buff> buffs_;
 	const std::map<int, const Buff*> buffsMap_;
-	std::map<uint, int> activeBuffs_;
+	std::map<uint, std::pair<int, int>> activeBuffs_;
+
 
 	static std::vector<Buff> GenerateBuffsList();
 	static std::map<int, const Buff*> GenerateBuffsMap(const std::vector<Buff>& lst);
@@ -73,5 +74,13 @@ protected:
 	bool placingItem_ = false;
 
 	static const int InvisibleWindowFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollWithMouse;
+
+#ifdef _DEBUG
+	int guildLogId_ = 3;
+	std::map<uint, std::string> buffNames_;
+
+	void SaveNames();
+	void LoadNames();
+#endif
 };
 }
