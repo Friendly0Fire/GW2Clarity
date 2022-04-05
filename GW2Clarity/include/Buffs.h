@@ -7,6 +7,7 @@
 #include <ConfigurationFile.h>
 #include <mutex>
 #include <span>
+#include <imgui.h>
 
 namespace GW2Clarity
 {
@@ -44,6 +45,7 @@ protected:
 		std::map<int, Item> items;
 		std::string name { "New Grid" };
 		bool attached = false;
+		bool square = true;
 	};
 
 	std::map<int, Grid> grids_;
@@ -66,5 +68,10 @@ protected:
 
 	static std::vector<Buff> GenerateBuffsList();
 	static std::map<int, const Buff*> GenerateBuffsMap(const std::vector<Buff>& lst);
+
+	bool draggingGridScale_ = false;
+	bool placingItem_ = false;
+
+	static const int InvisibleWindowFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollWithMouse;
 };
 }

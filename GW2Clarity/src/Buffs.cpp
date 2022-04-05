@@ -41,6 +41,48 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 {
 	if (ImGui::Begin("Buffs Management"))
 	{
+		if (draggingGridScale_ || placingItem_)
+		{
+			const auto& sp = selectedGridId_ >= 0 ? grids_[selectedGridId_].spacing : creatingGrid_.spacing;
+			auto d = ImGui::GetIO().DisplaySize;
+			auto c = d * 0.5f;
+
+			auto* cmdList = ImGui::GetWindowDrawList();
+			cmdList->PushClipRectFullScreen();
+
+			int i = 0;
+			auto color = [&i]() { return i != 0 ? (i % 4 == 0 ? 0xCCFFFFFF : 0x55FFFFFF) : 0xFFFFFFFF; };
+			for (float x = 0.f; x < c.x; x += sp.x)
+			{
+				cmdList->AddLine(ImVec2(c.x + x, 0.f), ImVec2(c.x + x, d.y), color(), 1.2f);
+				cmdList->AddLine(ImVec2(c.x - x, 0.f), ImVec2(c.x - x, d.y), color(), 1.2f);
+				i++;
+			}
+
+			i = 0;
+			for (float y = 0.f; y < c.y; y += sp.y)
+			{
+				cmdList->AddLine(ImVec2(0.f, c.y + y), ImVec2(d.x, c.y + y), color(), 1.2f);
+				cmdList->AddLine(ImVec2(0.f, c.y - y), ImVec2(d.x, c.y - y), color(), 1.2f);
+				i++;
+			}
+			cmdList->PopClipRect();
+
+			draggingGridScale_ = ImGui::IsMouseDragging(ImGuiMouseButton_Left);
+		}
+
+		if (placingItem_)
+		{
+			const auto& sp = grids_[selectedGridId_].spacing;
+			auto& item = selectedItemId_ >= 0 ? grids_[selectedGridId_].items[selectedItemId_] : creatingItem_;
+			auto mouse = ImGui::GetIO().MousePos - ImGui::GetIO().DisplaySize * 0.5f;
+
+			item.pos = glm::ivec2(glm::floor(glm::vec2(mouse.x, mouse.y) / glm::vec2(sp)));
+
+			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+				placingItem_ = false;
+		}
+
 		for (auto& [gid, g] : grids_)
 		{
 			if (ImGui::Selectable(std::format("{} ({}x{})##{}", g.name, g.spacing.x, g.spacing.y, gid).c_str(), selectedGridId_ == gid && selectedItemId_ == UnselectedId))
@@ -82,16 +124,22 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 			else
 				ImGuiTitle("New Grid");
 
-			ImGui::DragInt2("Grid Scale", glm::value_ptr(editGrid.spacing));
+			ImGui::Checkbox("Square Grid", &editGrid.square);
+			if (editGrid.square && ImGui::DragInt("Grid Scale", (int*)&editGrid.spacing, 0.1f, 1, 2048) ||
+				!editGrid.square && ImGui::DragInt2("Grid Scale", glm::value_ptr(editGrid.spacing), 0.1f, 1, 2048))
+			{
+				draggingGridScale_ = ImGui::IsMouseDragging(ImGuiMouseButton_Left);
+			}
+			if (editGrid.square)
+				editGrid.spacing.y = editGrid.spacing.x;
+
 			ImGui::InputText("Grid Name", &editGrid.name);
 			ImGui::Checkbox("Attached to Mouse", &editGrid.attached);
 
 			if (selectedGridId_ == NewId && ImGui::Button("Create Grid"))
 			{
 				grids_[currentGridId_] = creatingGrid_;
-				creatingGrid_.name = "New Grid";
-				creatingGrid_.spacing = GridDefaultSpacing;
-				creatingGrid_.attached = false;
+				creatingGrid_ = {};
 				currentGridId_++;
 			}
 		}
@@ -117,13 +165,15 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 				}
 				ImGui::EndCombo();
 			}
-			ImGui::DragInt2("Location", glm::value_ptr(editItem.pos));
+			ImGui::DragInt2("Location", glm::value_ptr(editItem.pos), 0.1f);
+			ImGui::SameLine();
+			if (ImGui::Button("Place"))
+				placingItem_ = true;
 
 			if (selectedItemId_ == NewId && ImGui::Button("Create Item"))
 			{
 				grids_[selectedGridId_].items[currentItemId_] = creatingItem_;
-				creatingItem_.pos = { 1, 1 };
-				creatingItem_.buff = &UnknownBuff;
+				creatingItem_ = {};
 				currentItemId_++;
 			}
 		}
@@ -138,40 +188,50 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 	glm::vec2 mouse{ ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y };
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
 	ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
-	if (ImGui::Begin("Display Area", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollWithMouse))
+	if (ImGui::Begin("Display Area", nullptr, InvisibleWindowFlags))
 	{
 		auto* font = Core::i().fontBuffCounter();
 		ImGui::PushFont(font);
 		float origFontScale = font->Scale;
+
+		auto drawItem = [&](const Grid& g, const Item& i, int count) {
+			if (count == 0 && i.inactiveAlpha < 1.f / 255.f)
+				return;
+
+			glm::vec2 pos = (g.attached && !placingItem_ ? mouse : screen * 0.5f) + glm::vec2(i.pos * g.spacing);
+
+			ImGui::SetCursorPos(ToImGui(pos));
+			ImGui::Image(buffsAtlas_.srv.Get(), AdjustToArea(128, 128, g.spacing.x), ToImGui(i.buff->uv.xy), ToImGui(i.buff->uv.zw), ImVec4(1, 1, 1, count > 0 ? i.activeAlpha : i.inactiveAlpha));
+			if (count > 1)
+			{
+				pos += glm::vec2(g.spacing);
+				font->Scale = 0.01f * g.spacing.x;
+				auto countStr = std::format("{}", count);
+				auto dim = ImGui::CalcTextSize(countStr.c_str());
+				dim.y *= 0.85f;
+				dim.x += float(g.spacing.x) / 16;
+
+				ImGui::SetCursorPos(ToImGui(pos) - dim);
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 0, 0, 1));
+				ImGui::TextUnformatted(countStr.c_str());
+				ImGui::PopStyleColor();
+				ImGui::SetCursorPos(ToImGui(pos) - dim - ImVec2(font->Scale * 2.f, font->Scale * 2.f));
+				ImGui::TextUnformatted(countStr.c_str());
+			}
+		};
+
 		for (const auto& [gid, g] : grids_)
 		{
 			for (const auto& [iid, i] : g.items)
 			{
 				int count = activeBuffs_[i.buff->id];
-				if (count == 0 && i.inactiveAlpha < 1.f / 255.f)
-					continue;
-				
-				glm::vec2 pos = (g.attached ? mouse : screen * 0.5f) + glm::vec2(i.pos * g.spacing);
+				if (placingItem_ && selectedGridId_ == gid && selectedItemId_ == iid)
+					count = std::max(count, 1);
 
-				ImGui::SetCursorPos(ToImGui(pos));
-				ImGui::Image(buffsAtlas_.srv.Get(), AdjustToArea(128, 128, g.spacing.x), ToImGui(i.buff->uv.xy), ToImGui(i.buff->uv.zw), ImVec4(1, 1, 1, count > 0 ? i.activeAlpha : i.inactiveAlpha));
-				if (count > 1)
-				{
-					pos += glm::vec2(g.spacing);
-					font->Scale = 0.01f * g.spacing.x;
-					auto countStr = std::format("{}", count);
-					auto dim = ImGui::CalcTextSize(countStr.c_str());
-					dim.y *= 0.85f;
-					dim.x += float(g.spacing.x) / 16;
-
-					ImGui::SetCursorPos(ToImGui(pos) - dim);
-					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 0, 0, 1));
-					ImGui::TextUnformatted(countStr.c_str());
-					ImGui::PopStyleColor();
-					ImGui::SetCursorPos(ToImGui(pos) - dim - ImVec2(font->Scale * 2.f, font->Scale * 2.f));
-					ImGui::TextUnformatted(countStr.c_str());
-				}
+				drawItem(g, i, count);
 			}
+			if (placingItem_ && selectedGridId_ == gid && selectedItemId_ == NewId)
+				drawItem(g, creatingItem_, 1);
 		}
 		font->Scale = origFontScale;
 		ImGui::PopFont();
