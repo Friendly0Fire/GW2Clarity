@@ -11,6 +11,7 @@
     "xxhash",
     "neargye-semver",
     "cppcodec",
-    "skyr-url"
+    "skyr-url",
+    "range-v3"
   ]
 }

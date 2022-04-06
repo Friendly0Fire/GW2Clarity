@@ -13,6 +13,7 @@
 #include <shellapi.h>
 #include <ranges>
 #include <algorithm>
+#include <range/v3/all.hpp>
 
 namespace GW2Clarity
 {
@@ -133,11 +134,15 @@ void Buffs::SaveNames()
 
 void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 {
+	mstime currentTime = TimeInMilliseconds();
+	if (needsSaving_ && lastSaveTime_ + SaveDelay <= currentTime)
+		Save();
+
 	if (ImGui::Begin("Buffs Management"))
 	{
 		if (draggingGridScale_ || placingItem_)
 		{
-			const auto& sp = selectedGridId_ >= 0 ? grids_[selectedGridId_].spacing : creatingGrid_.spacing;
+			const auto& sp = getG(selectedId_).spacing;
 			auto d = ImGui::GetIO().DisplaySize;
 			auto c = d * 0.5f;
 
@@ -163,88 +168,91 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 			cmdList->PopClipRect();
 
 			draggingGridScale_ = ImGui::IsMouseDragging(ImGuiMouseButton_Left);
+			if(!draggingGridScale_)
+				needsSaving_ = true;
 		}
 
 		if (placingItem_)
 		{
-			const auto& sp = grids_[selectedGridId_].spacing;
-			auto& item = selectedItemId_ >= 0 ? grids_[selectedGridId_].items[selectedItemId_] : creatingItem_;
+			const auto& sp = getG(selectedId_).spacing;
+			auto& item = getI(selectedId_);
 			auto mouse = ImGui::GetIO().MousePos - ImGui::GetIO().DisplaySize * 0.5f;
 
 			item.pos = glm::ivec2(glm::floor(glm::vec2(mouse.x, mouse.y) / glm::vec2(sp)));
 
 			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+			{
 				placingItem_ = false;
+				needsSaving_ = true;
+			}
 		}
 
-		for (auto& [gid, g] : grids_)
+		for (auto&& [gid, g] : grids_ | ranges::views::enumerate)
 		{
-			if (ImGui::Selectable(std::format("{} ({}x{})##{}", g.name, g.spacing.x, g.spacing.y, gid).c_str(), selectedGridId_ == gid && selectedItemId_ == UnselectedId))
-			{
-				selectedGridId_ = gid;
-				selectedItemId_ = UnselectedId;
-			}
+			auto u = Unselected(gid);
+			if (ImGui::Selectable(std::format("{} ({}x{})##{}", g.name, g.spacing.x, g.spacing.y, gid).c_str(), selectedId_ == u))
+				selectedId_ = u;
+
 			ImGui::Indent();
-			for (auto& [iid, i] : g.items)
+			for (auto&& [iid, i] : g.items | ranges::views::enumerate)
 			{
-				if (ImGui::Selectable(std::format("{} ({}, {})##{}", i.buff->name.c_str(), i.pos.x, i.pos.y, iid).c_str(), selectedItemId_ == iid))
-				{
-					selectedGridId_ = gid;
-					selectedItemId_ = iid;
-				}
+				Id id{ gid, iid };
+				if (ImGui::Selectable(std::format("{} ({}, {})##{}", i.buff->name.c_str(), i.pos.x, i.pos.y, iid).c_str(), selectedId_ == id))
+					selectedId_ = id;
 			}
-			if (ImGui::Selectable(std::format("+ New Item##{}", gid).c_str(), selectedGridId_ == gid && selectedItemId_ == NewId))
-			{
-				selectedGridId_ = gid;
-				selectedItemId_ = NewId;
-			}
+
+			auto n = New(gid);
+			if (ImGui::Selectable(std::format("+ New Item##{}", gid).c_str(), selectedId_.grid == gid && selectedId_ == n))
+				selectedId_ = n;
 			ImGui::Unindent();
 		}
-		if (ImGui::Selectable("+ New Grid", selectedGridId_ == NewId))
 		{
-			selectedGridId_ = NewId;
-			selectedItemId_ = UnselectedId;
+			auto n = New();
+			if (ImGui::Selectable("+ New Grid", selectedId_ == n))
+				selectedId_ = n;
 		}
 
-		bool editingGrid = selectedGridId_ >= 0 && selectedItemId_ == UnselectedId;
-		bool editingItem = selectedItemId_ >= 0;
-		if (editingGrid || selectedGridId_ == NewId)
+		auto saveCheck = [this](bool changed) { needsSaving_ = needsSaving_ || changed; return changed; };
+
+		bool editingGrid = selectedId_.grid >= 0 && selectedId_.item == UnselectedSubId;
+		bool editingItem = selectedId_.item >= 0;
+		if (editingGrid || selectedId_.grid == NewSubId)
 		{
 			ImGui::Separator();
 
-			auto& editGrid = editingGrid ? grids_[selectedGridId_] : creatingGrid_;
+			auto& editGrid = editingGrid ? getG(selectedId_) : creatingGrid_;
 			if (editingGrid)
 				ImGuiTitle(std::format("Editing Grid '{}'", editGrid.name).c_str());
 			else
 				ImGuiTitle("New Grid");
 
-			ImGui::Checkbox("Square Grid", &editGrid.square);
-			if (editGrid.square && ImGui::DragInt("Grid Scale", (int*)&editGrid.spacing, 0.1f, 1, 2048) ||
-				!editGrid.square && ImGui::DragInt2("Grid Scale", glm::value_ptr(editGrid.spacing), 0.1f, 1, 2048))
+			saveCheck(ImGui::Checkbox("Square Grid", &editGrid.square));
+			if (editGrid.square && saveCheck(ImGui::DragInt("Grid Scale", (int*)&editGrid.spacing, 0.1f, 1, 2048)) ||
+				!editGrid.square && saveCheck(ImGui::DragInt2("Grid Scale", glm::value_ptr(editGrid.spacing), 0.1f, 1, 2048)))
 			{
 				draggingGridScale_ = ImGui::IsMouseDragging(ImGuiMouseButton_Left);
 			}
 			if (editGrid.square)
 				editGrid.spacing.y = editGrid.spacing.x;
 
-			ImGui::InputText("Grid Name", &editGrid.name);
-			ImGui::Checkbox("Attached to Mouse", &editGrid.attached);
+			saveCheck(ImGui::InputText("Grid Name", &editGrid.name));
+			saveCheck(ImGui::Checkbox("Attached to Mouse", &editGrid.attached));
 
-			if (selectedGridId_ == NewId && ImGui::Button("Create Grid"))
+			if (selectedId_.grid == NewSubId && ImGui::Button("Create Grid"))
 			{
-				grids_[currentGridId_] = creatingGrid_;
+				grids_.push_back(creatingGrid_);
 				creatingGrid_ = {};
-				currentGridId_++;
+				needsSaving_ = true;
 			}
 		}
 
-		if (editingItem || selectedItemId_ == NewId)
+		if (editingItem || selectedId_.item == NewSubId)
 		{
-			auto& editItem = editingItem ? grids_[selectedGridId_].items[selectedItemId_] : creatingItem_;
+			auto& editItem = editingItem ? getI(selectedId_) : creatingItem_;
 			if (editingItem)
-				ImGuiTitle(std::format("Editing Item '{}' of '{}'", editItem.buff->name, grids_[selectedGridId_].name).c_str());
+				ImGuiTitle(std::format("Editing Item '{}' of '{}'", editItem.buff->name, getG(selectedId_).name).c_str());
 			else
-				ImGuiTitle(std::format("New Item in '{}'", grids_[selectedGridId_].name).c_str());
+				ImGuiTitle(std::format("New Item in '{}'", getG(selectedId_).name).c_str());
 
 			ImGui::Separator();
 
@@ -254,12 +262,12 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 				{
 					ImGui::Image(buffsAtlas_.srv.Get(), ImVec2(32, 32), ToImGui(b.uv.xy), ToImGui(b.uv.zw));
 					ImGui::SameLine();
-					if (ImGui::Selectable(b.name.c_str(), false))
+					if (saveCheck(ImGui::Selectable(b.name.c_str(), false)))
 						editItem.buff = &b;
 				}
 				ImGui::EndCombo();
 			}
-			ImGui::DragInt2("Location", glm::value_ptr(editItem.pos), 0.1f);
+			saveCheck(ImGui::DragInt2("Location", glm::value_ptr(editItem.pos), 0.1f));
 			ImGui::SameLine();
 			if (ImGui::Button("Place"))
 				placingItem_ = true;
@@ -278,31 +286,27 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 				ImGui::TextUnformatted("When less than ");
 				ImGui::SameLine();
 				ImGui::SetNextItemWidth(100.f);
-				ImGui::DragInt(std::format("##Threshold{}", i).c_str(), &th.threshold, 0.1f, 0, 25);
+				saveCheck(ImGui::DragInt(std::format("##Threshold{}", i).c_str(), &th.threshold, 0.1f, 0, 25));
 				ImGui::SameLine();
 				ImGui::TextUnformatted("stacks, apply tint ");
 				ImGui::SameLine();
-				ImGui::ColorEdit4(std::format("##ThresholdColor{}", i).c_str(), &th.tint.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs);
+				saveCheck(ImGui::ColorEdit4(std::format("##ThresholdColor{}", i).c_str(), &th.tint.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
 				ImGui::Spacing();
 			}
-			if (ImGui::Button("Add threshold"))
+			if (saveCheck(ImGui::Button("Add threshold")))
 				editItem.thresholds.emplace_back();
 
 			std::ranges::sort(editItem.thresholds, [](auto& a, auto& b) { return a.threshold < b.threshold; });
 
 			ImGui::Separator();
 
-			if (selectedItemId_ == NewId && ImGui::Button("Create Item"))
+			if (selectedId_.item == NewSubId && ImGui::Button("Create Item"))
 			{
-				grids_[selectedGridId_].items[currentItemId_] = creatingItem_;
+				getG(selectedId_).items.push_back(creatingItem_);
 				creatingItem_ = {};
-				currentItemId_++;
+				needsSaving_ = true;
 			}
 		}
-
-		ImGui::Separator();
-		if (ImGui::Button("Save", ImVec2(128, 32)))
-			Save();
 
 #ifdef _DEBUG
 		ImGui::Separator();
@@ -479,16 +483,16 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 			}
 		};
 
-		for (const auto& [gid, g] : grids_)
+		for (const auto& [gid, g] : grids_ | ranges::views::enumerate)
 		{
-			for (const auto& [iid, i] : g.items)
+			for (const auto& [iid, i] : g.items | ranges::views::enumerate)
 			{
-				bool editing = selectedGridId_ == gid && selectedItemId_ == iid;
+				bool editing = selectedId_ == Id{ gid, iid };
 				int count = editing ? editingItemFakeCount_ : activeBuffs_[i.buff->id].first;
 
 				drawItem(g, i, count, editing);
 			}
-			if (selectedGridId_ == gid && selectedItemId_ == NewId)
+			if (selectedId_ == New(gid))
 				drawItem(g, creatingItem_, editingItemFakeCount_, true);
 		}
 	}
@@ -511,9 +515,7 @@ void Buffs::Load()
 {
 	using namespace nlohmann;
 	grids_.clear();
-	currentGridId_ = currentItemId_ = 0;
-	selectedGridId_ = UnselectedId;
-	selectedItemId_ = UnselectedId;
+	selectedId_ = Unselected();
 
 	auto& cfg = JSONConfigurationFile::i();
 	cfg.Reload();
@@ -539,9 +541,9 @@ void Buffs::Load()
 			for (auto& tIn : iIn["thresholds"])
 				i.thresholds.emplace_back(tIn["threshold"], getImVec4(tIn["tint"]));
 
-			g.items[currentItemId_++] = i;
+			g.items.push_back(i);
 		}
-		grids_[currentGridId_++] = g;
+		grids_.push_back(g);
 	}
 }
 
@@ -552,7 +554,7 @@ void Buffs::Save()
 	auto& cfg = JSONConfigurationFile::i();
 	auto& grids = cfg.json()["buff_grids"];
 	grids = json::array();
-	for (const auto& [gid, g] : grids_)
+	for (const auto& g : grids_)
 	{
 		json grid;
 		grid["spacing"] = { g.spacing.x, g.spacing.y };
@@ -562,7 +564,7 @@ void Buffs::Save()
 
 		json& gridItems = grid["items"];
 
-		for (const auto& [iid, i] : g.items)
+		for (const auto& i : g.items)
 		{
 			json item;
 			item["pos"] = { i.pos.x, i.pos.y };
@@ -580,6 +582,9 @@ void Buffs::Save()
 	}
 
 	cfg.Save();
+
+	needsSaving_ = false;
+	lastSaveTime_ = TimeInMilliseconds();
 }
 
 std::vector<Buff> Buffs::GenerateBuffsList()

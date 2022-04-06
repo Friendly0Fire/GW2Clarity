@@ -39,6 +39,32 @@ protected:
 		ImVec4 tint { 1, 1, 1, 1 };
 	};
 
+	static inline const short UnselectedSubId = -1;
+	static inline const short NewSubId = -2;
+
+	union Id
+	{
+		int id;
+		struct {
+			short grid;
+			short item;
+		};
+
+		constexpr Id(short g, short i) : grid(g), item(i) { }
+		constexpr Id(size_t g, size_t i) : grid(short(g)), item(short(i)) { }
+
+		inline constexpr bool operator==(const Id& other) const {
+			return id == other.id;
+		}
+		inline constexpr bool operator!=(const Id& other) const {
+			return id != other.id;
+		}
+	};
+	static_assert(sizeof(Id) == sizeof(int));
+
+	Id Unselected(short gid = UnselectedSubId) { return { gid, UnselectedSubId }; }
+	Id New(short gid = NewSubId) { return { gid, NewSubId }; }
+
 	struct Item
 	{
 		glm::ivec2 pos { 0, 0 };
@@ -50,27 +76,41 @@ protected:
 	struct Grid
 	{
 		glm::ivec2 spacing = GridDefaultSpacing;
-		std::map<int, Item> items;
+		std::vector<Item> items;
 		std::string name { "New Grid" };
 		bool attached = false;
 		bool square = true;
 	};
 
-	std::map<int, Grid> grids_;
+	Grid creatingGrid_;
+	Item creatingItem_;
+
+	inline Grid& getG(const Id& id)
+	{
+		if (id.grid == UnselectedSubId)
+			throw std::invalid_argument("unselected id");
+		else if (id.grid == NewSubId)
+			return creatingGrid_;
+		else
+			return grids_[id.grid];
+	}
+
+	inline Item& getI(const Id& id)
+	{
+		if (id.grid == UnselectedSubId || id.item == UnselectedSubId)
+			throw std::invalid_argument("unselected id");
+		else if (id.item == NewSubId)
+			return creatingItem_;
+		else
+			return grids_[id.grid].items[id.item];
+	}
+
+	std::vector<Grid> grids_;
 	Texture2D buffsAtlas_;
 	Texture2D numbersAtlas_;
 
-	int currentGridId_ = 0;
-	int currentItemId_ = 0;
+	Id selectedId_ = Unselected();
 
-	static inline const int UnselectedId = -1;
-	static inline const int NewId = -2;
-
-	int selectedGridId_ = UnselectedId;
-	int selectedItemId_ = UnselectedId;
-
-	Grid creatingGrid_;
-	Item creatingItem_;
 	int editingItemFakeCount_ = 1;
 
 	const std::vector<Buff> buffs_;
@@ -84,6 +124,9 @@ protected:
 
 	bool draggingGridScale_ = false;
 	bool placingItem_ = false;
+	mstime lastSaveTime_ = 0;
+	bool needsSaving_ = false;
+	static inline const mstime SaveDelay = 1000;
 
 	static const int InvisibleWindowFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollWithMouse;
 
