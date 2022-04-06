@@ -242,6 +242,7 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 			{
 				grids_.push_back(creatingGrid_);
 				creatingGrid_ = {};
+				selectedId_ = Unselected();
 				needsSaving_ = true;
 			}
 		}
@@ -304,6 +305,7 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 			{
 				getG(selectedId_).items.push_back(creatingItem_);
 				creatingItem_ = {};
+				selectedId_ = Unselected();
 				needsSaving_ = true;
 			}
 		}
