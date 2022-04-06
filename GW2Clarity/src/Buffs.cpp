@@ -11,6 +11,8 @@
 #include <cppcodec/base64_rfc4648.hpp>
 #include <skyr/percent_encoding/percent_encode.hpp>
 #include <shellapi.h>
+#include <ranges>
+#include <algorithm>
 
 namespace GW2Clarity
 {
@@ -31,11 +33,45 @@ ImVec2 AdjustToArea(int w, int h, int availW)
 	return dims;
 }
 
+std::vector<glm::vec4> GenerateNumbersMap()
+{
+	return {
+		{},
+		{},
+		{ 0.0015337423, 0.0015337423, 0.19785276, 0.19785276 },
+		{ 0.20092024, 0.0015337423, 0.39723927, 0.19785276 },
+		{ 0.40030676, 0.0015337423, 0.59662575, 0.19785276 },
+		{ 0.59969324, 0.0015337423, 0.7960123, 0.19785276 },
+		{ 0.7990798, 0.0015337423, 0.99539876, 0.19785276 },
+		{ 0.0015337423, 0.20092024, 0.19785276, 0.39723927 },
+		{ 0.20092024, 0.20092024, 0.39723927, 0.39723927 },
+		{ 0.40030676, 0.20092024, 0.59662575, 0.39723927 },
+		{ 0.59969324, 0.20092024, 0.7960123, 0.39723927 },
+		{ 0.7990798, 0.20092024, 0.99539876, 0.39723927 },
+		{ 0.0015337423, 0.40030676, 0.19785276, 0.59662575 },
+		{ 0.20092024, 0.40030676, 0.39723927, 0.59662575 },
+		{ 0.40030676, 0.40030676, 0.59662575, 0.59662575 },
+		{ 0.59969324, 0.40030676, 0.7960123, 0.59662575 },
+		{ 0.7990798, 0.40030676, 0.99539876, 0.59662575 },
+		{ 0.0015337423, 0.59969324, 0.19785276, 0.7960123 },
+		{ 0.20092024, 0.59969324, 0.39723927, 0.7960123 },
+		{ 0.40030676, 0.59969324, 0.59662575, 0.7960123 },
+		{ 0.59969324, 0.59969324, 0.7960123, 0.7960123 },
+		{ 0.7990798, 0.59969324, 0.99539876, 0.7960123 },
+		{ 0.0015337423, 0.7990798, 0.19785276, 0.99539876 },
+		{ 0.20092024, 0.7990798, 0.39723927, 0.99539876 },
+		{ 0.40030676, 0.7990798, 0.59662575, 0.99539876 },
+		{ 0.59969324, 0.7990798, 0.7960123, 0.99539876 },
+	};
+}
+
 Buffs::Buffs(ComPtr<ID3D11Device>& dev)
 	: buffs_(GenerateBuffsList())
 	, buffsMap_(GenerateBuffsMap(buffs_))
+	, numbersMap_(GenerateNumbersMap())
 {
-	buffsAtlas_ = CreateTextureFromResource(dev.Get(), Core::i().dllModule(), IDR_BOONS);
+	buffsAtlas_ = CreateTextureFromResource(dev.Get(), Core::i().dllModule(), IDR_BUFFS);
+	numbersAtlas_ = CreateTextureFromResource(dev.Get(), Core::i().dllModule(), IDR_NUMBERS);
 
 	Load();
 #ifdef _DEBUG
@@ -228,6 +264,34 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 			if (ImGui::Button("Place"))
 				placingItem_ = true;
 
+			ImGui::Spacing();
+			ImGui::PushFont(Core::i().fontBold());
+			ImGui::TextUnformatted("Thresholds");
+			ImGui::PopFont();
+			ImGui::TextUnformatted("Simulate thresholds using ");
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(100.f);
+			ImGui::DragInt("stacks##Simulatedstacks", &editingItemFakeCount_, 0.1f, 0, 25);
+			for (size_t i = 0; i < editItem.thresholds.size(); i++)
+			{
+				auto& th = editItem.thresholds[i];
+				ImGui::TextUnformatted("When less than ");
+				ImGui::SameLine();
+				ImGui::SetNextItemWidth(100.f);
+				ImGui::DragInt(std::format("##Threshold{}", i).c_str(), &th.threshold, 0.1f, 0, 25);
+				ImGui::SameLine();
+				ImGui::TextUnformatted("stacks, apply tint ");
+				ImGui::SameLine();
+				ImGui::ColorEdit4(std::format("##ThresholdColor{}", i).c_str(), &th.tint.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs);
+				ImGui::Spacing();
+			}
+			if (ImGui::Button("Add threshold"))
+				editItem.thresholds.emplace_back();
+
+			std::ranges::sort(editItem.thresholds, [](auto& a, auto& b) { return a.threshold < b.threshold; });
+
+			ImGui::Separator();
+
 			if (selectedItemId_ == NewId && ImGui::Button("Create Item"))
 			{
 				grids_[selectedGridId_].items[currentItemId_] = creatingItem_;
@@ -392,33 +456,26 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 	ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
 	if (ImGui::Begin("Display Area", nullptr, InvisibleWindowFlags))
 	{
-		auto* font = Core::i().fontBuffCounter();
-		ImGui::PushFont(font);
-		float origFontScale = font->Scale;
+		auto drawItem = [&](const Grid& g, const Item& i, int count, bool editing) {
 
-		auto drawItem = [&](const Grid& g, const Item& i, int count) {
-			if (count == 0 && i.inactiveAlpha < 1.f / 255.f)
-				return;
+			auto thresh = std::ranges::find_if(i.thresholds, [=](const auto& t) { return count < t.threshold; });
+			ImVec4 tint(1, 1, 1, 1);
+			if (thresh != i.thresholds.end())
+				tint = thresh->tint;
 
 			glm::vec2 pos = (g.attached && !placingItem_ ? mouse : screen * 0.5f) + glm::vec2(i.pos * g.spacing);
 
+			auto adj = AdjustToArea(128, 128, g.spacing.x);
+
+			if (editing)
+				ImGui::GetWindowDrawList()->AddRect(ToImGui(pos), ToImGui(pos) + adj, 0xFF0000FF);
+
 			ImGui::SetCursorPos(ToImGui(pos));
-			ImGui::Image(buffsAtlas_.srv.Get(), AdjustToArea(128, 128, g.spacing.x), ToImGui(i.buff->uv.xy), ToImGui(i.buff->uv.zw), ImVec4(1, 1, 1, count > 0 ? i.activeAlpha : i.inactiveAlpha));
+			ImGui::Image(buffsAtlas_.srv.Get(), adj, ToImGui(i.buff->uv.xy), ToImGui(i.buff->uv.zw), tint);
 			if (count > 1)
 			{
-				pos += glm::vec2(g.spacing);
-				font->Scale = 0.01f * g.spacing.x;
-				auto countStr = std::format("{}", count);
-				auto dim = ImGui::CalcTextSize(countStr.c_str());
-				dim.y *= 0.85f;
-				dim.x += float(g.spacing.x) / 16;
-
-				ImGui::SetCursorPos(ToImGui(pos) - dim);
-				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0, 0, 0, 1));
-				ImGui::TextUnformatted(countStr.c_str());
-				ImGui::PopStyleColor();
-				ImGui::SetCursorPos(ToImGui(pos) - dim - ImVec2(font->Scale * 2.f, font->Scale * 2.f));
-				ImGui::TextUnformatted(countStr.c_str());
+				ImGui::SetCursorPos(ToImGui(pos));
+				ImGui::Image(numbersAtlas_.srv.Get(), adj, ToImGui(numbersMap_[count].xy), ToImGui(numbersMap_[count].zw));
 			}
 		};
 
@@ -426,17 +483,14 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 		{
 			for (const auto& [iid, i] : g.items)
 			{
-				int count = activeBuffs_[i.buff->id].first;
-				if (placingItem_ && selectedGridId_ == gid && selectedItemId_ == iid)
-					count = std::max(count, 1);
+				bool editing = selectedGridId_ == gid && selectedItemId_ == iid;
+				int count = editing ? editingItemFakeCount_ : activeBuffs_[i.buff->id].first;
 
-				drawItem(g, i, count);
+				drawItem(g, i, count, editing);
 			}
-			if (placingItem_ && selectedGridId_ == gid && selectedItemId_ == NewId)
-				drawItem(g, creatingItem_, 1);
+			if (selectedGridId_ == gid && selectedItemId_ == NewId)
+				drawItem(g, creatingItem_, editingItemFakeCount_, true);
 		}
-		font->Scale = origFontScale;
-		ImGui::PopFont();
 	}
 	ImGui::End();
 }

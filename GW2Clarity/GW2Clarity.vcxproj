@@ -221,6 +221,7 @@ cd "$(ProjectDir)shaders"
   </ItemGroup>
   <ItemGroup>
     <Image Include="assets\boons.dds" />
+    <Image Include="assets\numbers.dds" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

@@ -30,15 +30,22 @@ public:
 protected:
 	void Load();
 	void Save();
-	static inline const glm::ivec2 GridDefaultSpacing{ 128, 128 };
+	static inline const glm::ivec2 GridDefaultSpacing{ 64, 64 };
 	static inline const Buff UnknownBuff{ 0, "Unknown", { 0.f, 0.f, 0.f, 0.f } };
+
+	struct Threshold
+	{
+		int threshold = 1;
+		ImVec4 tint { 1, 1, 1, 1 };
+	};
 
 	struct Item
 	{
 		glm::ivec2 pos { 0, 0 };
 		const Buff* buff = &UnknownBuff;
-		float activeAlpha = 1.f;
-		float inactiveAlpha = 0.1f;
+		std::vector<Threshold> thresholds{
+			{ 1, ImVec4(1, 0.5f, 0.5f, 0.33f) }
+		};
 	};
 	struct Grid
 	{
@@ -51,9 +58,11 @@ protected:
 
 	std::map<int, Grid> grids_;
 	Texture2D buffsAtlas_;
+	Texture2D numbersAtlas_;
 
 	Grid creatingGrid_;
 	Item creatingItem_;
+	int editingItemFakeCount_ = 1;
 	int currentGridId_ = 0;
 	int currentItemId_ = 0;
 
@@ -65,6 +74,7 @@ protected:
 
 	const std::vector<Buff> buffs_;
 	const std::map<int, const Buff*> buffsMap_;
+	const std::vector<glm::vec4> numbersMap_;
 	std::map<uint, std::pair<int, int>> activeBuffs_;
 
 

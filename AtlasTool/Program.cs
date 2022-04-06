@@ -22,6 +22,9 @@ class Program
         [Option('o', "output", Required = true, HelpText = "Specifies output file name.")]
         public string OutputFile { get; set; }
 
+        [Option('x', "format", Required = false, HelpText = "Specifies output format.")]
+        public DXGI_FORMAT OutputFormat { get; set; } = DXGI_FORMAT.UNKNOWN;
+
         [Option('v', "verbose", Required = false, HelpText = "Set output to verbose messages.")]
         public bool Verbose { get; set; }
     }
@@ -38,7 +41,7 @@ class Program
                     files = o.InputFiles.Where(x => Path.GetExtension(x).ToLowerInvariant() == ".dds");
                 }
                 else
-                    files = Directory.EnumerateFiles(o.InputDirectory, "*.dds");
+                    files = Directory.EnumerateFiles(o.InputDirectory);
                 files = files.OrderBy(x => Path.GetFileName(x));
 
                 if(o.Verbose)
@@ -48,14 +51,30 @@ class Program
                         Console.WriteLine($"\t{file}");
                 }
 
-                MakeAtlas(o.OutputFile, files, o.Size, o.Border, o.Verbose);
+                MakeAtlas(o.OutputFile, files, o.Size, o.Border, o.OutputFormat, o.Verbose);
             });
     }
 
-    private static void MakeAtlas(string outputPath, IEnumerable<string> inputPaths, int size, int border, bool verbose)
+    private static void MakeAtlas(string outputPath, IEnumerable<string> inputPaths, int size, int border, DXGI_FORMAT outFormat, bool verbose)
     {
         var texHelper = TexHelper.Instance;
-        IEnumerable<ScratchImage> images = inputPaths.Select(f => texHelper.LoadFromDDSFile(f, DDS_FLAGS.NONE)) ?? new List<ScratchImage>();
+        IEnumerable<ScratchImage> images = inputPaths.Select(f => {
+            if (Path.GetExtension(f) == ".dds")
+                return texHelper.LoadFromDDSFile(f, DDS_FLAGS.NONE);
+            else if (Path.GetExtension(f) == ".tga")
+                return texHelper.LoadFromTGAFile(f);
+            else
+            {
+                try
+                {
+                    return texHelper.LoadFromWICFile(f, WIC_FLAGS.NONE);
+                }
+                catch(Exception)
+                {
+                    return null;
+                }
+            }
+            }).Where(x => x != null);
         if(size == 0)
         {
             size = images.Select(i => i.GetMetadata().Width).Max();
@@ -64,7 +83,10 @@ class Program
         }
         int sizeWithBorders = size + border * 2;
         int squareEdge = (int)Math.Ceiling(Math.Sqrt(images.Count())) * sizeWithBorders;
-        if(verbose)
+        int baseSquareEdge = squareEdge;
+        if(squareEdge % 4 != 0)
+            squareEdge = ((squareEdge / 4) + 1) * 4;
+        if (verbose)
             Console.WriteLine($"Final texture size: {squareEdge}x{squareEdge}.");
 
         StringBuilder sidecar = new StringBuilder();
@@ -87,14 +109,14 @@ class Program
             _ = sidecar.AppendLine($"{{ \"{Path.GetFileNameWithoutExtension(p).ToLowerInvariant()}\", {{ {(float)x / squareEdge}, {(float)y / squareEdge}, {(float)(x + i0.Width) / squareEdge}, {(float)(y + i0.Height) / squareEdge} }} }},");
 
             x += sizeWithBorders;
-            if(x >= squareEdge)
+            if(x >= baseSquareEdge)
             { 
                 x = border;
                 y += sizeWithBorders;
             }
         }
 
-        var format = images.First().GetMetadata().Format;
+        var format = outFormat == DXGI_FORMAT.UNKNOWN ? images.First().GetMetadata().Format : outFormat;
 
         output = output.GenerateMipMaps(TEX_FILTER_FLAGS.DEFAULT, 0);
         var finalOutput = texHelper.IsCompressed(format) ? output.Compress(format, TEX_COMPRESS_FLAGS.DEFAULT, 0.5f) : output;
