@@ -60,9 +60,6 @@ protected:
 	Texture2D buffsAtlas_;
 	Texture2D numbersAtlas_;
 
-	Grid creatingGrid_;
-	Item creatingItem_;
-	int editingItemFakeCount_ = 1;
 	int currentGridId_ = 0;
 	int currentItemId_ = 0;
 
@@ -71,6 +68,10 @@ protected:
 
 	int selectedGridId_ = UnselectedId;
 	int selectedItemId_ = UnselectedId;
+
+	Grid creatingGrid_;
+	Item creatingItem_;
+	int editingItemFakeCount_ = 1;
 
 	const std::vector<Buff> buffs_;
 	const std::map<int, const Buff*> buffsMap_;

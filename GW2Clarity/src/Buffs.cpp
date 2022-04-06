@@ -509,75 +509,77 @@ void Buffs::UpdateBuffsTable(StackedBuff* buffs)
 
 void Buffs::Load()
 {
-#if 0
+	using namespace nlohmann;
 	grids_.clear();
+	currentGridId_ = currentItemId_ = 0;
+	selectedGridId_ = UnselectedId;
+	selectedItemId_ = UnselectedId;
 
-	ConfigurationFile::i().Reload();
-	auto& ini = ConfigurationFile::i().ini();
+	auto& cfg = JSONConfigurationFile::i();
+	cfg.Reload();
 
-	std::vector<std::string> itemParts;
-	std::list<CSimpleIniA::Entry> sections;
-	ini.GetAllSections(sections);
-	for (auto& sec : sections)
+	auto getivec2 = [](const auto& j) { return glm::ivec2(j[0].get<int>(), j[1].get<int>()); };
+	auto getImVec4 = [](const auto& j) { return ImVec4(j[0].get<float>(), j[1].get<float>(), j[2].get<float>(), j[3].get<float>()); };
+
+	const auto& grids = cfg.json()["buff_grids"];
+	for (const auto& gIn : grids)
 	{
-		std::string secName = sec.pItem;
-		if (secName.starts_with("Grid "))
+		Grid g;
+		g.spacing = getivec2(gIn["spacing"]);
+		g.attached = gIn["attached"];
+		g.square = gIn["square"];
+		g.name = gIn["name"];
+
+		for (const auto& iIn : gIn["items"])
 		{
-			Grid loadedGrid;
-			loadedGrid.name = secName.substr(5);
-			loadedGrid.spacing.x = ini.GetLongValue(secName.c_str(), "spacing_x", GridDefaultSpacing.x);
-			loadedGrid.spacing.y = ini.GetLongValue(secName.c_str(), "spacing_y", GridDefaultSpacing.y);
-			loadedGrid.attached = ini.GetBoolValue(secName.c_str(), "attached");
+			Item i;
+			i.pos = getivec2(iIn["pos"]);
+			i.buff = buffsMap_.at(iIn["buff_id"]);
 
-			std::list<CSimpleIniA::Entry> keys;
-			ini.GetAllKeys(secName.c_str(), keys);
-			for (auto& k : keys)
-			{
-				std::string keyName = k.pItem;
-				if (keyName.starts_with("item_"))
-				{
-					auto* i = ini.GetValue(secName.c_str(), keyName.c_str());
-					itemParts.clear();
-					SplitString(i, ",", std::back_inserter(itemParts));
-					Item it;
-					it.buff = buffsMap_.at(std::atoi(itemParts[0].c_str()));
-					if (itemParts.size() > 1)
-						it.pos.x = std::atoi(itemParts[1].c_str());
-					if (itemParts.size() > 2)
-						it.pos.y = std::atoi(itemParts[2].c_str());
-					if (itemParts.size() > 3)
-						it.activeAlpha = std::atof(itemParts[3].c_str());
-					if (itemParts.size() > 4)
-						it.inactiveAlpha = std::atof(itemParts[4].c_str());
+			for (auto& tIn : iIn["thresholds"])
+				i.thresholds.emplace_back(tIn["threshold"], getImVec4(tIn["tint"]));
 
-					loadedGrid.items[currentItemId_++] = it;
-				}
-			}
-
-			grids_[currentGridId_++] = loadedGrid;
+			g.items[currentItemId_++] = i;
 		}
+		grids_[currentGridId_++] = g;
 	}
-#endif
 }
 
 void Buffs::Save()
 {
-#if 0
-	auto& ini = ConfigurationFile::i().ini();
+	using namespace nlohmann;
 
+	auto& cfg = JSONConfigurationFile::i();
+	auto& grids = cfg.json()["buff_grids"];
+	grids = json::array();
 	for (const auto& [gid, g] : grids_)
 	{
-		std::string secName = "Grid " + g.name;
-		ini.SetLongValue(secName.c_str(), "spacing_x", g.spacing.x);
-		ini.SetLongValue(secName.c_str(), "spacing_y", g.spacing.y);
-		ini.SetBoolValue(secName.c_str(), "attached", g.attached);
+		json grid;
+		grid["spacing"] = { g.spacing.x, g.spacing.y };
+		grid["attached"] = g.attached;
+		grid["square"] = g.square;
+		grid["name"] = g.name;
+
+		json& gridItems = grid["items"];
 
 		for (const auto& [iid, i] : g.items)
-			ini.SetValue(secName.c_str(), std::format("item_{}", iid).c_str(), std::format("{}, {}, {}, {}, {}", i.buff->id, i.pos.x, i.pos.y, i.activeAlpha, i.inactiveAlpha).c_str());
+		{
+			json item;
+			item["pos"] = { i.pos.x, i.pos.y };
+			item["buff_id"] = i.buff->id;
+
+			json thresholds = json::array();
+			for (auto& t : i.thresholds)
+				thresholds.push_back({ "threshold", t.threshold, "tint", { t.tint.x, t.tint.y, t.tint.z, t.tint.w } });
+			item["thresholds"] = thresholds;
+
+			gridItems.push_back(item);
+		}
+
+		grids.push_back(grid);
 	}
 
-	ConfigurationFile::i().Save();
-#endif
+	cfg.Save();
 }
 
 std::vector<Buff> Buffs::GenerateBuffsList()
