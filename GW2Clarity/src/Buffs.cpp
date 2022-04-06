@@ -63,6 +63,7 @@ std::vector<glm::vec4> GenerateNumbersMap()
 		{ 0.20092024, 0.7990798, 0.39723927, 0.99539876 },
 		{ 0.40030676, 0.7990798, 0.59662575, 0.99539876 },
 		{ 0.59969324, 0.7990798, 0.7960123, 0.99539876 },
+	    { 0.7990798, 0.7990798, 0.99539876, 0.99539876 },
 	};
 }
 
@@ -257,17 +258,36 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 
 			ImGui::Separator();
 
-			if (ImGui::BeginCombo("Buff", editItem.buff->name.c_str()))
+			auto buffCombo = [&](auto& buff, int id)
 			{
-				for (auto& b : buffs_)
+				if (ImGui::BeginCombo(std::format("Buff##{}", id).c_str(), buff->name.c_str()))
 				{
-					ImGui::Image(buffsAtlas_.srv.Get(), ImVec2(32, 32), ToImGui(b.uv.xy), ToImGui(b.uv.zw));
-					ImGui::SameLine();
-					if (saveCheck(ImGui::Selectable(b.name.c_str(), false)))
-						editItem.buff = &b;
+					for (auto& b : buffs_)
+					{
+						ImGui::Image(buffsAtlas_.srv.Get(), ImVec2(32, 32), ToImGui(b.uv.xy), ToImGui(b.uv.zw));
+						ImGui::SameLine();
+						if (saveCheck(ImGui::Selectable(b.name.c_str(), false)))
+							buff = &b;
+					}
+					ImGui::EndCombo();
 				}
-				ImGui::EndCombo();
+			};
+
+			buffCombo(editItem.buff, -1);
+			int removeId = -1;
+			for (auto&& [n, extraBuff] : editItem.additionalBuffs | ranges::views::enumerate)
+			{
+				buffCombo(extraBuff, n);
+				ImGui::SameLine();
+				if (ImGuiClose(std::format("RemoveExtraBuff{}", n).c_str()))
+					removeId = n;
 			}
+			if (removeId != -1)
+				editItem.additionalBuffs.erase(editItem.additionalBuffs.begin() + removeId);
+
+			if (ImGui::Button("Add Tracked Buff"))
+				editItem.additionalBuffs.push_back(&UnknownBuff);
+
 			saveCheck(ImGui::DragInt2("Location", glm::value_ptr(editItem.pos), 0.1f));
 			ImGui::SameLine();
 			if (ImGui::Button("Place"))
@@ -480,6 +500,7 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 			ImGui::Image(buffsAtlas_.srv.Get(), adj, ToImGui(i.buff->uv.xy), ToImGui(i.buff->uv.zw), tint);
 			if (count > 1)
 			{
+				count = std::min(count, int(numbersMap_.size()) - 1);
 				ImGui::SetCursorPos(ToImGui(pos));
 				ImGui::Image(numbersAtlas_.srv.Get(), adj, ToImGui(numbersMap_[count].xy), ToImGui(numbersMap_[count].zw));
 			}
@@ -490,7 +511,11 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 			for (const auto& [iid, i] : g.items | ranges::views::enumerate)
 			{
 				bool editing = selectedId_ == Id{ gid, iid };
-				int count = editing ? editingItemFakeCount_ : activeBuffs_[i.buff->id].first;
+				int count = 0;
+				if (editing)
+					count = editingItemFakeCount_;
+				else
+					count = std::accumulate(i.additionalBuffs.begin(), i.additionalBuffs.end(), activeBuffs_[i.buff->id].first, [&](int a, const Buff* b) { return a + activeBuffs_[b->id].first; });
 
 				drawItem(g, i, count, editing);
 			}
@@ -540,8 +565,14 @@ void Buffs::Load()
 			i.pos = getivec2(iIn["pos"]);
 			i.buff = buffsMap_.at(iIn["buff_id"]);
 
-			for (auto& tIn : iIn["thresholds"])
-				i.thresholds.emplace_back(tIn["threshold"], getImVec4(tIn["tint"]));
+			if(iIn.contains("additional_buff_ids"))
+				for (auto& bIn : iIn["additional_buff_ids"])
+					if(const Buff* b = buffsMap_.at(bIn); b)
+						i.additionalBuffs.push_back(b);
+
+			if (iIn.contains("thresholds"))
+				for (auto& tIn : iIn["thresholds"])
+					i.thresholds.emplace_back(tIn["threshold"], getImVec4(tIn["tint"]));
 
 			g.items.push_back(i);
 		}
@@ -572,10 +603,21 @@ void Buffs::Save()
 			item["pos"] = { i.pos.x, i.pos.y };
 			item["buff_id"] = i.buff->id;
 
-			json thresholds = json::array();
-			for (auto& t : i.thresholds)
-				thresholds.push_back({ "threshold", t.threshold, "tint", { t.tint.x, t.tint.y, t.tint.z, t.tint.w } });
-			item["thresholds"] = thresholds;
+			if (!i.thresholds.empty())
+			{
+				json thresholds = json::array();
+				for (auto& t : i.thresholds)
+					thresholds.push_back({ { "threshold", t.threshold }, { "tint", { t.tint.x, t.tint.y, t.tint.z, t.tint.w } } });
+				item["thresholds"] = thresholds;
+			}
+
+			if (!i.additionalBuffs.empty())
+			{
+				json buffs = json::array();
+				for (const auto* b : i.additionalBuffs)
+					buffs.push_back(b->id);
+				item["additional_buff_ids"] = buffs;
+			}
 
 			gridItems.push_back(item);
 		}

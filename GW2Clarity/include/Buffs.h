@@ -69,6 +69,7 @@ protected:
 	{
 		glm::ivec2 pos { 0, 0 };
 		const Buff* buff = &UnknownBuff;
+		std::vector<const Buff*> additionalBuffs;
 		std::vector<Threshold> thresholds{
 			{ 1, ImVec4(1, 0.5f, 0.5f, 0.33f) }
 		};
