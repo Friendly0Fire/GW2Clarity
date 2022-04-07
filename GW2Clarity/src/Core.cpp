@@ -20,6 +20,11 @@
 #include <MiscTab.h>
 #include <common/baseresource.h>
 
+KeyCombo GetSettingsKeyCombo()
+{
+	return { GetScanCodeFromVirtualKey('C'), Modifier::SHIFT | Modifier::ALT };
+}
+
 namespace GW2Clarity
 {
 

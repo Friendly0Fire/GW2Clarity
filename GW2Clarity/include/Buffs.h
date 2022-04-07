@@ -9,6 +9,8 @@
 #include <span>
 #include <imgui.h>
 #include <set>
+#include <ActivationKeybind.h>
+#include <SettingsMenu.h>
 
 namespace GW2Clarity
 {
@@ -19,17 +21,27 @@ struct Buff
 	glm::vec4 uv;
 };
 
-class Buffs
+class Buffs : public SettingsMenu::Implementer
 {
 public:
 	Buffs(ComPtr<ID3D11Device>& dev);
+	~Buffs();
 
 	void Draw(ComPtr<ID3D11DeviceContext>& ctx);
 	void UpdateBuffsTable(StackedBuff* buffs);
+	void DrawMenu(Keybind** currentEditedKeybind) override;
+
+	const char* GetTabName() const override { return "Buffs"; }
 
 protected:
 	void Load();
 	void Save();
+
+	void DrawEditingGrid();
+	void PlaceItem();
+	void DrawGridList();
+	void DrawItems();
+
 	static inline const glm::ivec2 GridDefaultSpacing{ 64, 64 };
 	static inline const Buff UnknownBuff{ 0, "Unknown", { 0.f, 0.f, 0.f, 0.f } };
 
@@ -82,9 +94,18 @@ protected:
 		bool attached = false;
 		bool square = true;
 	};
+	struct Set
+	{
+		std::string name;
+		std::set<Grid*> grids;
+	};
 
 	Grid creatingGrid_;
 	Item creatingItem_;
+	Set creatingSet_;
+	short currentSetId_ = UnselectedSubId;
+
+	static inline const char* ChangeSetPopupName = "QuickSet";
 
 	inline Grid& getG(const Id& id)
 	{
@@ -107,10 +128,12 @@ protected:
 	}
 
 	std::vector<Grid> grids_;
+	std::vector<Set> sets_;
 	Texture2D buffsAtlas_;
 	Texture2D numbersAtlas_;
 
 	Id selectedId_ = Unselected();
+	short selectedSetId_ = UnselectedSubId;
 
 	int editingItemFakeCount_ = 1;
 
@@ -128,17 +151,23 @@ protected:
 	mstime lastSaveTime_ = 0;
 	bool needsSaving_ = false;
 	static inline const mstime SaveDelay = 1000;
+	bool showSetSelector_ = false;
 
 	static const int InvisibleWindowFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollWithMouse;
 
+	ActivationKeybind changeGridSetKey_;
+
 #ifdef _DEBUG
+	ActivationKeybind showAnalyzerKey_;
 	int guildLogId_ = 3;
 	std::map<uint, std::string> buffNames_;
 	bool hideInactive_ = false;
 	std::set<uint> hiddenBuffs_;
+	bool showAnalyzer_ = true;
 
 	void SaveNames();
 	void LoadNames();
+	void DrawBuffAnalyzer();
 #endif
 };
 }
