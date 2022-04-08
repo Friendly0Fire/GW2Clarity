@@ -74,9 +74,19 @@ void Core::InnerInternalInit()
 		GetModuleFileName(dllModule(), fn, MAX_PATH);
 
 		std::filesystem::path buffsPath = fn;
-		buffsPath = buffsPath.remove_filename() / "getbuffs.dll";
+#ifdef _DEBUG
+		buffsPath = buffsPath.remove_filename() / "getbuffsd.dll";
 		buffLib_ = LoadLibrary(buffsPath.wstring().c_str());
-		getBuffs_ = (decltype(getBuffs_))GetProcAddress(buffLib_, "GetCurrentPlayerStackedBuffs");
+		if (!buffLib_)
+#endif
+		{
+			buffsPath = buffsPath.remove_filename() / "getbuffs.dll";
+			buffLib_ = LoadLibrary(buffsPath.wstring().c_str());
+		}
+		if (buffLib_)
+			getBuffs_ = (decltype(getBuffs_))GetProcAddress(buffLib_, "GetCurrentPlayerStackedBuffs");
+		else
+			getBuffs_ = nullptr;
 	}
 }
 
