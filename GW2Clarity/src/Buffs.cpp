@@ -370,31 +370,43 @@ void Buffs::DrawGridList()
 	{
 		auto u = Unselected(gid);
 		if (ImGui::Selectable(std::format("{} ({}x{})##{}", g.name, g.spacing.x, g.spacing.y, gid).c_str(), selectedId_ == u))
+		{
 			selectedId_ = u;
+			selectedSetId_ = UnselectedSubId;
+		}
 
 		ImGui::Indent();
 		for (auto&& [iid, i] : g.items | ranges::views::enumerate)
 		{
 			Id id{ gid, iid };
 			if (ImGui::Selectable(std::format("{} ({}, {})##{}", i.buff->name.c_str(), i.pos.x, i.pos.y, iid).c_str(), selectedId_ == id))
+			{
 				selectedId_ = id;
+				selectedSetId_ = UnselectedSubId;
+			}
 		}
 
 		auto n = New(gid);
 		if (ImGui::Selectable(std::format("+ New Item##{}", gid).c_str(), selectedId_.grid == gid && selectedId_ == n))
+		{
 			selectedId_ = n;
+			selectedSetId_ = UnselectedSubId;
+		}
 		ImGui::Unindent();
 	}
 	{
 		auto n = New();
 		if (ImGui::Selectable("+ New Grid", selectedId_ == n))
+		{
 			selectedId_ = n;
+			selectedSetId_ = UnselectedSubId;
+		}
 	}
 }
 
 void Buffs::DrawItems()
 {
-	bool editMode = selectedId_ != Unselected();
+	bool editMode = selectedId_.grid != UnselectedSubId;
 
 	if (currentSetId_ != UnselectedSubId || editMode)
 	{
@@ -440,7 +452,7 @@ void Buffs::DrawItems()
 			{
 				for (const auto& [iid, i] : g.items | ranges::views::enumerate)
 				{
-					bool editing = editMode && selectedId_ == Id{ gid, iid };
+					bool editing = editMode && selectedId_ == Id{ gid, short(iid) };
 					int count = 0;
 					if (editing)
 						count = editingItemFakeCount_;
@@ -454,10 +466,10 @@ void Buffs::DrawItems()
 			};
 
 			if (editMode)
-				drawGrid(grids_[selectedId_.grid], selectedId_.grid);
+				drawGrid(getG(selectedId_), selectedId_.grid);
 			else
-				for (const auto& g : sets_[currentSetId_].grids)
-					drawGrid(*g, UnselectedSubId);
+				for (int gid : sets_[currentSetId_].grids)
+					drawGrid(grids_[gid], UnselectedSubId);
 
 			for (const auto& dd : delayedDraws)
 			{
@@ -466,6 +478,46 @@ void Buffs::DrawItems()
 			}
 		}
 		ImGui::End();
+	}
+}
+
+void Buffs::Delete(Id& id)
+{
+	if (id.item >= 0)
+	{
+		auto& g = getG(id);
+		g.items.erase(g.items.begin() + id.item);
+		id = Unselected();
+
+		needsSaving_ = true;
+	}
+	else
+	{
+		grids_.erase(grids_.begin() + id.grid);
+
+		for (auto& s : sets_)
+		{
+			std::vector<int> toadd;
+
+			s.grids.erase(id.grid);
+			for (auto it = s.grids.begin(); it != s.grids.end();)
+			{
+				int gid = *it;
+				if (gid > id.grid)
+				{
+					it = s.grids.erase(it);
+					toadd.push_back(gid - 1);
+				}
+				else
+					it++;
+			}
+
+			for (int i : toadd)
+				s.grids.insert(i);
+		}
+
+		id = Unselected();
+		needsSaving_ = true;
 	}
 }
 
@@ -480,6 +532,32 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind)
 		ImGuiTitle("Grid Editor");
 
 		DrawGridList();
+
+		if (ImGui::BeginPopupModal("Confirm Deletion"))
+		{
+			bool isSet = selectedSetId_ >= 0 && selectedId_ == Unselected();
+			bool isItem = !isSet && selectedId_.item >= 0;
+			const auto& name = isSet ? sets_[selectedSetId_].name : isItem ? getI(selectedId_).buff->name : getG(selectedId_).name;
+			const char* type = isSet ? "set" : isItem ? "item" : "grid";
+			ImGui::TextUnformatted(std::format("Are you sure you want to delete {} '{}'{}?", type, name, isItem ? std::format(" from grid '{}'", getG(selectedId_).name) : "").c_str());
+			if (ImGui::Button("Yes"))
+			{
+				if (isSet)
+				{
+					sets_.erase(sets_.begin() + selectedSetId_);
+					selectedSetId_ = UnselectedSubId;
+					needsSaving_ = true;
+				}
+				else
+					Delete(selectedId_);
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel"))
+				ImGui::CloseCurrentPopup();
+
+			ImGui::EndPopup();
+		}
 
 		bool editingGrid = selectedId_.grid >= 0 && selectedId_.item == UnselectedSubId;
 		bool editingItem = selectedId_.item >= 0;
@@ -510,6 +588,9 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind)
 				selectedId_ = Unselected();
 				needsSaving_ = true;
 			}
+
+			if (selectedId_.grid >= 0 && ImGui::Button("Delete Grid"))
+				ImGui::OpenPopup("Confirm Deletion");
 		}
 		else if (editingItem || selectedId_.item == NewSubId)
 		{
@@ -589,6 +670,9 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind)
 				selectedId_ = Unselected();
 				needsSaving_ = true;
 			}
+
+			if (selectedId_.item >= 0 && ImGui::Button("Delete Item"))
+				ImGui::OpenPopup("Confirm Deletion");
 		}
 	}
 	{
@@ -596,10 +680,16 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind)
 		for (auto&& [sid, s] : sets_ | ranges::views::enumerate)
 		{
 			if (ImGui::Selectable(std::format("{}##Set", s.name).c_str(), selectedSetId_ == sid))
+			{
 				selectedSetId_ = sid;
+				selectedId_ = Unselected();
+			}
 		}
 		if (ImGui::Selectable("+ Add Set", selectedSetId_ == NewSubId))
+		{
 			selectedSetId_ = NewSubId;
+			selectedId_ = Unselected();
+		}
 
 		bool editingSet = selectedSetId_ != NewSubId;
 		if (selectedSetId_ != UnselectedSubId)
@@ -612,15 +702,15 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind)
 
 			saveCheck(ImGui::InputText("Name##NewSet", &editSet.name));
 
-			for (auto& g : grids_)
+			for (auto&& [gid, g] : grids_ | ranges::views::enumerate)
 			{
-				bool sel = editSet.grids.count(&g) > 0;
+				bool sel = editSet.grids.count(gid) > 0;
 				if (saveCheck(ImGui::Checkbox(std::format("{}##GridInSet", g.name).c_str(), &sel)))
 				{
 					if (sel)
-						editSet.grids.insert(&g);
+						editSet.grids.insert(gid);
 					else
-						editSet.grids.erase(&g);
+						editSet.grids.erase(gid);
 				}
 			}
 
@@ -632,6 +722,8 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind)
 				selectedSetId_ = UnselectedSubId;
 				needsSaving_ = true;
 			}
+			else if(selectedSetId_ >= 0 && ImGui::Button("Delete Set"))
+				ImGui::OpenPopup("Confirm Deletion");
 		}
 	}
 
@@ -733,6 +825,22 @@ void Buffs::Load()
 		}
 		grids_.push_back(g);
 	}
+
+	const auto& sets = cfg.json()["buff_sets"];
+	for (const auto& sIn : sets)
+	{
+		Set s;
+		s.name = sIn["name"];
+
+		for (const auto& gIn : sIn["grids"])
+		{
+			int id = gIn;
+			if (id < grids_.size())
+				s.grids.insert(id);
+		}
+
+		sets_.push_back(s);
+	}
 }
 
 void Buffs::Save()
@@ -778,6 +886,21 @@ void Buffs::Save()
 		}
 
 		grids.push_back(grid);
+	}
+
+	auto& sets = cfg.json()["buff_sets"];
+	sets = json::array();
+	for (const auto& s : sets_)
+	{
+		json set;
+		set["name"] = s.name;
+
+		json& setGrids = set["grids"];
+
+		for (int i : s.grids)
+			setGrids.push_back(i);
+
+		sets.push_back(set);
 	}
 
 	cfg.Save();
@@ -980,6 +1103,7 @@ std::vector<Buff> Buffs::GenerateBuffsList()
 		{ 31884, "Unstable Pylon: Blue" }, // https://wiki.guildwars2.com/images/c/c3/Unstable_Pylon_%28Blue%29.png
 		{ 31828, "Unstable Pylon: Green" }, // https://wiki.guildwars2.com/images/9/9d/Unstable_Pylon_%28Green%29.png
 		{ 34979, "Unbreakable" }, // https://wiki.guildwars2.com/images/5/56/Xera%27s_Embrace.png
+		{ 51371, "Unstable Magic Spike" }, // 
 				// Gorseval
 		{ 31722, "Spirited Fusion" }, // https://wiki.guildwars2.com/images/e/eb/Spirited_Fusion.png
 		{ 31877, "Protective Shadow" }, // https://wiki.guildwars2.com/images/8/87/Protective_Shadow.png

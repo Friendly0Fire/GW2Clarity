@@ -74,8 +74,10 @@ protected:
 	};
 	static_assert(sizeof(Id) == sizeof(int));
 
-	Id Unselected(short gid = UnselectedSubId) { return { gid, UnselectedSubId }; }
-	Id New(short gid = NewSubId) { return { gid, NewSubId }; }
+	static Id Unselected(short gid = UnselectedSubId) { return { gid, UnselectedSubId }; }
+	static Id New(short gid = NewSubId) { return { gid, NewSubId }; }
+
+	void Delete(Id& id);
 
 	struct Item
 	{
@@ -97,7 +99,7 @@ protected:
 	struct Set
 	{
 		std::string name;
-		std::set<Grid*> grids;
+		std::set<int> grids;
 	};
 
 	Grid creatingGrid_;

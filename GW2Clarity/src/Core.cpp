@@ -22,7 +22,7 @@
 
 KeyCombo GetSettingsKeyCombo()
 {
-	return { GetScanCodeFromVirtualKey('C'), Modifier::SHIFT | Modifier::ALT };
+	return { GetScanCodeFromVirtualKey('P'), Modifier::SHIFT | Modifier::ALT };
 }
 
 namespace GW2Clarity
