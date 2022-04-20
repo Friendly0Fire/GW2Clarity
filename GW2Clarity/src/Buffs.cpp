@@ -739,30 +739,36 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 	if (!SettingsMenu::i().isVisible())
 		selectedId_ = Unselected();
 
-	if (ImGui::Begin(ChangeSetPopupName, &showSetSelector_, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+	if(showSetSelector_)
 	{
-		if (sets_.empty())
-			showSetSelector_ = false;
-
-		for (auto&& [i, s] : sets_ | ranges::views::enumerate)
+		if (ImGui::Begin(ChangeSetPopupName, nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
 		{
-			if (ImGui::Selectable(s.name.c_str(), currentSetId_ == i))
+			if (sets_.empty())
+				showSetSelector_ = false;
+
+			if(!ImGui::IsWindowHovered() && ImGui::IsMouseDown(ImGuiMouseButton_Left))
+				showSetSelector_ = false;
+
+			for (auto&& [i, s] : sets_ | ranges::views::enumerate)
 			{
-				currentSetId_ = i;
+				if (ImGui::Selectable(s.name.c_str(), currentSetId_ == i))
+				{
+					currentSetId_ = i;
+					showSetSelector_ = false;
+				}
+			}
+
+			if (ImGui::Selectable("None", currentSetId_ == UnselectedSubId))
+			{
+				currentSetId_ = UnselectedSubId;
 				showSetSelector_ = false;
 			}
-		}
 
-		if (ImGui::Selectable("None", currentSetId_ == UnselectedSubId))
-		{
-			currentSetId_ = UnselectedSubId;
-			showSetSelector_ = false;
+			if (ImGui::IsKeyPressed(ImGuiKey_Escape))
+				showSetSelector_ = false;
 		}
-
-		if (ImGui::IsKeyPressed(ImGuiKey_Escape))
-			showSetSelector_ = false;
+		ImGui::End();
 	}
-	ImGui::End();
 
 	DrawItems();
 
