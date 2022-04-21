@@ -410,74 +410,77 @@ void Buffs::DrawItems()
 
 	if (currentSetId_ != UnselectedSubId || editMode)
 	{
-		glm::vec2 screen{ ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y };
-		glm::vec2 mouse{ ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y };
-		ImGui::SetNextWindowPos(ImVec2(0, 0));
-		ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
-		if (ImGui::Begin("Display Area", nullptr, InvisibleWindowFlags))
+		if(!sets_[currentSetId_].combatOnly || MumbleLink::i().isInCombat())
 		{
-			struct NumberDraw
+			glm::vec2 screen{ ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y };
+			glm::vec2 mouse{ ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y };
+			ImGui::SetNextWindowPos(ImVec2(0, 0));
+			ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+			if (ImGui::Begin("Display Area", nullptr, InvisibleWindowFlags))
 			{
-				ImVec2 adj;
-				ImVec2 pos;
-				ImVec2 uv1;
-				ImVec2 uv2;
-			};
-			std::vector<NumberDraw> delayedDraws;
-
-			auto drawItem = [&](const Grid& g, const Item& i, int count, bool editing) {
-
-				auto thresh = std::ranges::find_if(i.thresholds, [=](const auto& t) { return count < t.threshold; });
-				ImVec4 tint(1, 1, 1, 1);
-				if (thresh != i.thresholds.end())
-					tint = thresh->tint;
-
-				glm::vec2 pos = (g.attached && !placingItem_ ? mouse : screen * 0.5f) + glm::vec2(i.pos * g.spacing);
-
-				auto adj = AdjustToArea(128, 128, g.spacing.x);
-
-				if (editing)
-					ImGui::GetWindowDrawList()->AddRect(ToImGui(pos), ToImGui(pos) + adj, 0xFF0000FF);
-
-				ImGui::SetCursorPos(ToImGui(pos));
-				ImGui::Image(buffsAtlas_.srv.Get(), adj, ToImGui(i.buff->uv.xy), ToImGui(i.buff->uv.zw), tint);
-				if (count > 1)
+				struct NumberDraw
 				{
-					count = std::min(count, int(numbersMap_.size()) - 1);
-					delayedDraws.emplace_back(adj, ToImGui(pos), ToImGui(numbersMap_[count].xy), ToImGui(numbersMap_[count].zw));
-				}
-			};
+					ImVec2 adj;
+					ImVec2 pos;
+					ImVec2 uv1;
+					ImVec2 uv2;
+				};
+				std::vector<NumberDraw> delayedDraws;
 
-			auto drawGrid = [&](Grid& g, short gid)
-			{
-				for (const auto& [iid, i] : g.items | ranges::views::enumerate)
-				{
-					bool editing = editMode && selectedId_ == Id{ gid, short(iid) };
-					int count = 0;
+				auto drawItem = [&](const Grid& g, const Item& i, int count, bool editing) {
+
+					auto thresh = std::ranges::find_if(i.thresholds, [=](const auto& t) { return count < t.threshold; });
+					ImVec4 tint(1, 1, 1, 1);
+					if (thresh != i.thresholds.end())
+						tint = thresh->tint;
+
+					glm::vec2 pos = (g.attached && !placingItem_ ? mouse : screen * 0.5f) + glm::vec2(i.pos * g.spacing);
+
+					auto adj = AdjustToArea(128, 128, g.spacing.x);
+
 					if (editing)
-						count = editingItemFakeCount_;
-					else
-						count = std::accumulate(i.additionalBuffs.begin(), i.additionalBuffs.end(), activeBuffs_[i.buff->id].first, [&](int a, const Buff* b) { return a + activeBuffs_[b->id].first; });
+						ImGui::GetWindowDrawList()->AddRect(ToImGui(pos), ToImGui(pos) + adj, 0xFF0000FF);
 
-					drawItem(g, i, count, editing);
+					ImGui::SetCursorPos(ToImGui(pos));
+					ImGui::Image(buffsAtlas_.srv.Get(), adj, ToImGui(i.buff->uv.xy), ToImGui(i.buff->uv.zw), tint);
+					if (count > 1)
+					{
+						count = std::min(count, int(numbersMap_.size()) - 1);
+						delayedDraws.emplace_back(adj, ToImGui(pos), ToImGui(numbersMap_[count].xy), ToImGui(numbersMap_[count].zw));
+					}
+				};
+
+				auto drawGrid = [&](Grid& g, short gid)
+				{
+					for (const auto& [iid, i] : g.items | ranges::views::enumerate)
+					{
+						bool editing = editMode && selectedId_ == Id{ gid, short(iid) };
+						int count = 0;
+						if (editing)
+							count = editingItemFakeCount_;
+						else
+							count = std::accumulate(i.additionalBuffs.begin(), i.additionalBuffs.end(), activeBuffs_[i.buff->id].first, [&](int a, const Buff* b) { return a + activeBuffs_[b->id].first; });
+
+						drawItem(g, i, count, editing);
+					}
+					if (editMode && selectedId_ == New(gid))
+						drawItem(g, creatingItem_, editingItemFakeCount_, true);
+				};
+
+				if (editMode)
+					drawGrid(getG(selectedId_), selectedId_.grid);
+				else
+					for (int gid : sets_[currentSetId_].grids)
+						drawGrid(grids_[gid], UnselectedSubId);
+
+				for (const auto& dd : delayedDraws)
+				{
+					ImGui::SetCursorPos(dd.pos);
+					ImGui::Image(numbersAtlas_.srv.Get(), dd.adj, dd.uv1, dd.uv2);
 				}
-				if (editMode && selectedId_ == New(gid))
-					drawItem(g, creatingItem_, editingItemFakeCount_, true);
-			};
-
-			if (editMode)
-				drawGrid(getG(selectedId_), selectedId_.grid);
-			else
-				for (int gid : sets_[currentSetId_].grids)
-					drawGrid(grids_[gid], UnselectedSubId);
-
-			for (const auto& dd : delayedDraws)
-			{
-				ImGui::SetCursorPos(dd.pos);
-				ImGui::Image(numbersAtlas_.srv.Get(), dd.adj, dd.uv1, dd.uv2);
 			}
+			ImGui::End();
 		}
-		ImGui::End();
 	}
 }
 
@@ -699,8 +702,11 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind)
 				ImGuiTitle(std::format("Editing Set '{}'", editSet.name).c_str(), 0.75f);
 			else
 				ImGuiTitle("New Set", 0.75f);
-
+			
 			saveCheck(ImGui::InputText("Name##NewSet", &editSet.name));
+			saveCheck(ImGui::Checkbox("Show in Combat Only##NewSet", &editSet.combatOnly));
+
+			ImGui::Separator();
 
 			for (auto&& [gid, g] : grids_ | ranges::views::enumerate)
 			{
@@ -746,7 +752,7 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 			if (sets_.empty())
 				showSetSelector_ = false;
 
-			if(!ImGui::IsWindowHovered() && ImGui::IsMouseDown(ImGuiMouseButton_Left))
+			if(!ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup | ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) && ImGui::IsMouseDown(ImGuiMouseButton_Left))
 				showSetSelector_ = false;
 
 			for (auto&& [i, s] : sets_ | ranges::views::enumerate)
@@ -837,6 +843,7 @@ void Buffs::Load()
 	{
 		Set s;
 		s.name = sIn["name"];
+		s.combatOnly = sIn["combat_only"];
 
 		for (const auto& gIn : sIn["grids"])
 		{
@@ -900,6 +907,7 @@ void Buffs::Save()
 	{
 		json set;
 		set["name"] = s.name;
+		set["combat_only"] = s.combatOnly;
 
 		json& setGrids = set["grids"];
 

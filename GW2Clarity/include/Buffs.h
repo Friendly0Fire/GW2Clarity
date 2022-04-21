@@ -42,7 +42,7 @@ protected:
 	void DrawGridList();
 	void DrawItems();
 
-	static inline const glm::ivec2 GridDefaultSpacing{ 64, 64 };
+	static inline constexpr glm::ivec2 GridDefaultSpacing{ 64, 64 };
 	static inline const Buff UnknownBuff{ 0, "Unknown", { 0.f, 0.f, 0.f, 0.f } };
 
 	struct Threshold
@@ -100,6 +100,7 @@ protected:
 	{
 		std::string name;
 		std::set<int> grids;
+		bool combatOnly = true;
 	};
 
 	Grid creatingGrid_;
@@ -152,10 +153,10 @@ protected:
 	bool placingItem_ = false;
 	mstime lastSaveTime_ = 0;
 	bool needsSaving_ = false;
-	static inline const mstime SaveDelay = 1000;
+	static inline constexpr mstime SaveDelay = 1000;
 	bool showSetSelector_ = false;
 
-	static const int InvisibleWindowFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollWithMouse;
+	static constexpr int InvisibleWindowFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollWithMouse;
 
 	ActivationKeybind changeGridSetKey_;
 
