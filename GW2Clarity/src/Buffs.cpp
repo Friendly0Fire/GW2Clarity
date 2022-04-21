@@ -410,7 +410,7 @@ void Buffs::DrawItems()
 
 	if (currentSetId_ != UnselectedSubId || editMode)
 	{
-		if(!sets_[currentSetId_].combatOnly || MumbleLink::i().isInCombat())
+		if(!MumbleLink::i().isInCompetitiveMode() && (!sets_[currentSetId_].combatOnly || MumbleLink::i().isInCombat()))
 		{
 			glm::vec2 screen{ ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y };
 			glm::vec2 mouse{ ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y };

@@ -84,9 +84,6 @@
     <CopyFileToFolders Include="..\readme.md">
       <Filter>Resource Files</Filter>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="..\getbuffs.dll">
-      <Filter>Resource Files</Filter>
-    </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
     <Image Include="assets\boons.dds">
