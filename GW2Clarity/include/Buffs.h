@@ -19,6 +19,18 @@ struct Buff
 	uint id;
 	std::string name;
 	glm::vec4 uv;
+	std::string atlasEntry;
+
+	Buff(uint id, std::string&& name)
+		: id(id), name(std::move(name)) {
+		atlasEntry = ReplaceChar(ToLower(this->name), ' ', '_');
+	}
+
+	Buff(uint id, std::string&& name, std::string&& atlas)
+		: id(id), name(std::move(name)), atlasEntry(std::move(atlas)) {}
+
+	Buff(uint id, std::string&& name, glm::vec4&& uv)
+		: id(id), name(std::move(name)), uv(uv) {}
 };
 
 class Buffs : public SettingsMenu::Implementer
@@ -43,7 +55,7 @@ protected:
 	void DrawItems();
 
 	static inline constexpr glm::ivec2 GridDefaultSpacing{ 64, 64 };
-	static inline const Buff UnknownBuff{ 0, "Unknown", { 0.f, 0.f, 0.f, 0.f } };
+	static inline const Buff UnknownBuff{ 0, "Unknown", glm::vec4{ 0.f, 0.f, 0.f, 0.f } };
 
 	struct Threshold
 	{
