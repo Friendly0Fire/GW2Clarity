@@ -29,6 +29,16 @@ class Program
         public bool Verbose { get; set; }
     }
 
+    private static string[] SupportedExtensions =
+    {
+        ".dds",
+        ".tga",
+        ".bmp",
+        ".jpg",
+        ".jpeg",
+        ".png"
+    };
+
     public static void Main(string[] args)
     {
         Console.WriteLine("Loading Atlas Tool...");
@@ -36,9 +46,9 @@ class Program
             .WithParsed(o =>
             {
                 IEnumerable<string> files;
-                if (o.InputFiles.Count() > 0)
+                if (o.InputFiles.Any())
                 { 
-                    files = o.InputFiles.Where(x => Path.GetExtension(x).ToLowerInvariant() == ".dds");
+                    files = o.InputFiles.Where(x => SupportedExtensions.Contains(Path.GetExtension(x).ToLowerInvariant()));
                 }
                 else
                     files = Directory.EnumerateFiles(o.InputDirectory);
@@ -104,7 +114,16 @@ class Program
                 i0 = i.Decompress(DXGI_FORMAT.R8G8B8A8_UNORM).GetImage(0);
             else
                 i0 = i.GetImage(0);
-            texHelper.CopyRectangle(i0, 0, 0, i0.Width, i0.Height, output0, TEX_FILTER_FLAGS.DEFAULT, x, y);
+
+            int xOff = x;
+            int yOff = y;
+            
+            if (i0.Width < size)
+                xOff += (size - i0.Width) / 2;
+            if (i0.Height < size)
+                yOff += (size - i0.Height) / 2;
+
+            texHelper.CopyRectangle(i0, 0, 0, i0.Width, i0.Height, output0, TEX_FILTER_FLAGS.DEFAULT, xOff, yOff);
 
             _ = sidecar.AppendLine($"{{ \"{Path.GetFileNameWithoutExtension(p).ToLowerInvariant()}\", {{ {(float)x / squareEdge}, {(float)y / squareEdge}, {(float)(x + i0.Width) / squareEdge}, {(float)(y + i0.Height) / squareEdge} }} }},");
 
