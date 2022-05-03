@@ -1248,30 +1248,30 @@ static const std::vector<Buff> g_Buffs {
 	{ 48848, "Energy Threshold", "spirit_form" }, // https://wiki.guildwars2.com/images/2/2e/Spirit_Form_%28Hall_of_Chains%29.png
 	////////////////////////////////////////////////
 	//// CA
-	//{ 52667, "Greatsword Power" }, // https://wiki.guildwars2.com/images/3/3b/Greatsword_Power_%28effect%29.png
+	{ 52667, "Greatsword Power" }, // https://wiki.guildwars2.com/images/3/3b/Greatsword_Power_%28effect%29.png
 	//{ 53030, "Fractured - Enemy" }, // https://wiki.guildwars2.com/images/7/78/Branded_Aura.png
 	//{ 52213, "Fractured - Allied" }, // https://wiki.guildwars2.com/images/7/78/Branded_Aura.png
-	//{ 52754, "Conjured Shield" }, // https://wiki.guildwars2.com/images/8/83/Conjured_Shield_%28effect%29.png
+	{ 52754, "Conjured Shield" }, // https://wiki.guildwars2.com/images/8/83/Conjured_Shield_%28effect%29.png
 	//{ 52973, "Conjured Protection" }, // https://wiki.guildwars2.com/images/8/83/Bloodstone-Infused_shield.png
 	//{ 53003, "Shielded" }, // https://wiki.guildwars2.com/images/4/47/Golem-Powered_Shielding.png
 	//{ 52074, "Augmented Power" }, // https://wiki.guildwars2.com/images/4/47/Golem-Powered_Shielding.png
-	//{ 53075, "Locked On" }, // https://wiki.guildwars2.com/images/3/39/Target%21.png
+	{ 53075, "Locked On" }, // https://wiki.guildwars2.com/images/3/39/Target%21.png
 	//{ 52255, "CA Invul" }, // https://wiki.guildwars2.com/images/d/d3/Blood_Fueled.png
 	//{ 52430, "Arm Up" }, // https://wiki.guildwars2.com/images/d/d3/Blood_Fueled.png
 	//{ 52943, "Fixation" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
 	//// Twin Largos
 	//{ 52211, "Aquatic Aura (Kenut)" }, // https://wiki.guildwars2.com/images/4/44/Expose_Weakness.png
 	//{ 52929, "Aquatic Aura (Nikare)" }, // https://wiki.guildwars2.com/images/f/fd/Fractured_%28effect%29.png
-	//{ 51935, "Waterlogged" }, // https://wiki.guildwars2.com/images/8/89/Waterlogged.png
+	{ 51935, "Waterlogged" }, // https://wiki.guildwars2.com/images/8/89/Waterlogged.png
 	//{ 52626, "Enraged (Twin Largos)" }, // https://wiki.guildwars2.com/images/7/78/Vengeance_%28Mordrem%29.png
 	//// Qadim
 	//{ 52568, "Flame Armor" }, // https://wiki.guildwars2.com/images/e/e7/Magma_Orb.png
 	//{ 52588, "Fiery Surge" }, // https://wiki.guildwars2.com/images/f/f9/Fiery_Surge.png
-	//{ 52035, "Power of the Lamp" }, // https://wiki.guildwars2.com/images/e/e5/Break_Out%21.png
+	{ 52035, "Power of the Lamp" }, // https://wiki.guildwars2.com/images/e/e5/Break_Out%21.png
 	//{ 52408, "Unbearable Flames" }, // https://wiki.guildwars2.com/images/2/21/Expel_Excess_Magic_Poison.png
 	//{ 52464, "Parry" }, // https://wiki.guildwars2.com/images/2/28/Parry_%28effect%29.png
 	//{ 52863, "Mythwright Surge" }, // https://wiki.guildwars2.com/images/7/7a/Swiftness_%28effect%29.png
-	//{ 51726, "Lamp Bond" }, // https://wiki.guildwars2.com/images/d/db/Lamp_Bond.png
+	{ 51726, "Lamp Bond" }, // https://wiki.guildwars2.com/images/d/db/Lamp_Bond.png
 	//{ 52040, "Enraged (Wywern)" }, // https://wiki.guildwars2.com/images/7/78/Vengeance_%28Mordrem%29.png
 	//{ 51933, "Enraged (Qadim)" }, // https://wiki.guildwars2.com/images/7/78/Vengeance_%28Mordrem%29.png
 	//{ 52075, "Resistance (Lava Elemental)" }, // https://wiki.guildwars2.com/images/1/18/Fire_Shield.png
@@ -1279,13 +1279,13 @@ static const std::vector<Buff> g_Buffs {
 	////////////////////////////////////////////////
 	//// Adina
 	//{ 56204, "Pillar Pandemonium" }, // https://wiki.guildwars2.com/images/d/d9/Captain%27s_Inspiration.png
-	//{ 56593, "Radiant Blindness" }, // https://wiki.guildwars2.com/images/6/6c/Radiant_Blindness.png
+	{ 56593, "Radiant Blindness" }, // https://wiki.guildwars2.com/images/6/6c/Radiant_Blindness.png
 	//{ 56099, "Diamond Palisade (Damage)" }, // https://wiki.guildwars2.com/images/5/5f/Monster_Skill.png
 	//{ 56636, "Diamond Palisade" }, // https://wiki.guildwars2.com/images/5/5f/Monster_Skill.png
-	//{ 56440, "Eroding Curse" }, // https://wiki.guildwars2.com/images/d/de/Toxic_Gas.png
+	{ 56440, "Eroding Curse" }, // https://wiki.guildwars2.com/images/d/de/Toxic_Gas.png
 	//// Sabir
 	//{ 56100, "Ion Shield" }, // https://wiki.guildwars2.com/images/9/94/Ion_Shield.png
-	//{ 56123, "Violent Currents" }, // https://wiki.guildwars2.com/images/0/06/Violent_Currents.png
+	{ 56123, "Violent Currents" }, // https://wiki.guildwars2.com/images/0/06/Violent_Currents.png
 	//{ 56172, "Repulsion Field" }, // https://wiki.guildwars2.com/images/2/24/Targeted.png
 	//{ 56391, "Electrical Repulsion" }, // https://wiki.guildwars2.com/images/d/dd/Xera%27s_Fury.png
 	//{ 56474, "Electro-Repulsion" }, // https://wiki.guildwars2.com/images/4/42/Exposed_%28Statue_of_Darkness%29.png
@@ -1294,13 +1294,13 @@ static const std::vector<Buff> g_Buffs {
 	//// Peerless Qadim
 	//{ 56582, "Erratic Energy" }, // https://wiki.guildwars2.com/images/4/45/Unstable.png
 	//{ 56104, "Power Share" }, // https://wiki.guildwars2.com/images/2/24/Targeted.png
-	//{ 56118, "Sapping Surge" }, // https://wiki.guildwars2.com/images/6/6f/Guilt_Exploitation.png
+	{ 56118, "Sapping Surge" }, // https://wiki.guildwars2.com/images/6/6f/Guilt_Exploitation.png
 	//{ 56182, "Chaos Corrosion" }, // https://wiki.guildwars2.com/images/f/fd/Fractured_%28effect%29.png
 	//{ 56510, "Fixated (Qadim the Peerless)" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
 	//{ 56475, "Magma Drop" }, // https://wiki.guildwars2.com/images/2/24/Targeted.png
 	//{ 56424, "Critical Mass" }, // https://wiki.guildwars2.com/images/b/bf/Orb_of_Ascension_%28effect%29.png
-	//{ 56609, "Kinetic Abundance" }, // https://wiki.guildwars2.com/images/6/64/Kinetic_Abundance.png
-	//{ 56540, "Enfeebled Force" }, // https://wiki.guildwars2.com/images/b/b6/Enfeebled_Force.png
+	{ 56609, "Kinetic Abundance" }, // https://wiki.guildwars2.com/images/6/64/Kinetic_Abundance.png
+	{ 56540, "Enfeebled Force" }, // https://wiki.guildwars2.com/images/b/b6/Enfeebled_Force.png
 	//{ 56360, "Backlashing Beam" }, // https://wiki.guildwars2.com/images/0/04/Xera%27s_Boon.png
 	//{ 56257, "Clutched by Chaos" }, // https://wiki.guildwars2.com/images/8/87/Protective_Shadow.png
 	//{ 56237, "Cleansed Conductor" }, // https://wiki.guildwars2.com/images/a/a9/Magic_Blast_Intensity.png
