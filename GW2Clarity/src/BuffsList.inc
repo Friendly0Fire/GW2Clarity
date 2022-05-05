@@ -1,4 +1,4 @@
-static const std::vector<Buff> g_Buffs {
+const auto g_Buffs = std::to_array<Buff>({
 	// Common Buffs
 	{ 743, "Aegis" },
 	{ 30328, "Alacrity" },
@@ -469,4 +469,4 @@ static const std::vector<Buff> g_Buffs {
 	//{ 63605, "Aerial Defense" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
 	//{ 66800, "Void Immunity" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
 	//{ 65563, "Void Shell" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
-};
+});
