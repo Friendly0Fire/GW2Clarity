@@ -74,6 +74,9 @@
     <None Include="vcpkg.json">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="src\BuffsList.inc">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc">
