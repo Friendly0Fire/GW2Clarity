@@ -410,7 +410,7 @@ void Buffs::DrawItems()
 
 	if (currentSetId_ != UnselectedSubId || editMode)
 	{
-		if(!MumbleLink::i().isInCompetitiveMode() && (!sets_[currentSetId_].combatOnly || MumbleLink::i().isInCombat()))
+		if(!MumbleLink::i().isInCompetitiveMode() && (editMode || !sets_[currentSetId_].combatOnly || MumbleLink::i().isInCombat()))
 		{
 			glm::vec2 screen{ ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y };
 			glm::vec2 mouse{ ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y };
@@ -607,8 +607,30 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind)
 			{
 				if (ImGui::BeginCombo(std::format("Buff##{}", id).c_str(), buff->name.c_str()))
 				{
+					ImGui::InputText("Search...", buffSearch_, sizeof(buffSearch_));
+					std::string_view bs = buffSearch_;
+
 					for (auto& b : buffs_)
 					{
+						if(b.id == 0xFFFFFFFF) {
+							if(bs.empty())
+							{
+								ImGui::PushFont(Core::i().fontBold());
+								ImGui::Text(b.name.c_str());
+								ImGui::PopFont();
+								ImGui::Separator();
+							}
+							continue;
+						}
+						
+						if(!bs.empty() && std::search(
+							b.name.begin(), b.name.end(),
+							bs.begin(), bs.end(),
+							[](char l, char r) { return std::tolower(l) == std::tolower(r); }) == b.name.end())
+							continue;
+
+						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 20.f);
+
 						ImGui::Image(buffsAtlas_.srv.Get(), ImVec2(32, 32), ToImGui(b.uv.xy), ToImGui(b.uv.zw));
 						ImGui::SameLine();
 						if (saveCheck(ImGui::Selectable(b.name.c_str(), false)))
@@ -937,11 +959,9 @@ std::vector<Buff> Buffs::GenerateBuffsList()
 
 	for (auto& b : buffs)
 	{
-		auto it = atlasElements.find(ToLower(b.name));
+		auto it = atlasElements.find(b.atlasEntry);
 		b.uv = it != atlasElements.end() ? it->second : glm::vec4 { 0.f, 0.f, 0.f, 0.f };
 	}
-
-	std::ranges::sort(buffs, [](auto& a, auto& b) { return a.name < b.name; });
 
 	return buffs;
 }
