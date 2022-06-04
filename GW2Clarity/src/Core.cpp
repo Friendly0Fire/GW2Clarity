@@ -114,7 +114,7 @@ void Core::InnerDraw()
 		ImGuiPopup("Welcome to GW2Clarity!").Position({ 0.5f, 0.45f }).Size({ 0.35f, 0.2f }).Display([&](const ImVec2& windowSize)
 			{
 				ImGui::TextWrapped("Welcome to GW2Clarity! This addon provides extensive UI customization options to make it easier to parse gameplay and situations. "
-					"To begin, use the shortcut Shift+Alt+C to open the settings menu and take a moment to bind your keys. If you ever need further assistance, please visit "
+					"To begin, use the shortcut Shift+Alt+P to open the settings menu and take a moment to bind your keys. If you ever need further assistance, please visit "
 					"this project's website at");
 
 				ImGui::Spacing();

@@ -1,6 +1,6 @@
 const auto g_Buffs = std::to_array<Buff>({
 	// Common Buffs
-	{ 0xFFFFFFFF, "Buffs" },
+	{ "Buffs" },
 	{ 743, "Aegis" },
 	{ 30328, "Alacrity" },
 	{ 725, "Fury" },
@@ -15,7 +15,7 @@ const auto g_Buffs = std::to_array<Buff>({
 	{ 726, "Vigor" },
 
 	// Conditions
-	{ 0xFFFFFFFF, "Conditions" },
+	{ "Conditions" },
 	{ 736, "Bleeding" },
 	{ 737, "Burning" },
 	{ 861, "Confusion" },
@@ -32,7 +32,7 @@ const auto g_Buffs = std::to_array<Buff>({
 	{ 738, "Vulnerability" },
 
 	// Special
-	{ 0xFFFFFFFF, "Special Status" },
+	{ "Special Status" },
 	//{ 46668, "Diminished" }, // https://wiki.guildwars2.com/images/7/71/Diminished.png
 	//{ 46587, "Malnourished" }, // https://wiki.guildwars2.com/images/6/67/Malnourished.png
 	//{ 770, "Downed" }, // https://wiki.guildwars2.com/images/d/dd/Downed.png
@@ -124,7 +124,7 @@ const auto g_Buffs = std::to_array<Buff>({
 	//{ 47288, "Mistlock Instability: Toxic Sickness" }, // https://wiki.guildwars2.com/images/6/6f/Mistlock_Instability_Toxic_Sickness.png
 	//
 	//// Generic
-	{ 0xFFFFFFFF, "Generic Mechanics" },
+	{ "Generic Mechanics" },
 	{ 38077, "Spectral Agony" }, // https://wiki.guildwars2.com/images/7/70/Spectral_Agony.png
 	{ 15773, "Agony" }, // https://wiki.guildwars2.com/images/b/be/Agony.png
 	{ 47856, "Hamstrung" }, // https://wiki.guildwars2.com/images/b/b9/Unseen_Burden.png
@@ -181,7 +181,7 @@ const auto g_Buffs = std::to_array<Buff>({
 	//{ 18981, "Fiery Block" }, // https://wiki.guildwars2.com/images/d/de/Shield_Stance.png
 	////////////////////////////////////////////////
 	//// VG
-	{ 0xFFFFFFFF, "Vale Guardian" },
+	{ "Vale Guardian" },
 	//{ 31413, "Blue Pylon Power" }, // https://wiki.guildwars2.com/images/6/6e/Blue_Pylon_Power.png
 	{ 31695, "Pylon Attunement: Red", "red_pylon" }, // https://wiki.guildwars2.com/images/9/94/Pylon_Attunement-_Red.png
 	{ 31317, "Pylon Attunement: Blue", "blue_pylon" }, // https://wiki.guildwars2.com/images/6/6e/Blue_Pylon_Power.png
@@ -192,34 +192,34 @@ const auto g_Buffs = std::to_array<Buff>({
 	//{ 34979, "Unbreakable" }, // https://wiki.guildwars2.com/images/5/56/Xera%27s_Embrace.png
 	{ 51371, "Unstable Magic Spike", "range" }, //
 	//// Gorseval
-	{ 0xFFFFFFFF, "Gorseval" },
+	{ "Gorseval" },
 	//{ 31722, "Spirited Fusion" }, // https://wiki.guildwars2.com/images/e/eb/Spirited_Fusion.png
 	//{ 31877, "Protective Shadow" }, // https://wiki.guildwars2.com/images/8/87/Protective_Shadow.png
 	{ 31623, "Ghastly Prison" }, // https://wiki.guildwars2.com/images/6/62/Ghastly_Prison.png
 	//{ 31548, "Vivid Echo" }, // https://wiki.guildwars2.com/images/4/4f/Vivid_Echo.png
 	{ 31498, "Spectral Darkness" }, // https://wiki.guildwars2.com/images/a/a8/Spectral_Darkness.png
 	//// Sabetha
-	{ 0xFFFFFFFF, "Sabetha" },
+	{ "Sabetha" },
 	{ 34108, "Shell-Shocked" }, // https://wiki.guildwars2.com/images/3/39/Shell-Shocked.png
 	{ 31473, "Sapper Bomb" }, // https://wiki.guildwars2.com/images/8/88/Sapper_Bomb_%28effect%29.png
 	{ 31485, "Time Bomb" }, // https://wiki.guildwars2.com/images/9/91/Time_Bomb.png
 	////////////////////////////////////////////////
 	//// Slothasor
-	{ 0xFFFFFFFF, "Slothasor" },
+	{ "Slothasor" },
 	//{ 34467, "Narcolepsy" }, // https://wiki.guildwars2.com/images/e/eb/Determined.png
 	{ 34496, "Nauseated" }, // https://wiki.guildwars2.com/images/3/30/Nauseated.png
 	//{ 34362, "Magic Transformation" }, // https://wiki.guildwars2.com/images/4/45/Magic_Transformation.png
 	{ 34508, "Fixated" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
 	{ 34387, "Volatile Poison" }, // https://wiki.guildwars2.com/images/1/12/Volatile_Poison.png
 	//// Trio
-	{ 0xFFFFFFFF, "Bandit Trio" },
+	{ "Bandit Trio" },
 	//{ 34434, "Not the Bees!" }, // https://wiki.guildwars2.com/images/0/08/Throw_Jar.png
 	//{ 34464, "Slow Burn" }, // https://wiki.guildwars2.com/images/6/6e/Heat_Wave_%28Matthias_Gabrel_effect%29.png
 	//{ 34392, "Targeted" }, // https://wiki.guildwars2.com/images/2/24/Targeted.png
 	{ 34393, "Target!", "target" }, // https://wiki.guildwars2.com/images/0/09/Target.png
 	//{ 34439, "Locust Trail" }, // https://wiki.guildwars2.com/images/0/09/Target.png
 	//// Matthias
-	{ 0xFFFFFFFF, "Matthias" },
+	{ "Matthias" },
 	//{ 34376, "Blood Shield Abo" }, // https://wiki.guildwars2.com/images/a/a6/Blood_Shield.png
 	//{ 34518, "Blood Shield" }, // https://wiki.guildwars2.com/images/a/a6/Blood_Shield.png
 	//{ 34422, "Blood Fueled" }, // https://wiki.guildwars2.com/images/d/d3/Blood_Fueled.png
@@ -237,7 +237,7 @@ const auto g_Buffs = std::to_array<Buff>({
 	//{ 34548, "Unstable" }, // https://wiki.guildwars2.com/images/4/45/Unstable.png
 	////////////////////////////////////////////////
 	//// KC
-	{ 0xFFFFFFFF, "Keep Construct" },
+	{ "Keep Construct" },
 	//{ 35096, "Compromised" }, // https://wiki.guildwars2.com/images/4/48/Compromised.png
 	//{ 35025, "Xera's Boon" }, // https://wiki.guildwars2.com/images/0/04/Xera%27s_Boon.png
 	{ 35103, "Xera's Fury" }, // https://wiki.guildwars2.com/images/d/dd/Xera%27s_Fury.png
@@ -251,7 +251,7 @@ const auto g_Buffs = std::to_array<Buff>({
 	//{ 35119, "Magic Blast" }, // https://wiki.guildwars2.com/images/a/a9/Magic_Blast_Intensity.png
 	//{ 35075, "Gaining Power" }, // https://wiki.guildwars2.com/images/7/78/Vengeance_%28Mordrem%29.png
 	//// Twisted Castle
-	{ 0xFFFFFFFF, "Twisted Castle" },
+	{ "Twisted Castle" },
 	//{ 34918, "Spatial Distortion" }, // https://wiki.guildwars2.com/images/7/7a/Bloodstone_Blessed.png
 	{ 35006, "Madness" }, // https://wiki.guildwars2.com/images/e/ee/Madness.png
 	//{ 35106, "Still Waters" }, // https://wiki.guildwars2.com/images/5/5c/Still_Waters_%28effect%29.png
@@ -259,7 +259,7 @@ const auto g_Buffs = std::to_array<Buff>({
 	//{ 34963, "Chaotic Haze" }, // https://wiki.guildwars2.com/images/4/48/Lava_Font.png
 	//{ 34927, "Creeping Pursuit" }, // https://wiki.guildwars2.com/images/f/f8/Creeping_Pursuit.png
 	//// Xera
-	{ 0xFFFFFFFF, "Xera" },
+	{ "Xera" },
 	{ 34965, "Derangement" }, // https://wiki.guildwars2.com/images/c/ca/Derangement.png
 	//{ 35084, "Bending Chaos" }, // https://wiki.guildwars2.com/images/3/39/Target%21.png
 	//{ 35162, "Shifting Chaos" }, // https://wiki.guildwars2.com/images/0/04/Shifting_Chaos.png
@@ -270,21 +270,21 @@ const auto g_Buffs = std::to_array<Buff>({
 	//{ 34883, "Void Zone" }, // https://wiki.guildwars2.com/images/5/56/Void_Zone.png
 	////////////////////////////////////////////////
 	//// Cairn
-	{ 0xFFFFFFFF, "Cairn" },
+	{ "Cairn" },
 	//{ 38049, "Shared Agony" }, // https://wiki.guildwars2.com/images/5/53/Shared_Agony.png
 	//{ 37675, "Enraged (Cairn)" }, // https://wiki.guildwars2.com/images/7/78/Vengeance_%28Mordrem%29.png
 	{ 38153, "Unseen Burden", "hamstrung" }, // https://wiki.guildwars2.com/images/b/b9/Unseen_Burden.png
 	{ 38098, "Countdown" }, // https://wiki.guildwars2.com/images/0/05/Countdown.png
 	{ 37714, "Gaze Avoidance" }, // https://wiki.guildwars2.com/images/1/10/Gaze_Avoidance.png
 	//// MO
-	{ 0xFFFFFFFF, "Mursaat Overseer" },
+	{ "Mursaat Overseer" },
 	//{ 37626, "Empowered" }, // https://wiki.guildwars2.com/images/9/9c/Empowered_%28Mursaat_Overseer%29.png
 	//{ 38155, "Mursaat Overseer's Shield" }, // https://wiki.guildwars2.com/images/8/84/Mursaat_Overseer%27s_Shield.png
 	//{ 37813, "Protect (SAK)" }, // https://wiki.guildwars2.com/images/f/f6/Protect.png
 	//{ 37697, "Dispel (SAK)" }, // https://wiki.guildwars2.com/images/8/84/Mursaat_Overseer%27s_Shield.png
 	//{ 37779, "Claim (SAK)" }, // https://wiki.guildwars2.com/images/e/ef/Claim.png
 	//// Samarog
-	{ 0xFFFFFFFF, "Samarog" },
+	{ "Samarog" },
 	{ 37868, "Fixated", "fixated" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
 	{ 38223, "Fixated (Guldhem)", "fixated" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
 	{ 37693, "Fixated (Rigom)", "fixated" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
@@ -292,7 +292,7 @@ const auto g_Buffs = std::to_array<Buff>({
 	{ 38247, "Inevitable Betrayal (Small)" }, // https://wiki.guildwars2.com/images/b/b8/Feeding_Frenzy_%28GW1%29.png
 	//{ 37892, "Soul Swarm" }, // https://wiki.guildwars2.com/images/0/0e/Soul_Swarm_%28effect%29.png
 	//// Deimos
-	{ 0xFFFFFFFF, "Deimos" },
+	{ "Deimos" },
 	//{ 38224, "Unnatural Signet" }, // https://wiki.guildwars2.com/images/2/20/Unnatural_Signet.png
 	{ 38187, "Weak Minded", "unseen_burden" }, // https://wiki.guildwars2.com/images/3/38/Unseen_Burden_%28Deimos%29.png
 	{ 37733, "Tear Instability" }, // https://wiki.guildwars2.com/images/1/11/Tear_Instability.png
@@ -301,12 +301,12 @@ const auto g_Buffs = std::to_array<Buff>({
 	{ 38266, "Unseen Burden [??]", "unseen_burden" }, // https://wiki.guildwars2.com/images/3/38/Unseen_Burden_%28Deimos%29.png
 	////////////////////////////////////////////////
 	//// Soulless Horror
-	{ 0xFFFFFFFF, "Soulless Horror" },
+	{ "Soulless Horror" },
 	{ 48349, "Exile's Embrace" }, // https://wiki.guildwars2.com/images/b/b4/Exile%27s_Embrace.png
 	{ 47434, "Fixated" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
 	{ 47414, "Necrosis" }, // https://wiki.guildwars2.com/images/4/47/Ichor.png
 	//// River
-	{ 0xFFFFFFFF, "River of Souls" },
+	{ "River of Souls" },
 	{ 47470, "Soul Siphon" }, // https://wiki.guildwars2.com/images/f/f7/Soul_Siphon.png
 	{ 47219, "Desmina's Protection" }, // https://wiki.guildwars2.com/images/b/b3/Desmina%27s_Protection.png
 	//{ 47122, "Follower's Asylum" }, // https://wiki.guildwars2.com/images/b/b3/Desmina%27s_Protection.png
@@ -314,25 +314,25 @@ const auto g_Buffs = std::to_array<Buff>({
 	{ 48154, "Mortal Coil" }, // https://wiki.guildwars2.com/images/4/41/Mortal_Coil.png
 	{ 47758, "Energy Threshold", "spirit_form" }, // https://wiki.guildwars2.com/images/2/2e/Spirit_Form_%28Hall_of_Chains%29.png
 	//// Broken King
-	{ 0xFFFFFFFF, "Broken King" },
+	{ "Broken King" },
 	{ 47776, "Frozen Wind" }, // https://wiki.guildwars2.com/images/3/3a/Frozen_Wind.png
 	//{ 47595, "Shield of Ice" }, // https://wiki.guildwars2.com/images/3/38/Shield_of_Ice.png
 	{ 47022, "Glaciate" }, // https://wiki.guildwars2.com/images/b/ba/Glaciate.png
 	//// Eater of Soul
-	{ 0xFFFFFFFF, "Eater of Souls" },
+	{ "Eater of Souls" },
 	//{ 48541, "Soul Digestion" }, // https://wiki.guildwars2.com/images/0/08/Soul_Digestion.png
 	{ 47090, "Reclaimed Energy" }, // https://wiki.guildwars2.com/images/2/21/Reclaimed_Energy.png
 	{ 48583, "Mortal Coil" }, // https://wiki.guildwars2.com/images/4/41/Mortal_Coil.png
 	{ 47473, "Empowered" }, // https://wiki.guildwars2.com/images/d/de/Empowered_%28Statue_of_Death%29.png
 	////  Eyes
-	{ 0xFFFFFFFF, "Eyes" },
+	{ "Eyes" },
 	//{ 47635, "Last Grasp (Judgment)" }, // https://wiki.guildwars2.com/images/2/26/Last_Grasp.png
 	//{ 47278, "Last Grasp (Fate)" }, // https://wiki.guildwars2.com/images/2/26/Last_Grasp.png
 	//{ 47251, "Exposed (Statue of Darkness)" }, // https://wiki.guildwars2.com/images/4/42/Exposed_%28Statue_of_Darkness%29.png
 	//{ 48779, "Light Carrier" }, // https://wiki.guildwars2.com/images/f/f1/Torch_Fielder.png
 	//{ 48477, "Empowered (Light Thief)" }, // https://wiki.guildwars2.com/images/0/08/Soul_Digestion.png
 	//// Dhuum
-	{ 0xFFFFFFFF, "Dhuum" },
+	{ "Dhuum" },
 	{ 48281, "Mortal Coil" }, // https://wiki.guildwars2.com/images/4/48/Compromised.png
 	{ 46950, "Fractured Spirit" }, // https://wiki.guildwars2.com/images/c/c3/Fractured_Spirit.png
 	{ 47476, "Residual Affliction" }, // https://wiki.guildwars2.com/images/1/12/Residual_Affliction.png
@@ -345,7 +345,7 @@ const auto g_Buffs = std::to_array<Buff>({
 	{ 48848, "Energy Threshold", "spirit_form" }, // https://wiki.guildwars2.com/images/2/2e/Spirit_Form_%28Hall_of_Chains%29.png
 	////////////////////////////////////////////////
 	//// CA
-	{ 0xFFFFFFFF, "Conjured Amalgamate" },
+	{ "Conjured Amalgamate" },
 	{ 52667, "Greatsword Power" }, // https://wiki.guildwars2.com/images/3/3b/Greatsword_Power_%28effect%29.png
 	//{ 53030, "Fractured - Enemy" }, // https://wiki.guildwars2.com/images/7/78/Branded_Aura.png
 	//{ 52213, "Fractured - Allied" }, // https://wiki.guildwars2.com/images/7/78/Branded_Aura.png
@@ -358,13 +358,13 @@ const auto g_Buffs = std::to_array<Buff>({
 	//{ 52430, "Arm Up" }, // https://wiki.guildwars2.com/images/d/d3/Blood_Fueled.png
 	//{ 52943, "Fixation" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
 	//// Twin Largos
-	{ 0xFFFFFFFF, "Twin Largos" },
+	{ "Twin Largos" },
 	//{ 52211, "Aquatic Aura (Kenut)" }, // https://wiki.guildwars2.com/images/4/44/Expose_Weakness.png
 	//{ 52929, "Aquatic Aura (Nikare)" }, // https://wiki.guildwars2.com/images/f/fd/Fractured_%28effect%29.png
 	{ 51935, "Waterlogged" }, // https://wiki.guildwars2.com/images/8/89/Waterlogged.png
 	//{ 52626, "Enraged (Twin Largos)" }, // https://wiki.guildwars2.com/images/7/78/Vengeance_%28Mordrem%29.png
 	//// Qadim
-	{ 0xFFFFFFFF, "Qadim" },
+	{ "Qadim" },
 	//{ 52568, "Flame Armor" }, // https://wiki.guildwars2.com/images/e/e7/Magma_Orb.png
 	//{ 52588, "Fiery Surge" }, // https://wiki.guildwars2.com/images/f/f9/Fiery_Surge.png
 	{ 52035, "Power of the Lamp" }, // https://wiki.guildwars2.com/images/e/e5/Break_Out%21.png
@@ -378,14 +378,14 @@ const auto g_Buffs = std::to_array<Buff>({
 	//{ 53048, "Shielded (Lava Elemental)" }, // https://wiki.guildwars2.com/images/1/18/Fire_Shield.png
 	////////////////////////////////////////////////
 	//// Adina
-	{ 0xFFFFFFFF, "Cardinal Adina" },
+	{ "Cardinal Adina" },
 	//{ 56204, "Pillar Pandemonium" }, // https://wiki.guildwars2.com/images/d/d9/Captain%27s_Inspiration.png
 	{ 56593, "Radiant Blindness" }, // https://wiki.guildwars2.com/images/6/6c/Radiant_Blindness.png
 	//{ 56099, "Diamond Palisade (Damage)" }, // https://wiki.guildwars2.com/images/5/5f/Monster_Skill.png
 	//{ 56636, "Diamond Palisade" }, // https://wiki.guildwars2.com/images/5/5f/Monster_Skill.png
 	{ 56440, "Eroding Curse" }, // https://wiki.guildwars2.com/images/d/de/Toxic_Gas.png
 	//// Sabir
-	{ 0xFFFFFFFF, "Cardinal Sabir" },
+	{ "Cardinal Sabir" },
 	//{ 56100, "Ion Shield" }, // https://wiki.guildwars2.com/images/9/94/Ion_Shield.png
 	{ 56123, "Violent Currents" }, // https://wiki.guildwars2.com/images/0/06/Violent_Currents.png
 	//{ 56172, "Repulsion Field" }, // https://wiki.guildwars2.com/images/2/24/Targeted.png
@@ -394,7 +394,7 @@ const auto g_Buffs = std::to_array<Buff>({
 	//{ 56216, "Eye of the Storm" }, // https://wiki.guildwars2.com/images/5/52/Mending_Waters_%28effect%29.png
 	//{ 56394, "Bolt Break" }, // https://wiki.guildwars2.com/images/7/74/Mesmer_icon_white.png
 	//// Peerless Qadim
-	{ 0xFFFFFFFF, "Qadim the Peerless" },
+	{ "Qadim the Peerless" },
 	//{ 56582, "Erratic Energy" }, // https://wiki.guildwars2.com/images/4/45/Unstable.png
 	//{ 56104, "Power Share" }, // https://wiki.guildwars2.com/images/2/24/Targeted.png
 	{ 56118, "Sapping Surge" }, // https://wiki.guildwars2.com/images/6/6f/Guilt_Exploitation.png

@@ -18,8 +18,11 @@ struct Buff
 {
 	uint id;
 	std::string name;
-	glm::vec4 uv;
 	std::string atlasEntry;
+	glm::vec4 uv {};
+	
+	Buff(std::string&& name)
+		: Buff(0xFFFFFFFF, std::move(name)) {}
 
 	Buff(uint id, std::string&& name)
 		: id(id), name(std::move(name)) {
