@@ -170,6 +170,11 @@ cd "$(ProjectDir)shaders"
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
     </CopyFileToFolders>
+    <CopyFileToFolders Include="..\getbuffs.dll">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DeploymentContent>
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
     <None Include="art\finals\rcdata1.bin" />
     <None Include="Main.def" />
     <None Include="rt_rcdat.bin" />
