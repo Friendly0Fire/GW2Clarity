@@ -171,6 +171,7 @@ protected:
 	static inline constexpr mstime SaveDelay = 1000;
 	bool showSetSelector_ = false;
 	char buffSearch_[512];
+	bool firstDraw_ = true;
 
 	static constexpr int InvisibleWindowFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollWithMouse;
 

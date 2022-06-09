@@ -366,6 +366,80 @@ void Buffs::PlaceItem()
 
 void Buffs::DrawGridList()
 {
+	if(ImGui::BeginTable("##GridsAndItems", 2)) {
+		ImGui::TableNextRow();
+		ImGui::TableNextColumn();
+		ImGui::TextUnformatted("Grids");
+		ImGui::TableNextColumn();
+		ImGui::TextUnformatted("Items");
+
+		ImGui::TableNextRow();
+		ImGui::TableNextColumn();
+		if(ImGui::BeginListBox("##GridsList", ImVec2(-FLT_MIN, 0.f))) {
+			for (auto&& [gid, g] : grids_ | ranges::views::enumerate) {
+				auto u = Unselected(gid);
+				if (ImGui::Selectable(std::format("{} ({}x{})##{}", g.name, g.spacing.x, g.spacing.y, gid).c_str(), selectedId_ == u)) {
+					selectedId_ = u;
+					selectedSetId_ = UnselectedSubId;
+				}
+			}
+
+			if(ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+				selectedId_ = Unselected();
+				selectedSetId_ = UnselectedSubId;
+			}
+
+			ImGui::EndListBox();
+		}
+		ImGui::TableNextColumn();
+
+		const bool disableItemsList = selectedId_.grid < 0;
+		
+		ImGui::BeginDisabled(disableItemsList);
+		if(ImGui::BeginListBox("##ItemsList", ImVec2(-FLT_MIN, 0.f))) {
+			if(selectedId_.grid != UnselectedSubId)
+			{
+				auto& g = getG(selectedId_);
+				auto gid = selectedId_.grid;
+				for (auto&& [iid, i] : g.items | ranges::views::enumerate)
+				{
+					Id id{ gid, short(iid) };
+					if (ImGui::Selectable(std::format("{} ({}, {})##{}", i.buff->name.c_str(), i.pos.x, i.pos.y, iid).c_str(), selectedId_ == id))
+					{
+						selectedId_ = id;
+						selectedSetId_ = UnselectedSubId;
+					}
+				}
+
+				if(ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+					selectedId_ = Unselected(gid);
+					selectedSetId_ = UnselectedSubId;
+				}
+			}
+			else
+				ImGui::TextUnformatted("<no grid selected>");
+			ImGui::EndListBox();
+		}
+		ImGui::EndDisabled();
+
+		ImGui::TableNextRow();
+		ImGui::TableNextColumn();
+		if(ImGui::Button("New grid")) {
+			selectedId_ = New();
+			selectedSetId_ = UnselectedSubId;
+		}
+		ImGui::TableNextColumn();
+		ImGui::BeginDisabled(disableItemsList);
+		if(ImGui::Button("New item")) {
+			selectedId_ = New(selectedId_.grid);
+			selectedSetId_ = UnselectedSubId;
+		}
+		ImGui::EndDisabled();
+
+		ImGui::EndTable();
+	}
+	
+#if 0
 	for (auto&& [gid, g] : grids_ | ranges::views::enumerate)
 	{
 		auto u = Unselected(gid);
@@ -402,6 +476,7 @@ void Buffs::DrawGridList()
 			selectedSetId_ = UnselectedSubId;
 		}
 	}
+#endif
 }
 
 void Buffs::DrawItems()
@@ -556,7 +631,7 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind)
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::SameLine();
-			if (ImGui::Button("Cancel"))
+			if (ImGui::Button("No"))
 				ImGui::CloseCurrentPopup();
 
 			ImGui::EndPopup();
@@ -767,7 +842,7 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 	if (!SettingsMenu::i().isVisible())
 		selectedId_ = Unselected();
 
-	if(showSetSelector_)
+	if(showSetSelector_ || firstDraw_)
 	{
 		if (ImGui::Begin(ChangeSetPopupName, nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
 		{
@@ -801,10 +876,15 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 	DrawItems();
 
 #ifdef _DEBUG
-	if (ImGui::Begin("Buffs Analyzer", &showAnalyzer_))
-		DrawBuffAnalyzer();
-	ImGui::End();
+	if(firstDraw_ || showAnalyzer_)
+	{
+		if (ImGui::Begin("Buffs Analyzer", &showAnalyzer_))
+			DrawBuffAnalyzer();
+		ImGui::End();
+	}
 #endif
+
+	firstDraw_ = false;
 }
 
 void Buffs::UpdateBuffsTable(StackedBuff* buffs)
