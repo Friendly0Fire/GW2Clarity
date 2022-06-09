@@ -17,7 +17,7 @@
 
 namespace GW2Clarity
 {
-ImVec2 AdjustToArea(int w, int h, int availW)
+ImVec2 AdjustToArea(float w, float h, float availW)
 {
 	ImVec2 dims(w, h);
 	if (dims.x < dims.y)
@@ -403,7 +403,7 @@ void Buffs::DrawGridList()
 				auto gid = selectedId_.grid;
 				for (auto&& [iid, i] : g.items | ranges::views::enumerate)
 				{
-					Id id{ gid, short(iid) };
+					Id id{ gid, iid };
 					if (ImGui::Selectable(std::format("{} ({}, {})##{}", i.buff->name.c_str(), i.pos.x, i.pos.y, iid).c_str(), selectedId_ == id))
 					{
 						selectedId_ = id;
@@ -511,7 +511,7 @@ void Buffs::DrawItems()
 
 					glm::vec2 pos = (g.attached && !placingItem_ ? mouse : screen * 0.5f) + glm::vec2(i.pos * g.spacing);
 
-					auto adj = AdjustToArea(128, 128, g.spacing.x);
+					auto adj = AdjustToArea(128.f, 128.f, float(g.spacing.x));
 
 					if (editing)
 						ImGui::GetWindowDrawList()->AddRect(ToImGui(pos), ToImGui(pos) + adj, 0xFF0000FF);
@@ -527,9 +527,9 @@ void Buffs::DrawItems()
 
 				auto drawGrid = [&](Grid& g, short gid)
 				{
-					for (const auto& [iid, i] : g.items | ranges::views::enumerate)
+					for (const auto&& [iid, i] : g.items | ranges::views::enumerate)
 					{
-						bool editing = editMode && selectedId_ == Id{ gid, short(iid) };
+						bool editing = editMode && selectedId_ == Id{ gid, iid };
 						int count = 0;
 						if (editing)
 							count = editingItemFakeCount_;
@@ -719,10 +719,10 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind)
 			int removeId = -1;
 			for (auto&& [n, extraBuff] : editItem.additionalBuffs | ranges::views::enumerate)
 			{
-				buffCombo(extraBuff, n);
+				buffCombo(extraBuff, int(n));
 				ImGui::SameLine();
 				if (ImGuiClose(std::format("RemoveExtraBuff{}", n).c_str()))
-					removeId = n;
+					removeId = int(n);
 			}
 			if (removeId != -1)
 				editItem.additionalBuffs.erase(editItem.additionalBuffs.begin() + removeId);
@@ -781,7 +781,7 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind)
 		{
 			if (ImGui::Selectable(std::format("{}##Set", s.name).c_str(), selectedSetId_ == sid))
 			{
-				selectedSetId_ = sid;
+				selectedSetId_ = short(sid);
 				selectedId_ = Unselected();
 			}
 		}
@@ -807,13 +807,13 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind)
 
 			for (auto&& [gid, g] : grids_ | ranges::views::enumerate)
 			{
-				bool sel = editSet.grids.count(gid) > 0;
+				bool sel = editSet.grids.count(int(gid)) > 0;
 				if (saveCheck(ImGui::Checkbox(std::format("{}##GridInSet", g.name).c_str(), &sel)))
 				{
 					if (sel)
-						editSet.grids.insert(gid);
+						editSet.grids.insert(int(gid));
 					else
-						editSet.grids.erase(gid);
+						editSet.grids.erase(int(gid));
 				}
 			}
 
@@ -856,7 +856,7 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 			{
 				if (ImGui::Selectable(s.name.c_str(), currentSetId_ == i))
 				{
-					currentSetId_ = i;
+					currentSetId_ = short(i);
 					showSetSelector_ = false;
 				}
 			}

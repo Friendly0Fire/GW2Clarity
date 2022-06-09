@@ -77,20 +77,22 @@ protected:
 			short item;
 		};
 
-		constexpr Id(short g, short i) : grid(g), item(i) { }
-		constexpr Id(size_t g, size_t i) : grid(short(g)), item(short(i)) { }
+		template<std::integral T1, std::integral T2>
+		constexpr Id(T1 g, T2 i) : grid(short(g)), item(short(i)) { }
 
-		inline constexpr bool operator==(const Id& other) const {
+		constexpr bool operator==(const Id& other) const {
 			return id == other.id;
 		}
-		inline constexpr bool operator!=(const Id& other) const {
+		constexpr bool operator!=(const Id& other) const {
 			return id != other.id;
 		}
 	};
 	static_assert(sizeof(Id) == sizeof(int));
 
-	static Id Unselected(short gid = UnselectedSubId) { return { gid, UnselectedSubId }; }
-	static Id New(short gid = NewSubId) { return { gid, NewSubId }; }
+	template<std::integral T = short>
+	static Id Unselected(T gid = T(UnselectedSubId)) { return { short(gid), UnselectedSubId }; }
+	template<std::integral T = short>
+	static Id New(T gid = T(NewSubId)) { return { short(gid), NewSubId }; }
 
 	void Delete(Id& id);
 
