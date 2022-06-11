@@ -8,6 +8,5 @@ struct StackedBuff
 {
 	unsigned int id;
 	int count;
-	int maxDuration;
 };
 }

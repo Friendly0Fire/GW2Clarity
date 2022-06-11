@@ -165,7 +165,7 @@ protected:
 	const std::vector<Buff> buffs_;
 	const std::map<int, const Buff*> buffsMap_;
 	const std::vector<glm::vec4> numbersMap_;
-	std::map<uint, std::pair<int, int>> activeBuffs_;
+	std::unordered_map<uint, int> activeBuffs_;
 
 
 	static std::vector<Buff> GenerateBuffsList();

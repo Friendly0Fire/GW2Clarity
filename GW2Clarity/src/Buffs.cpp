@@ -176,14 +176,14 @@ void Buffs::DrawBuffAnalyzer()
 	if (ImGui::Button("Hide currently inactive"))
 	{
 		for (auto& [id, buff] : activeBuffs_)
-			if (buff.first == 0)
+			if (buff == 0)
 				hiddenBuffs_.insert(id);
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Hide currently active"))
 	{
 		for (auto& [id, buff] : activeBuffs_)
-			if (buff.first > 0)
+			if (buff > 0)
 				hiddenBuffs_.insert(id);
 	}
 	ImGui::SameLine();
@@ -195,12 +195,11 @@ void Buffs::DrawBuffAnalyzer()
 		ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed, 60.f);
 		ImGui::TableSetupColumn("Count", ImGuiTableColumnFlags_WidthFixed, 40.f);
 		ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 5.f);
-		ImGui::TableSetupColumn("Max Duration", ImGuiTableColumnFlags_WidthStretch, 2.f);
 		ImGui::TableSetupColumn("Chat Link", ImGuiTableColumnFlags_WidthStretch, 5.f);
 		ImGui::TableHeadersRow();
 		for (auto& [id, buff] : activeBuffs_)
 		{
-			if (buff.first == 0 && hideInactive_ || hiddenBuffs_.count(id) > 0)
+			if (buff == 0 && hideInactive_ || hiddenBuffs_.count(id) > 0)
 				continue;
 
 			ImGui::TableNextRow();
@@ -210,7 +209,7 @@ void Buffs::DrawBuffAnalyzer()
 
 			ImGui::TableNextColumn();
 
-			ImGui::Text("%d", buff.first);
+			ImGui::Text("%d", buff);
 
 			ImGui::TableNextColumn();
 
@@ -221,26 +220,6 @@ void Buffs::DrawBuffAnalyzer()
 				if (ImGui::InputText(std::format("##Name{}", id).c_str(), &str))
 					SaveNames();
 			}
-
-			ImGui::TableNextColumn();
-
-			const int hourMS = 1000 * 60 * 60;
-			const int minuteMS = 1000 * 60;
-			const int secondMS = 1000;
-
-			int hours = buff.second / hourMS;
-			int minutes = (buff.second - hours * hourMS) / minuteMS;
-			int seconds = (buff.second - hours * hourMS - minutes * minuteMS) / secondMS;
-
-			std::string timeLeft = "";
-			if (hours > 0)
-				timeLeft += std::format("{} hours", hours);
-			if (minutes > 0)
-				timeLeft += std::format(" {} minutes", minutes);
-			if (seconds > 0)
-				timeLeft += std::format(" {} seconds", seconds);
-
-			ImGui::Text("%s", timeLeft.c_str());
 
 			ImGui::TableNextColumn();
 
@@ -530,7 +509,7 @@ void Buffs::DrawItems()
 						if (editing)
 							count = editingItemFakeCount_;
 						else
-							count = std::accumulate(i.additionalBuffs.begin(), i.additionalBuffs.end(), activeBuffs_[i.buff->id].first, [&](int a, const Buff* b) { return a + activeBuffs_[b->id].first; });
+							count = std::accumulate(i.additionalBuffs.begin(), i.additionalBuffs.end(), activeBuffs_[i.buff->id], [&](int a, const Buff* b) { return a + activeBuffs_[b->id]; });
 
 						drawItem(g, i, count, editing);
 					}
@@ -907,12 +886,12 @@ void Buffs::UpdateBuffsTable(StackedBuff* buffs)
 {
 #ifdef _DEBUG
 	for (auto& b : activeBuffs_)
-		b.second = { 0, 0 };
+		b.second = 0;
 #else
 	activeBuffs_.clear();
 #endif
 	for (size_t i = 0; buffs[i].id; i++)
-		activeBuffs_[buffs[i].id] = { buffs[i].count, buffs[i].maxDuration };
+		activeBuffs_[buffs[i].id] = buffs[i].count;
 }
 
 void Buffs::Load()
