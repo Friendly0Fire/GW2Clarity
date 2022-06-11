@@ -109,6 +109,7 @@ protected:
 	struct Grid
 	{
 		glm::ivec2 spacing = GridDefaultSpacing;
+		glm::ivec2 offset = {};
 		std::vector<Item> items;
 		std::string name { "New Grid" };
 		bool attached = false;

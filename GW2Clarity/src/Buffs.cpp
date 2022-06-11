@@ -13,6 +13,7 @@
 #include <shellapi.h>
 #include <ranges>
 #include <algorithm>
+#include <variant>
 #include <range/v3/all.hpp>
 
 namespace GW2Clarity
@@ -241,7 +242,6 @@ void Buffs::DrawBuffAnalyzer()
 			ImGui::SameLine();
 			if (ImGui::Button(std::format("Say in G{}##{}", guildLogId_, chatCodeStr).c_str()))
 			{
-				mstime currentTime = TimeInMilliseconds();
 				ImGui::SetClipboardText(std::format("/g{} {}: {}", guildLogId_, id, chatCodeStr).c_str());
 
 				auto wait = [](int i) { std::this_thread::sleep_for(std::chrono::milliseconds(i)); };
@@ -295,8 +295,9 @@ void Buffs::DrawEditingGrid()
 	if (draggingGridScale_ || placingItem_)
 	{
 		const auto& sp = getG(selectedId_).spacing;
+		const auto& off = getG(selectedId_).offset;
 		auto d = ImGui::GetIO().DisplaySize;
-		auto c = d * 0.5f;
+		auto c = d * 0.5f + ImVec2(off.x, off.y);
 
 		auto* cmdList = ImGui::GetWindowDrawList();
 		cmdList->PushClipRectFullScreen();
@@ -484,7 +485,7 @@ void Buffs::DrawItems()
 					if (thresh != i.thresholds.end())
 						tint = thresh->tint;
 
-					glm::vec2 pos = (g.attached && !placingItem_ ? mouse : screen * 0.5f) + glm::vec2(i.pos * g.spacing);
+					glm::vec2 pos = (g.attached && !placingItem_ ? mouse : screen * 0.5f) + glm::vec2(i.pos * g.spacing) + glm::vec2(g.offset);
 
 					auto adj = AdjustToArea(128.f, 128.f, float(g.spacing.x));
 
@@ -623,17 +624,27 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind)
 				ImGuiTitle(std::format("Editing Grid '{}'", editGrid.name).c_str(), 0.75f);
 			else
 				ImGuiTitle("New Grid", 0.75f);
+			
+			saveCheck(ImGui::InputText("Grid Name", &editGrid.name));
+			ImGui::NewLine();
+
+			// If drag was triggered, stay on as long as dragging occurs, otherwise disable
+			draggingGridScale_ = draggingGridScale_ ? ImGui::IsMouseDragging(ImGuiMouseButton_Left) : false;
 
 			saveCheck(ImGui::Checkbox("Square Grid", &editGrid.square));
 			if (editGrid.square && saveCheck(ImGui::DragInt("Grid Scale", (int*)&editGrid.spacing, 0.1f, 1, 2048)) ||
 				!editGrid.square && saveCheck(ImGui::DragInt2("Grid Scale", glm::value_ptr(editGrid.spacing), 0.1f, 1, 2048)))
 			{
-				draggingGridScale_ = ImGui::IsMouseDragging(ImGuiMouseButton_Left);
+				draggingGridScale_ |= ImGui::IsMouseDragging(ImGuiMouseButton_Left);
 			}
 			if (editGrid.square)
 				editGrid.spacing.y = editGrid.spacing.x;
 
-			saveCheck(ImGui::InputText("Grid Name", &editGrid.name));
+			if(saveCheck(ImGui::DragInt2("Grid Offset", glm::value_ptr(editGrid.offset), 0.1f, -ImGui::GetIO().DisplaySize.x / 2, ImGui::GetIO().DisplaySize.x / 2)))
+			{
+				draggingGridScale_ |= ImGui::IsMouseDragging(ImGuiMouseButton_Left);
+			}
+
 			saveCheck(ImGui::Checkbox("Attached to Mouse", &editGrid.attached));
 
 			if (selectedId_.grid == NewSubId && ImGui::Button("Create Grid"))
@@ -903,16 +914,27 @@ void Buffs::Load()
 	auto& cfg = JSONConfigurationFile::i();
 	cfg.Reload();
 
-	auto getivec2 = [](const auto& j) { return glm::ivec2(j[0].get<int>(), j[1].get<int>()); };
-	auto getImVec4 = [](const auto& j) { return ImVec4(j[0].get<float>(), j[1].get<float>(), j[2].get<float>(), j[3].get<float>()); };
+	auto maybe_at = []<typename D>(const json& j, const char* n, const D& def, const std::variant<std::monostate, std::function<D(const json&)>>& cvt = {}) {
+		auto it   = j.find(n);
+		if(it == j.end())
+			return def;
+		if(cvt.index() == 0)
+			return static_cast<D>(*it);
+		else
+			return std::get<1>(cvt)(*it);
+	};
+
+	auto getivec2 = [](const json& j) { return glm::ivec2(j[0].get<int>(), j[1].get<int>()); };
+	auto getImVec4 = [](const json& j) { return ImVec4(j[0].get<float>(), j[1].get<float>(), j[2].get<float>(), j[3].get<float>()); };
 
 	const auto& grids = cfg.json()["buff_grids"];
 	for (const auto& gIn : grids)
 	{
 		Grid g;
-		g.spacing = getivec2(gIn["spacing"]);
-		g.attached = gIn["attached"];
-		g.square = gIn["square"];
+		g.spacing = maybe_at(gIn, "spacing", glm::ivec2(32, 32), { getivec2 });
+		g.offset = maybe_at(gIn, "offset", glm::ivec2(), { getivec2 });
+		g.attached = maybe_at(gIn, "attached", false);
+		g.square = maybe_at(gIn, "square", true);
 		g.name = gIn["name"];
 
 		for (const auto& iIn : gIn["items"])
@@ -940,7 +962,7 @@ void Buffs::Load()
 	{
 		Set s;
 		s.name = sIn["name"];
-		s.combatOnly = sIn["combat_only"];
+		s.combatOnly = maybe_at(sIn, "combat_only", true);
 
 		for (const auto& gIn : sIn["grids"])
 		{
@@ -964,6 +986,7 @@ void Buffs::Save()
 	{
 		json grid;
 		grid["spacing"] = { g.spacing.x, g.spacing.y };
+		grid["offset"] = { g.offset.x, g.offset.y };
 		grid["attached"] = g.attached;
 		grid["square"] = g.square;
 		grid["name"] = g.name;
