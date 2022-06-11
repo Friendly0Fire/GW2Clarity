@@ -514,9 +514,9 @@ void Buffs::DrawItems()
 
 					ImGui::SetCursorPos(ToImGui(pos));
 					ImGui::Image(buffsAtlas_.srv.Get(), adj, ToImGui(i.buff->uv.xy), ToImGui(i.buff->uv.zw), tint);
-					if (count > 1)
+					if (count > 1 && i.buff->maxStacks > 1)
 					{
-						count = std::min(count, int(numbersMap_.size()) - 1);
+						count = std::min({ count, i.buff->maxStacks, int(numbersMap_.size()) - 1 });
 						delayedDraws.emplace_back(adj, ToImGui(pos), ToImGui(numbersMap_[count].xy), ToImGui(numbersMap_[count].zw));
 					}
 				};

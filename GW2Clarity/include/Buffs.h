@@ -17,6 +17,7 @@ namespace GW2Clarity
 struct Buff
 {
 	uint id;
+	int maxStacks;
 	std::string name;
 	std::string atlasEntry;
 	glm::vec4 uv {};
@@ -24,16 +25,16 @@ struct Buff
 	Buff(std::string&& name)
 		: Buff(0xFFFFFFFF, std::move(name)) {}
 
-	Buff(uint id, std::string&& name)
-		: id(id), name(std::move(name)) {
+	Buff(uint id, std::string&& name, int maxStacks = std::numeric_limits<int>::max())
+		: id(id), name(std::move(name)), maxStacks(maxStacks) {
 		atlasEntry = ReplaceChar(ToLower(this->name), ' ', '_');
 	}
 
-	Buff(uint id, std::string&& name, std::string&& atlas)
-		: id(id), name(std::move(name)), atlasEntry(std::move(atlas)) {}
+	Buff(uint id, std::string&& name, std::string&& atlas, int maxStacks = std::numeric_limits<int>::max())
+		: id(id), name(std::move(name)), atlasEntry(std::move(atlas)), maxStacks(maxStacks) {}
 
-	Buff(uint id, std::string&& name, glm::vec4&& uv)
-		: id(id), name(std::move(name)), uv(uv) {}
+	Buff(uint id, std::string&& name, glm::vec4&& uv, int maxStacks = std::numeric_limits<int>::max())
+		: id(id), name(std::move(name)), uv(uv), maxStacks(maxStacks) {}
 };
 
 class Buffs : public SettingsMenu::Implementer

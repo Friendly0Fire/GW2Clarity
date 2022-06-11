@@ -1,47 +1,55 @@
 const auto g_Buffs = std::to_array<Buff>({
 	// Common Buffs
 	{ "Buffs" },
-	{ 743, "Aegis" },
-	{ 30328, "Alacrity" },
-	{ 725, "Fury" },
-	{ 719, "Swiftness" },
-	{ 740, "Might" },
-	{ 717, "Protection" },
-	{ 1187, "Quickness" },
-	{ 718, "Regeneration" },
-	{ 26980, "Resistance" },
-	{ 873, "Resolution" },
-	{ 1122, "Stability" },
-	{ 726, "Vigor" },
+	{ 743, "Aegis", 1 },
+	{ 30328, "Alacrity", 1 },
+	{ 725, "Fury", 1 },
+	{ 740, "Might", 25 },
+	{ 717, "Protection", 1 },
+	{ 1187, "Quickness", 1 },
+	{ 718, "Regeneration", 1 },
+	{ 26980, "Resistance", 1 },
+	{ 873, "Resolution", 1 },
+	{ 1122, "Stability", 25 },
+	{ 719, "Swiftness", 1 },
+	{ 726, "Vigor", 1 },
 
 	// Conditions
 	{ "Conditions" },
-	{ 736, "Bleeding" },
-	{ 737, "Burning" },
-	{ 861, "Confusion" },
-	{ 723, "Poisoned" },
-	{ 19426, "Torment" },
-	{ 720, "Blinded" },
-	{ 722, "Chilled" },
-	{ 721, "Crippled" },
-	{ 791, "Fear" },
-	{ 727, "Immobile" },
-	{ 26766, "Slow" },
-	{ 742, "Weakness" },
-	{ 27705, "Taunt" },
-	{ 738, "Vulnerability" },
-
-	// Special
+	{ 736, "Bleeding", 1500 },
+	{ 720, "Blinded", 1 },
+	{ 737, "Burning", 1500 },
+	{ 722, "Chilled", 1 },
+	{ 861, "Confusion", 1500 },
+	{ 721, "Crippled", 1 },
+	{ 791, "Fear", 1 },
+	{ 727, "Immobile", 1 },
+	{ 723, "Poisoned", 1500 },
+	{ 26766, "Slow", 1 },
+	{ 27705, "Taunt", 1 },
+	{ 19426, "Torment", 1500 },
+	{ 738, "Vulnerability", 25 },
+	{ 742, "Weakness", 1 },
+	
+	//// Auras
+	{ "Auras" },
+	{ 10332, "Chaos Aura", 1 }, // https://wiki.guildwars2.com/images/e/ec/Chaos_Aura.png
+	{ 5677, "Fire Aura", 1 }, // https://wiki.guildwars2.com/images/c/ce/Fire_Aura.png
+	{ 5579, "Frost Aura", 1 }, // https://wiki.guildwars2.com/images/8/87/Frost_Aura_%28effect%29.png
+	{ 25518, "Light Aura", 1 }, // https://wiki.guildwars2.com/images/5/5a/Light_Aura.png
+	{ 5684, "Magnetic Aura", 1 }, // https://wiki.guildwars2.com/images/0/0b/Magnetic_Aura_%28effect%29.png
+	{ 5577, "Shocking Aura", 1 }, // https://wiki.guildwars2.com/images/5/5d/Shocking_Aura_%28effect%29.png
+	{ 39978, "Dark Aura", 1 }, // https://wiki.guildwars2.com/images/e/ef/Dark_Aura.png
+	//// Special
 	{ "Special Status" },
 	//{ 46668, "Diminished" }, // https://wiki.guildwars2.com/images/7/71/Diminished.png
 	//{ 46587, "Malnourished" }, // https://wiki.guildwars2.com/images/6/67/Malnourished.png
 	//{ 770, "Downed" }, // https://wiki.guildwars2.com/images/d/dd/Downed.png
 	//{ 46842, "Exhaustion" }, // https://wiki.guildwars2.com/images/8/88/Exhaustion.png
-	{ 13017, "Stealth" }, // https://wiki.guildwars2.com/images/1/19/Stealth.png
+	{ 13017, "Stealth", 1 }, // https://wiki.guildwars2.com/images/1/19/Stealth.png
 	//{ 10269, "Hide in Shadows" }, // https://wiki.guildwars2.com/images/1/19/Stealth.png
-	{ 890, "Revealed" }, // https://wiki.guildwars2.com/images/d/db/Revealed.png
-	//{ 5974, "Superspeed" }, // https://wiki.guildwars2.com/images/c/c8/Superspeed.png
-	//{ 5974, "Superspeed" }, // https://wiki.guildwars2.com/images/c/c8/Superspeed.png
+	{ 890, "Revealed", 1 }, // https://wiki.guildwars2.com/images/d/db/Revealed.png
+	{ 5974, "Superspeed", 1 }, // https://wiki.guildwars2.com/images/c/c8/Superspeed.png
 	//{ 762, "Determined (762)" }, // https://wiki.guildwars2.com/images/e/eb/Determined.png
 	//{ 788, "Determined (788)" }, // https://wiki.guildwars2.com/images/e/eb/Determined.png
 	//{ 848, "Resurrection" }, // https://wiki.guildwars2.com/images/e/eb/Determined.png
@@ -53,23 +61,15 @@ const auto g_Buffs = std::to_array<Buff>({
 	//{ 56227, "Invulnerability (56227)" }, // https://wiki.guildwars2.com/images/e/eb/Determined.png
 	//{ 801, "Invulnerability (801)" }, // https://wiki.guildwars2.com/images/e/eb/Determined.png
 	//{ 34113, "Spawn Protection?" }, // https://wiki.guildwars2.com/images/e/eb/Determined.png
-	{ 872, "Stun" }, // https://wiki.guildwars2.com/images/9/97/Stun.png
-	{ 833, "Daze" }, // https://wiki.guildwars2.com/images/7/79/Daze.png
+	{ 872, "Stun", 1 }, // https://wiki.guildwars2.com/images/9/97/Stun.png
+	{ 833, "Daze", 1 }, // https://wiki.guildwars2.com/images/7/79/Daze.png
 	//{ 48209, "Exposed (48209)" }, // https://wiki.guildwars2.com/images/6/6b/Exposed.png
 	//{ 31589, "Exposed (31589)" }, // https://wiki.guildwars2.com/images/6/6b/Exposed.png
 	//{ 64936, "Exposed (64936)" }, // https://wiki.guildwars2.com/images/6/6b/Exposed.png
 	//{ 36781, "Unblockable" }, // https://wiki.guildwars2.com/images/f/f0/Unblockable_%28effect%29.png
 	//{ 1159, "Encumbered" }, // https://wiki.guildwars2.com/images/d/d7/Encumbered.png
-	{ 27048, "Celeritas Spores" }, // https://wiki.guildwars2.com/images/7/7b/Blazing_Speed_Mushrooms.png
+	{ 27048, "Celeritas Spores", 1 }, // https://wiki.guildwars2.com/images/7/7b/Blazing_Speed_Mushrooms.png
 	{ 52182, "Branded Accumulation" }, // https://wiki.guildwars2.com/images/5/55/Achilles_Bane.png
-	//// Auras
-	{ 10332, "Chaos Aura" }, // https://wiki.guildwars2.com/images/e/ec/Chaos_Aura.png
-	{ 5677, "Fire Aura" }, // https://wiki.guildwars2.com/images/c/ce/Fire_Aura.png
-	{ 5579, "Frost Aura" }, // https://wiki.guildwars2.com/images/8/87/Frost_Aura_%28effect%29.png
-	{ 25518, "Light Aura" }, // https://wiki.guildwars2.com/images/5/5a/Light_Aura.png
-	{ 5684, "Magnetic Aura" }, // https://wiki.guildwars2.com/images/0/0b/Magnetic_Aura_%28effect%29.png
-	{ 5577, "Shocking Aura" }, // https://wiki.guildwars2.com/images/5/5d/Shocking_Aura_%28effect%29.png
-	{ 39978, "Dark Aura" }, // https://wiki.guildwars2.com/images/e/ef/Dark_Aura.png
 	//// Racial
 	//{ 12459, "Take Root" }, // https://wiki.guildwars2.com/images/b/b2/Take_Root.png
 	//{ 12426, "Become the Bear" }, // https://wiki.guildwars2.com/images/7/7e/Become_the_Bear.png
