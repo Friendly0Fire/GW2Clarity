@@ -367,6 +367,7 @@ void Buffs::PlaceItem()
 void Buffs::DrawGridList()
 {
 	if(ImGui::BeginTable("##GridsAndItems", 2)) {
+		auto newCurrentHovered = Unselected();
 		ImGui::TableNextRow();
 		ImGui::TableNextColumn();
 		ImGui::TextUnformatted("Grids");
@@ -378,9 +379,25 @@ void Buffs::DrawGridList()
 		if(ImGui::BeginListBox("##GridsList", ImVec2(-FLT_MIN, 0.f))) {
 			for (auto&& [gid, g] : grids_ | ranges::views::enumerate) {
 				auto u = Unselected(gid);
-				if (ImGui::Selectable(std::format("{} ({}x{})##{}", g.name, g.spacing.x, g.spacing.y, gid).c_str(), selectedId_ == u)) {
+				if (ImGui::Selectable(std::format("{} ({}x{})##{}", g.name, g.spacing.x, g.spacing.y, gid).c_str(), selectedId_ == u || currentHovered_ == u, ImGuiSelectableFlags_AllowItemOverlap)) {
 					selectedId_ = u;
 					selectedSetId_ = UnselectedSubId;
+				}
+
+				if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) || ImGui::IsItemActive()) {
+					auto& style = ImGui::GetStyle();
+					auto orig = style.Colors[ImGuiCol_Button];
+					style.Colors[ImGuiCol_Button] *= ImVec4(0.5f, 0.5f, 0.5f, 1.f);
+					if(ImGuiClose(std::format("CloseGrid{}", gid).c_str(), 0.75f, false))
+					{
+						selectedId_ = u;
+						selectedSetId_ = UnselectedSubId;
+						ImGui::OpenPopup(confirmDeletionPopupID_);
+					}
+					if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem))
+						newCurrentHovered = u;
+
+					style.Colors[ImGuiCol_Button] = orig;
 				}
 			}
 
@@ -394,7 +411,7 @@ void Buffs::DrawGridList()
 		ImGui::TableNextColumn();
 
 		const bool disableItemsList = selectedId_.grid < 0;
-		
+
 		ImGui::BeginDisabled(disableItemsList);
 		if(ImGui::BeginListBox("##ItemsList", ImVec2(-FLT_MIN, 0.f))) {
 			if(selectedId_.grid != UnselectedSubId)
@@ -404,10 +421,26 @@ void Buffs::DrawGridList()
 				for (auto&& [iid, i] : g.items | ranges::views::enumerate)
 				{
 					Id id{ gid, iid };
-					if (ImGui::Selectable(std::format("{} ({}, {})##{}", i.buff->name.c_str(), i.pos.x, i.pos.y, iid).c_str(), selectedId_ == id))
+					if (ImGui::Selectable(std::format("{} ({}, {})##{}", i.buff->name.c_str(), i.pos.x, i.pos.y, iid).c_str(), selectedId_ == id || currentHovered_ == id, ImGuiSelectableFlags_AllowItemOverlap))
 					{
 						selectedId_ = id;
 						selectedSetId_ = UnselectedSubId;
+					}
+
+					if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) || ImGui::IsItemActive()) {
+						auto& style = ImGui::GetStyle();
+						auto orig = style.Colors[ImGuiCol_Button];
+						style.Colors[ImGuiCol_Button] *= ImVec4(0.5f, 0.5f, 0.5f, 1.f);
+						if(ImGuiClose(std::format("CloseItem{}", id.id).c_str(), 0.75f, false))
+						{
+							selectedId_ = id;
+							selectedSetId_ = UnselectedSubId;
+							ImGui::OpenPopup(confirmDeletionPopupID_);
+						}
+						if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem))
+							newCurrentHovered = id;
+
+						style.Colors[ImGuiCol_Button] = orig;
 					}
 				}
 
@@ -437,46 +470,9 @@ void Buffs::DrawGridList()
 		ImGui::EndDisabled();
 
 		ImGui::EndTable();
-	}
-	
-#if 0
-	for (auto&& [gid, g] : grids_ | ranges::views::enumerate)
-	{
-		auto u = Unselected(gid);
-		if (ImGui::Selectable(std::format("{} ({}x{})##{}", g.name, g.spacing.x, g.spacing.y, gid).c_str(), selectedId_ == u))
-		{
-			selectedId_ = u;
-			selectedSetId_ = UnselectedSubId;
-		}
 
-		ImGui::Indent();
-		for (auto&& [iid, i] : g.items | ranges::views::enumerate)
-		{
-			Id id{ gid, iid };
-			if (ImGui::Selectable(std::format("{} ({}, {})##{}", i.buff->name.c_str(), i.pos.x, i.pos.y, iid).c_str(), selectedId_ == id))
-			{
-				selectedId_ = id;
-				selectedSetId_ = UnselectedSubId;
-			}
-		}
-
-		auto n = New(gid);
-		if (ImGui::Selectable(std::format("+ New Item##{}", gid).c_str(), selectedId_.grid == gid && selectedId_ == n))
-		{
-			selectedId_ = n;
-			selectedSetId_ = UnselectedSubId;
-		}
-		ImGui::Unindent();
+		currentHovered_ = newCurrentHovered;
 	}
-	{
-		auto n = New();
-		if (ImGui::Selectable("+ New Grid", selectedId_ == n))
-		{
-			selectedId_ = n;
-			selectedSetId_ = UnselectedSubId;
-		}
-	}
-#endif
 }
 
 void Buffs::DrawItems()
@@ -565,7 +561,7 @@ void Buffs::Delete(Id& id)
 	{
 		auto& g = getG(id);
 		g.items.erase(g.items.begin() + id.item);
-		id = Unselected();
+		id = Unselected(id.grid);
 
 		needsSaving_ = true;
 	}
@@ -601,6 +597,34 @@ void Buffs::Delete(Id& id)
 
 void Buffs::DrawMenu(Keybind** currentEditedKeybind)
 {
+	if(!confirmDeletionPopupID_)
+		confirmDeletionPopupID_ = ImGui::GetID(ConfirmDeletionPopupName);
+	if (ImGui::BeginPopupModal(ConfirmDeletionPopupName))
+	{
+		bool isSet = selectedSetId_ >= 0 && selectedId_ == Unselected();
+		bool isItem = !isSet && selectedId_.item >= 0;
+		const auto& name = isSet ? sets_[selectedSetId_].name : isItem ? getI(selectedId_).buff->name : getG(selectedId_).name;
+		const char* type = isSet ? "set" : isItem ? "item" : "grid";
+		ImGui::TextUnformatted(std::format("Are you sure you want to delete {} '{}'{}?", type, name, isItem ? std::format(" from grid '{}'", getG(selectedId_).name) : "").c_str());
+		if (ImGui::Button("Yes"))
+		{
+			if (isSet)
+			{
+				sets_.erase(sets_.begin() + selectedSetId_);
+				selectedSetId_ = UnselectedSubId;
+				needsSaving_ = true;
+			}
+			else
+				Delete(selectedId_);
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("No"))
+			ImGui::CloseCurrentPopup();
+
+		ImGui::EndPopup();
+	}
+
 	DrawEditingGrid();
 	PlaceItem();
 
@@ -610,32 +634,6 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind)
 		ImGuiTitle("Grid Editor");
 
 		DrawGridList();
-
-		if (ImGui::BeginPopupModal("Confirm Deletion"))
-		{
-			bool isSet = selectedSetId_ >= 0 && selectedId_ == Unselected();
-			bool isItem = !isSet && selectedId_.item >= 0;
-			const auto& name = isSet ? sets_[selectedSetId_].name : isItem ? getI(selectedId_).buff->name : getG(selectedId_).name;
-			const char* type = isSet ? "set" : isItem ? "item" : "grid";
-			ImGui::TextUnformatted(std::format("Are you sure you want to delete {} '{}'{}?", type, name, isItem ? std::format(" from grid '{}'", getG(selectedId_).name) : "").c_str());
-			if (ImGui::Button("Yes"))
-			{
-				if (isSet)
-				{
-					sets_.erase(sets_.begin() + selectedSetId_);
-					selectedSetId_ = UnselectedSubId;
-					needsSaving_ = true;
-				}
-				else
-					Delete(selectedId_);
-				ImGui::CloseCurrentPopup();
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("No"))
-				ImGui::CloseCurrentPopup();
-
-			ImGui::EndPopup();
-		}
 
 		bool editingGrid = selectedId_.grid >= 0 && selectedId_.item == UnselectedSubId;
 		bool editingItem = selectedId_.item >= 0;
@@ -663,12 +661,9 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind)
 			{
 				grids_.push_back(creatingGrid_);
 				creatingGrid_ = {};
-				selectedId_ = Unselected();
+				selectedId_ = Unselected(grids_.size() - 1);
 				needsSaving_ = true;
 			}
-
-			if (selectedId_.grid >= 0 && ImGui::Button("Delete Grid"))
-				ImGui::OpenPopup("Confirm Deletion");
 		}
 		else if (editingItem || selectedId_.item == NewSubId)
 		{
@@ -697,7 +692,7 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind)
 							}
 							continue;
 						}
-						
+
 						if(!bs.empty() && std::search(
 							b.name.begin(), b.name.end(),
 							bs.begin(), bs.end(),
@@ -767,12 +762,9 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind)
 			{
 				getG(selectedId_).items.push_back(creatingItem_);
 				creatingItem_ = {};
-				selectedId_ = Unselected();
+				selectedId_ = { selectedId_.grid, getG(selectedId_).items.size() - 1 };
 				needsSaving_ = true;
 			}
-
-			if (selectedId_.item >= 0 && ImGui::Button("Delete Item"))
-				ImGui::OpenPopup("Confirm Deletion");
 		}
 	}
 	{
@@ -840,7 +832,10 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind)
 void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 {
 	if (!SettingsMenu::i().isVisible())
+	{
 		selectedId_ = Unselected();
+		selectedSetId_ = UnselectedSubId;
+	}
 
 	if(showSetSelector_ || firstDraw_)
 	{

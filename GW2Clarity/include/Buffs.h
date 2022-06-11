@@ -124,8 +124,11 @@ protected:
 	Item creatingItem_;
 	Set creatingSet_;
 	short currentSetId_ = UnselectedSubId;
-
+	Id currentHovered_ = Unselected();
+	
 	static inline const char* ChangeSetPopupName = "QuickSet";
+	static inline const char* ConfirmDeletionPopupName = "Confirm Deletion";
+	ImGuiID confirmDeletionPopupID_ = 0;
 
 	inline Grid& getG(const Id& id)
 	{
