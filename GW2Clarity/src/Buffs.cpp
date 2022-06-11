@@ -769,15 +769,36 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind)
 	}
 	{
 		ImGuiTitle("Set Editor");
-		for (auto&& [sid, s] : sets_ | ranges::views::enumerate)
-		{
-			if (ImGui::Selectable(std::format("{}##Set", s.name).c_str(), selectedSetId_ == sid))
+		if(ImGui::BeginListBox("##SetsList", ImVec2(-FLT_MIN, 0.f))) {
+			short newCurrentHovered = currentHoveredSet_;
+			for (auto&& [sid, s] : sets_ | ranges::views::enumerate)
 			{
-				selectedSetId_ = short(sid);
-				selectedId_ = Unselected();
+				if (ImGui::Selectable(std::format("{}##Set", s.name).c_str(), selectedSetId_ == sid || currentHoveredSet_ == sid, ImGuiSelectableFlags_AllowItemOverlap))
+				{
+					selectedSetId_ = short(sid);
+					selectedId_ = Unselected();
+				}
+
+				if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) || ImGui::IsItemActive()) {
+					auto& style = ImGui::GetStyle();
+					auto orig = style.Colors[ImGuiCol_Button];
+					style.Colors[ImGuiCol_Button] *= ImVec4(0.5f, 0.5f, 0.5f, 1.f);
+					if(ImGuiClose(std::format("CloseSet{}", sid).c_str(), 0.75f, false))
+					{
+						selectedId_ = Unselected();
+						selectedSetId_ = short(sid);
+						ImGui::OpenPopup(confirmDeletionPopupID_);
+					}
+					if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem))
+						newCurrentHovered = short(sid);
+
+					style.Colors[ImGuiCol_Button] = orig;
+				}
 			}
+			currentHoveredSet_ = newCurrentHovered;
+			ImGui::EndListBox();
 		}
-		if (ImGui::Selectable("+ Add Set", selectedSetId_ == NewSubId))
+		if (ImGui::Button("New set"))
 		{
 			selectedSetId_ = NewSubId;
 			selectedId_ = Unselected();

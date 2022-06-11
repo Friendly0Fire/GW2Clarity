@@ -125,6 +125,7 @@ protected:
 	Set creatingSet_;
 	short currentSetId_ = UnselectedSubId;
 	Id currentHovered_ = Unselected();
+	short currentHoveredSet_ = UnselectedSubId;
 	
 	static inline const char* ChangeSetPopupName = "QuickSet";
 	static inline const char* ConfirmDeletionPopupName = "Confirm Deletion";
