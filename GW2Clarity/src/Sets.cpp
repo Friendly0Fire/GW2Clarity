@@ -73,6 +73,8 @@ void Sets::GridDeleted(Id id)
 		for (int i : toadd)
 			s.grids.insert(i);
 	}
+
+	needsSaving_ = true;
 }
 
 void Sets::DrawMenu(Keybind** currentEditedKeybind)

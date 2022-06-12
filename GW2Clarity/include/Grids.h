@@ -138,9 +138,6 @@ protected:
 	Grid creatingGrid_;
 	Item creatingItem_;
 	Id currentHovered_ = Unselected();
-	
-	static inline const char* ConfirmDeletionPopupName = "Confirm Deletion";
-	ImGuiID confirmDeletionPopupID_ = 0;
 
 	std::vector<Grid> grids_;
 	Texture2D buffsAtlas_;

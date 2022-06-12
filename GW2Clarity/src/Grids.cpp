@@ -363,7 +363,7 @@ void Grids::DrawGridList()
 					if(ImGuiClose(std::format("CloseGrid{}", gid).c_str(), 0.75f, false))
 					{
 						selectedId_ = u;
-						ImGui::OpenPopup(confirmDeletionPopupID_);
+						Core::i().DisplayDeletionMenu(u);
 					}
 					if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem))
 						newCurrentHovered = u;
@@ -403,7 +403,7 @@ void Grids::DrawGridList()
 						if(ImGuiClose(std::format("CloseItem{}", id.id).c_str(), 0.75f, false))
 						{
 							selectedId_ = id;
-							ImGui::OpenPopup(confirmDeletionPopupID_);
+							Core::i().DisplayDeletionMenu(id);
 						}
 						if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem))
 							newCurrentHovered = id;
