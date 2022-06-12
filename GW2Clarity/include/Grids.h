@@ -102,6 +102,10 @@ public:
 	{
 		glm::ivec2 spacing = GridDefaultSpacing;
 		glm::ivec2 offset = {};
+		float centralWeight = 0.f;
+		glm::ivec2 mouseClipMin { std::numeric_limits<int>::max() };
+		glm::ivec2 mouseClipMax { std::numeric_limits<int>::min() };
+		bool trackMouseWhileHeld = true;
 		std::vector<Item> items;
 		std::string name { "New Grid" };
 		bool attached = false;
@@ -154,13 +158,16 @@ protected:
 	static std::vector<Buff> GenerateBuffsList();
 	static std::map<int, const Buff*> GenerateBuffsMap(const std::vector<Buff>& lst);
 
-	bool draggingGridScale_ = false;
+	bool draggingGridScale_ = false, draggingMouseBoundaries_ = false;
+	bool testMouseMode_ = false;
 	bool placingItem_ = false;
 	mstime lastSaveTime_ = 0;
 	bool needsSaving_ = false;
 	static inline constexpr mstime SaveDelay = 1000;
 	char buffSearch_[512];
 	bool firstDraw_ = true;
+	ScanCode holdingMouseButton_ = ScanCode::NONE;
+	ImVec2 heldMousePos_ {};
 
 	static constexpr int InvisibleWindowFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollWithMouse;
 	

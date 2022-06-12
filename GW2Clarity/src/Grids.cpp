@@ -76,6 +76,15 @@ Grids::Grids(ComPtr<ID3D11Device>& dev)
 	buffsAtlas_ = CreateTextureFromResource(dev.Get(), Core::i().dllModule(), IDR_BUFFS);
 	numbersAtlas_ = CreateTextureFromResource(dev.Get(), Core::i().dllModule(), IDR_NUMBERS);
 
+	Input::i().mouseButtonEvent().AddCallback([&](EventKey ek, bool&) {
+		bool wasHolding = holdingMouseButton_ != ScanCode::NONE;
+		if(ek.sc == ScanCode::LBUTTON || ek.sc == ScanCode::RBUTTON)
+			holdingMouseButton_ = ek.down ? (holdingMouseButton_ | ek.sc) : (holdingMouseButton_ & ~ek.sc);
+		bool isHolding = holdingMouseButton_ != ScanCode::NONE;
+		if(!wasHolding && isHolding)
+			heldMousePos_ = ImGui::GetIO().MousePos;
+	});
+
 	Load();
 #ifdef _DEBUG
 	LoadNames();
@@ -297,6 +306,17 @@ void Grids::DrawEditingGrid()
 		if (!draggingGridScale_)
 			needsSaving_ = true;
 	}
+
+	if(draggingMouseBoundaries_) {
+		auto* cmdList = ImGui::GetWindowDrawList();
+		cmdList->PushClipRectFullScreen();
+		cmdList->AddRect(ToImGui(getG(selectedId_).mouseClipMin), ToImGui(getG(selectedId_).mouseClipMax), 0xFFFF0000);
+		cmdList->PopClipRect();
+
+		draggingMouseBoundaries_ = ImGui::IsMouseDragging(ImGuiMouseButton_Left);
+		if (!draggingMouseBoundaries_)
+			needsSaving_ = true;
+	}
 }
 
 void Grids::PlaceItem()
@@ -429,7 +449,8 @@ void Grids::DrawItems(const Sets::Set* set)
 		if(!MumbleLink::i().isInCompetitiveMode() && (editMode || !set->combatOnly || MumbleLink::i().isInCombat()))
 		{
 			glm::vec2 screen{ ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y };
-			glm::vec2 mouse{ ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y };
+			glm::vec2 baseMouse{ ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y };
+
 			ImGui::SetNextWindowPos(ImVec2(0, 0));
 			ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
 			if (ImGui::Begin("Display Area", nullptr, InvisibleWindowFlags))
@@ -443,14 +464,14 @@ void Grids::DrawItems(const Sets::Set* set)
 				};
 				std::vector<NumberDraw> delayedDraws;
 
-				auto drawItem = [&](const Grid& g, const Item& i, int count, bool editing) {
+				auto drawItem = [&](const Grid& g, const Item& i, const glm::vec2& gridOrigin, int count, bool editing) {
 
 					auto thresh = std::ranges::find_if(i.thresholds, [=](const auto& t) { return count < t.threshold; });
 					ImVec4 tint(1, 1, 1, 1);
 					if (thresh != i.thresholds.end())
 						tint = thresh->tint;
 
-					glm::vec2 pos = (g.attached && !placingItem_ ? mouse : screen * 0.5f) + glm::vec2(i.pos * g.spacing) + glm::vec2(g.offset);
+					glm::vec2 pos = gridOrigin + glm::vec2(i.pos * g.spacing);
 
 					auto adj = AdjustToArea(128.f, 128.f, float(g.spacing.x));
 
@@ -468,6 +489,24 @@ void Grids::DrawItems(const Sets::Set* set)
 
 				auto drawGrid = [&](Grid& g, short gid)
 				{
+					glm::vec2 gridOrigin;
+					if(!g.attached || (editMode && !testMouseMode_))
+						gridOrigin = screen * 0.5f + glm::vec2(g.offset);
+					else {
+						if(!g.trackMouseWhileHeld && holdingMouseButton_ != ScanCode::NONE)
+							gridOrigin = glm::vec2{ heldMousePos_.x, heldMousePos_.y };
+						else
+							gridOrigin = baseMouse;
+
+						if(g.mouseClipMin.x != std::numeric_limits<int>::max()) {
+							gridOrigin = glm::max(gridOrigin, glm::vec2(g.mouseClipMin));
+							gridOrigin = glm::min(gridOrigin, glm::vec2(g.mouseClipMax));
+						}
+
+						if(g.centralWeight > 0.f)
+							gridOrigin = glm::mix(gridOrigin, screen * 0.5f, g.centralWeight);
+					}
+
 					for (const auto&& [iid, i] : g.items | ranges::views::enumerate)
 					{
 						bool editing = editMode && selectedId_ == Id{ gid, iid };
@@ -487,10 +526,10 @@ void Grids::DrawItems(const Sets::Set* set)
 										[&](int a, uint b) { return a + activeBuffs_[b]; }));
 								});
 
-						drawItem(g, i, count, editing);
+						drawItem(g, i, gridOrigin, count, editing);
 					}
 					if (editMode && selectedId_ == New(gid))
-						drawItem(g, creatingItem_, editingItemFakeCount_, true);
+						drawItem(g, creatingItem_, screen * 0.5f, editingItemFakeCount_, true);
 				};
 
 				if (editMode)
@@ -540,12 +579,12 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind)
 	auto saveCheck = [this](bool changed) { needsSaving_ = needsSaving_ || changed; return changed; };
 
 	{
-		ImGuiTitle("Grid Editor");
-
 		DrawGridList();
 
 		bool editingGrid = selectedId_.grid >= 0 && selectedId_.item == UnselectedSubId;
 		bool editingItem = selectedId_.item >= 0;
+		if(!editingGrid)
+			testMouseMode_ = false;
 		if (editingGrid || selectedId_.grid == NewSubId)
 		{
 			auto& editGrid = editingGrid ? getG(selectedId_) : creatingGrid_;
@@ -559,6 +598,7 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind)
 
 			// If drag was triggered, stay on as long as dragging occurs, otherwise disable
 			draggingGridScale_ = draggingGridScale_ ? ImGui::IsMouseDragging(ImGuiMouseButton_Left) : false;
+			draggingMouseBoundaries_ = draggingMouseBoundaries_ ? ImGui::IsMouseDragging(ImGuiMouseButton_Left) : false;
 
 			saveCheck(ImGui::Checkbox("Square Grid", &editGrid.square));
 			if (editGrid.square && saveCheck(ImGui::DragInt("Grid Scale", (int*)&editGrid.spacing, 0.1f, 1, 2048)) ||
@@ -575,6 +615,47 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind)
 			}
 
 			saveCheck(ImGui::Checkbox("Attached to Mouse", &editGrid.attached));
+			if(editGrid.attached) {
+				ImGui::Indent();
+
+				saveCheck(ImGui::DragFloat("Center Weight", &editGrid.centralWeight, 0.01f, 0.f, 1.f));
+				ImGuiHelpTooltip("Reduces the impact of the mouse cursor's location: 0.0 locks to the mouse perfectly whereas 1.0 locks to the center of the screen.");
+				
+				saveCheck(ImGui::Checkbox("Track Mouse While Button Is Held", &editGrid.trackMouseWhileHeld));
+				ImGuiHelpTooltip("Controls whether to follow the mouse motion when it is hidden while a mouse button is held.");
+
+				bool showMouseClip = editGrid.mouseClipMin.x != std::numeric_limits<int>::max();
+				bool lastShowMouseClip = showMouseClip;
+				saveCheck(ImGui::Checkbox("Enable Mouse Boundaries", &showMouseClip));
+				ImGuiHelpTooltip("Mouse boundaries constrain the effective mouse location within a certain region of the screen. Useful to prevent an attached grid from moving too far to the side of the screen.");
+				if(showMouseClip && !lastShowMouseClip) {
+					editGrid.mouseClipMin = glm::ivec2{ 0 };
+					editGrid.mouseClipMax = glm::ivec2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y);
+				}
+				else if(!showMouseClip && lastShowMouseClip) {
+					editGrid.mouseClipMin = glm::ivec2{ std::numeric_limits<int>::max() };
+					editGrid.mouseClipMax = glm::ivec2{ std::numeric_limits<int>::min() };
+				}
+
+				if(showMouseClip) {
+					ImGui::TextUnformatted("Mouse boundaries");
+					ImGui::Indent();
+					bool editingAny = false;
+					editingAny |= saveCheck(ImGui::DragInt("Mouse Left", &editGrid.mouseClipMin.x, 1.f, 0, int(ImGui::GetIO().DisplaySize.x)));
+					editingAny |= saveCheck(ImGui::DragInt("Mouse Right", &editGrid.mouseClipMax.x, 1.f, 0, int(ImGui::GetIO().DisplaySize.x)));
+					editingAny |= saveCheck(ImGui::DragInt("Mouse Top", &editGrid.mouseClipMin.y, 1.f, 0, int(ImGui::GetIO().DisplaySize.y)));
+					editingAny |= saveCheck(ImGui::DragInt("Mouse Bottom", &editGrid.mouseClipMax.y, 1.f, 0, int(ImGui::GetIO().DisplaySize.y)));
+					ImGui::Unindent();
+
+					if(editingAny)
+						draggingMouseBoundaries_ = ImGui::IsMouseDragging(ImGuiMouseButton_Left);
+				}
+
+				if(ImGui::Button(testMouseMode_ ? "Stop Testing" : "Begin Mouse Test"))
+					testMouseMode_ = !testMouseMode_;
+
+				ImGui::Unindent();
+			}
 			
 			ImGui::PushFont(Core::i().fontBold());
 			if (selectedId_.grid == NewSubId && ImGui::Button("Create Grid"))
@@ -649,8 +730,10 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind)
 
 			ImGui::NewLine();
 
-			if (ImGui::Button("Place..."))
+			if (ImGui::Button("Place...")) {
+				testMouseMode_ = false;
 				placingItem_ = true;
+			}
 			ImGui::SameLine();
 			saveCheck(ImGui::DragInt2("Location", glm::value_ptr(editItem.pos), 0.1f));
 
@@ -710,6 +793,7 @@ void Grids::Draw(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set)
 	if (!SettingsMenu::i().isVisible())
 	{
 		selectedId_ = Unselected();
+		testMouseMode_ = false;
 	}
 
 	DrawItems(set);
@@ -756,8 +840,9 @@ void Grids::Load()
 		else
 			return std::get<1>(cvt)(*it);
 	};
-
+	
 	auto getivec2 = [](const json& j) { return glm::ivec2(j[0].get<int>(), j[1].get<int>()); };
+	auto getivec4 = [](const json& j) { return glm::ivec4(j[0].get<int>(), j[1].get<int>(), j[2].get<int>(), j[3].get<int>()); };
 	auto getImVec4 = [](const json& j) { return ImVec4(j[0].get<float>(), j[1].get<float>(), j[2].get<float>(), j[3].get<float>()); };
 
 	const auto& grids = cfg.json()["buff_grids"];
@@ -767,6 +852,10 @@ void Grids::Load()
 		g.spacing = maybe_at(gIn, "spacing", glm::ivec2(32, 32), { getivec2 });
 		g.offset = maybe_at(gIn, "offset", glm::ivec2(), { getivec2 });
 		g.attached = maybe_at(gIn, "attached", false);
+		g.centralWeight = maybe_at(gIn, "central_weight", 0.f);
+		g.mouseClipMin = maybe_at(gIn, "mouse_clip_min", glm::ivec2{ std::numeric_limits<int>::max() }, { getivec2 });
+		g.mouseClipMax = maybe_at(gIn, "mouse_clip_max", glm::ivec2{ std::numeric_limits<int>::min() }, { getivec2 });
+		g.trackMouseWhileHeld = maybe_at(gIn, "track_mouse_while_held", true);
 		g.square = maybe_at(gIn, "square", true);
 		g.name = gIn["name"];
 
@@ -805,6 +894,10 @@ void Grids::Save()
 		grid["spacing"] = { g.spacing.x, g.spacing.y };
 		grid["offset"] = { g.offset.x, g.offset.y };
 		grid["attached"] = g.attached;
+		grid["central_weight"] = g.centralWeight;
+		grid["mouse_clip_min"] = { g.mouseClipMin.x, g.mouseClipMin.y };
+		grid["mouse_clip_max"] = { g.mouseClipMax.x, g.mouseClipMax.y };
+		grid["track_mouse_while_held"] = g.trackMouseWhileHeld;
 		grid["square"] = g.square;
 		grid["name"] = g.name;
 

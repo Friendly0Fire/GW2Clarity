@@ -62,13 +62,6 @@ void Core::InnerInitPostImGui()
 
 void Core::InnerInternalInit()
 {
-	ULONG_PTR contextToken;
-	if (CoGetContextToken(&contextToken) == CO_E_NOTINITIALIZED) {
-		HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-		if (hr != S_FALSE && hr != RPC_E_CHANGED_MODE && FAILED(hr))
-			CriticalMessageBox(L"Could not initialize COM library: error code 0x%X.", hr);
-	}
-
 	if (!buffLib_)
 	{
 		wchar_t fn[MAX_PATH];
