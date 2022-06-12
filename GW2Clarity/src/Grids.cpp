@@ -475,7 +475,17 @@ void Grids::DrawItems(const Sets::Set* set)
 						if (editing)
 							count = editingItemFakeCount_;
 						else
-							count = std::accumulate(i.additionalBuffs.begin(), i.additionalBuffs.end(), activeBuffs_[i.buff->id], [&](int a, const Buff* b) { return a + activeBuffs_[b->id]; });
+							count = std::accumulate(
+								i.additionalBuffs.begin(),
+								i.additionalBuffs.end(),
+								activeBuffs_[i.buff->id],
+								[&](int a, const Buff* b) {
+									return a + (b->extraIds.empty() ? activeBuffs_[b->id] : std::accumulate(
+										b->extraIds.begin(),
+										b->extraIds.end(),
+										activeBuffs_[b->id],
+										[&](int a, uint b) { return a + activeBuffs_[b]; }));
+								});
 
 						drawItem(g, i, count, editing);
 					}
@@ -845,6 +855,16 @@ std::vector<Buff> Grids::GenerateBuffsList()
 
 	std::vector<Buff> buffs;
 	buffs.assign(g_Buffs.begin(), g_Buffs.end());
+
+#ifdef _DEBUG
+	std::set<std::string> buffNames;
+	for(auto& b : buffs)
+	{
+		auto r = buffNames.insert(b.name);
+		if(!r.second)
+			LogWarn("Duplicate buff name: {}", b.name);
+	}
+#endif
 
 	for (auto& b : buffs)
 	{

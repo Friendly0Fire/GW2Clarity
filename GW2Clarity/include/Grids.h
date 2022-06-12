@@ -22,6 +22,7 @@ struct Buff
 	std::string name;
 	std::string atlasEntry;
 	glm::vec4 uv {};
+	std::set<uint> extraIds;
 	
 	Buff(std::string&& name)
 		: Buff(0xFFFFFFFF, std::move(name)) {}
@@ -36,6 +37,22 @@ struct Buff
 
 	Buff(uint id, std::string&& name, glm::vec4&& uv, int maxStacks = std::numeric_limits<int>::max())
 		: id(id), name(std::move(name)), uv(uv), maxStacks(maxStacks) {}
+
+	Buff(std::initializer_list<uint> ids, std::string&& name, int maxStacks = std::numeric_limits<int>::max())
+		: id(*ids.begin()), name(std::move(name)), maxStacks(maxStacks) {
+		atlasEntry = ReplaceChar(ToLower(this->name), ' ', '_');
+		extraIds.insert(ids.begin() + 1, ids.end());
+	}
+
+	Buff(std::initializer_list<uint> ids, std::string&& name, std::string&& atlas, int maxStacks = std::numeric_limits<int>::max())
+		: id(*ids.begin()), name(std::move(name)), atlasEntry(std::move(atlas)), maxStacks(maxStacks) {
+		extraIds.insert(ids.begin() + 1, ids.end());
+	}
+
+	Buff(std::initializer_list<uint> ids, std::string&& name, glm::vec4&& uv, int maxStacks = std::numeric_limits<int>::max())
+		: id(*ids.begin()), name(std::move(name)), uv(uv), maxStacks(maxStacks) {
+		extraIds.insert(ids.begin() + 1, ids.end());
+	}
 };
 
 class Grids : public SettingsMenu::Implementer
