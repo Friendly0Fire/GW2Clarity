@@ -22,10 +22,13 @@
     <ClCompile Include="src\Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Buffs.cpp">
+    <ClCompile Include="src\Grids.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="common\imgui\misc\cpp\imgui_stdlib.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Sets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -45,7 +48,10 @@
     <ClInclude Include="include\Version.h">
       <Filter>Source Files\Versioning</Filter>
     </ClInclude>
-    <ClInclude Include="include\Buffs.h">
+    <ClInclude Include="include\Grids.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Sets.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

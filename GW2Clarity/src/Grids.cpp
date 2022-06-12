@@ -1,7 +1,7 @@
 #define GLM_FORCE_SWIZZLE
 #include <glm/glm.hpp>
 
-#include <Buffs.h>
+#include <Grids.h>
 #include <Core.h>
 #include <imgui.h>
 #include <ImGuiExtensions.h>
@@ -68,40 +68,13 @@ std::vector<glm::vec4> GenerateNumbersMap()
 	};
 }
 
-Buffs::Buffs(ComPtr<ID3D11Device>& dev)
+Grids::Grids(ComPtr<ID3D11Device>& dev)
 	: buffs_(GenerateBuffsList())
 	, buffsMap_(GenerateBuffsMap(buffs_))
 	, numbersMap_(GenerateNumbersMap())
-	, changeGridSetKey_("change_grid_set", "Change Grid Set", "General")
-#ifdef _DEBUG
-	, showAnalyzerKey_("show_analyzer", "Show Analyzer", "General", ScanCode::X, Modifier::CTRL | Modifier::SHIFT, false)
-#endif
 {
 	buffsAtlas_ = CreateTextureFromResource(dev.Get(), Core::i().dllModule(), IDR_BUFFS);
 	numbersAtlas_ = CreateTextureFromResource(dev.Get(), Core::i().dllModule(), IDR_NUMBERS);
-
-	changeGridSetKey_.callback([&](Activated a) {
-		if (a && !showSetSelector_)
-		{
-			ImGui::SetWindowPos(ChangeSetPopupName, ImGui::GetIO().MousePos);
-			showSetSelector_ = true;
-			return true;
-		}
-		else
-			return false;
-	});
-
-#ifdef _DEBUG
-	showAnalyzerKey_.callback([&](Activated a) {
-		if (a && !showAnalyzer_)
-		{
-			showAnalyzer_ = true;
-			return true;
-		}
-		else
-			return false;
-});
-#endif
 
 	Load();
 #ifdef _DEBUG
@@ -111,13 +84,13 @@ Buffs::Buffs(ComPtr<ID3D11Device>& dev)
 	SettingsMenu::i().AddImplementer(this);
 }
 
-Buffs::~Buffs()
+Grids::~Grids()
 {
 	SettingsMenu::f([&](auto& i) { i.RemoveImplementer(this); });
 }
 
 #ifdef _DEBUG
-void Buffs::LoadNames()
+void Grids::LoadNames()
 {
 	buffNames_.clear();
 
@@ -150,7 +123,7 @@ void Buffs::LoadNames()
 	}
 }
 
-void Buffs::SaveNames()
+void Grids::SaveNames()
 {
 	wchar_t fn[MAX_PATH];
 	GetModuleFileName(GetBaseCore().dllModule(), fn, MAX_PATH);
@@ -167,7 +140,7 @@ void Buffs::SaveNames()
 	}
 }
 
-void Buffs::DrawBuffAnalyzer()
+void Grids::DrawBuffAnalyzer()
 {
 	ImGui::InputInt("Say in Guild", &guildLogId_, 1);
 	if (guildLogId_ < 0 || guildLogId_ > 5)
@@ -290,7 +263,7 @@ void Buffs::DrawBuffAnalyzer()
 }
 #endif
 
-void Buffs::DrawEditingGrid()
+void Grids::DrawEditingGrid()
 {
 	if (draggingGridScale_ || placingItem_)
 	{
@@ -326,7 +299,7 @@ void Buffs::DrawEditingGrid()
 	}
 }
 
-void Buffs::PlaceItem()
+void Grids::PlaceItem()
 {
 	if (placingItem_)
 	{
@@ -344,7 +317,7 @@ void Buffs::PlaceItem()
 	}
 }
 
-void Buffs::DrawGridList()
+void Grids::DrawGridList()
 {
 	if(ImGui::BeginTable("##GridsAndItems", 2)) {
 		auto newCurrentHovered = Unselected();
@@ -361,7 +334,6 @@ void Buffs::DrawGridList()
 				auto u = Unselected(gid);
 				if (ImGui::Selectable(std::format("{} ({}x{})##{}", g.name, g.spacing.x, g.spacing.y, gid).c_str(), selectedId_ == u || currentHovered_ == u, ImGuiSelectableFlags_AllowItemOverlap)) {
 					selectedId_ = u;
-					selectedSetId_ = UnselectedSubId;
 				}
 
 				if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) || ImGui::IsItemActive()) {
@@ -371,7 +343,6 @@ void Buffs::DrawGridList()
 					if(ImGuiClose(std::format("CloseGrid{}", gid).c_str(), 0.75f, false))
 					{
 						selectedId_ = u;
-						selectedSetId_ = UnselectedSubId;
 						ImGui::OpenPopup(confirmDeletionPopupID_);
 					}
 					if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem))
@@ -383,7 +354,6 @@ void Buffs::DrawGridList()
 
 			if(ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
 				selectedId_ = Unselected();
-				selectedSetId_ = UnselectedSubId;
 			}
 
 			ImGui::EndListBox();
@@ -404,7 +374,6 @@ void Buffs::DrawGridList()
 					if (ImGui::Selectable(std::format("{} ({}, {})##{}", i.buff->name.c_str(), i.pos.x, i.pos.y, iid).c_str(), selectedId_ == id || currentHovered_ == id, ImGuiSelectableFlags_AllowItemOverlap))
 					{
 						selectedId_ = id;
-						selectedSetId_ = UnselectedSubId;
 					}
 
 					if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) || ImGui::IsItemActive()) {
@@ -414,7 +383,6 @@ void Buffs::DrawGridList()
 						if(ImGuiClose(std::format("CloseItem{}", id.id).c_str(), 0.75f, false))
 						{
 							selectedId_ = id;
-							selectedSetId_ = UnselectedSubId;
 							ImGui::OpenPopup(confirmDeletionPopupID_);
 						}
 						if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem))
@@ -426,7 +394,6 @@ void Buffs::DrawGridList()
 
 				if(ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
 					selectedId_ = Unselected(gid);
-					selectedSetId_ = UnselectedSubId;
 				}
 			}
 			else
@@ -439,13 +406,11 @@ void Buffs::DrawGridList()
 		ImGui::TableNextColumn();
 		if(ImGui::Button("New grid")) {
 			selectedId_ = New();
-			selectedSetId_ = UnselectedSubId;
 		}
 		ImGui::TableNextColumn();
 		ImGui::BeginDisabled(disableItemsList);
 		if(ImGui::Button("New item")) {
 			selectedId_ = New(selectedId_.grid);
-			selectedSetId_ = UnselectedSubId;
 		}
 		ImGui::EndDisabled();
 
@@ -455,13 +420,13 @@ void Buffs::DrawGridList()
 	}
 }
 
-void Buffs::DrawItems()
+void Grids::DrawItems(const Sets::Set* set)
 {
 	bool editMode = selectedId_.grid != UnselectedSubId;
 
-	if (currentSetId_ != UnselectedSubId || editMode)
+	if (set || editMode)
 	{
-		if(!MumbleLink::i().isInCompetitiveMode() && (editMode || !sets_[currentSetId_].combatOnly || MumbleLink::i().isInCombat()))
+		if(!MumbleLink::i().isInCompetitiveMode() && (editMode || !set->combatOnly || MumbleLink::i().isInCombat()))
 		{
 			glm::vec2 screen{ ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y };
 			glm::vec2 mouse{ ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y };
@@ -521,7 +486,7 @@ void Buffs::DrawItems()
 				if (editMode)
 					drawGrid(getG(selectedId_), selectedId_.grid);
 				else
-					for (int gid : sets_[currentSetId_].grids)
+					for (int gid : set->grids)
 						drawGrid(grids_[gid], UnselectedSubId);
 
 				for (const auto& dd : delayedDraws)
@@ -535,13 +500,15 @@ void Buffs::DrawItems()
 	}
 }
 
-void Buffs::Delete(Id& id)
+void Grids::Delete(Id id)
 {
 	if (id.item >= 0)
 	{
 		auto& g = getG(id);
 		g.items.erase(g.items.begin() + id.item);
-		id = Unselected(id.grid);
+
+		if(id == selectedId_)
+			selectedId_ = Unselected(id.grid);
 
 		needsSaving_ = true;
 	}
@@ -549,62 +516,14 @@ void Buffs::Delete(Id& id)
 	{
 		grids_.erase(grids_.begin() + id.grid);
 
-		for (auto& s : sets_)
-		{
-			std::vector<int> toadd;
-
-			s.grids.erase(id.grid);
-			for (auto it = s.grids.begin(); it != s.grids.end();)
-			{
-				int gid = *it;
-				if (gid > id.grid)
-				{
-					it = s.grids.erase(it);
-					toadd.push_back(gid - 1);
-				}
-				else
-					it++;
-			}
-
-			for (int i : toadd)
-				s.grids.insert(i);
-		}
-
-		id = Unselected();
+		if(id == selectedId_)
+			selectedId_ = Unselected();
 		needsSaving_ = true;
 	}
 }
 
-void Buffs::DrawMenu(Keybind** currentEditedKeybind)
+void Grids::DrawMenu(Keybind** currentEditedKeybind)
 {
-	if(!confirmDeletionPopupID_)
-		confirmDeletionPopupID_ = ImGui::GetID(ConfirmDeletionPopupName);
-	if (ImGui::BeginPopupModal(ConfirmDeletionPopupName))
-	{
-		bool isSet = selectedSetId_ >= 0 && selectedId_ == Unselected();
-		bool isItem = !isSet && selectedId_.item >= 0;
-		const auto& name = isSet ? sets_[selectedSetId_].name : isItem ? getI(selectedId_).buff->name : getG(selectedId_).name;
-		const char* type = isSet ? "set" : isItem ? "item" : "grid";
-		ImGui::TextUnformatted(std::format("Are you sure you want to delete {} '{}'{}?", type, name, isItem ? std::format(" from grid '{}'", getG(selectedId_).name) : "").c_str());
-		if (ImGui::Button("Yes"))
-		{
-			if (isSet)
-			{
-				sets_.erase(sets_.begin() + selectedSetId_);
-				selectedSetId_ = UnselectedSubId;
-				needsSaving_ = true;
-			}
-			else
-				Delete(selectedId_);
-			ImGui::CloseCurrentPopup();
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("No"))
-			ImGui::CloseCurrentPopup();
-
-		ImGui::EndPopup();
-	}
-
 	DrawEditingGrid();
 	PlaceItem();
 
@@ -646,7 +565,8 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind)
 			}
 
 			saveCheck(ImGui::Checkbox("Attached to Mouse", &editGrid.attached));
-
+			
+			ImGui::PushFont(Core::i().fontBold());
 			if (selectedId_.grid == NewSubId && ImGui::Button("Create Grid"))
 			{
 				grids_.push_back(creatingGrid_);
@@ -654,6 +574,7 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind)
 				selectedId_ = Unselected(grids_.size() - 1);
 				needsSaving_ = true;
 			}
+			ImGui::PopFont();
 		}
 		else if (editingItem || selectedId_.item == NewSubId)
 		{
@@ -663,9 +584,9 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind)
 			else
 				ImGuiTitle(std::format("New Item in '{}'", getG(selectedId_).name).c_str(), 0.75f);
 
-			auto buffCombo = [&](auto& buff, int id)
+			auto buffCombo = [&](auto& buff, int id, const char* name)
 			{
-				if (ImGui::BeginCombo(std::format("Buff##{}", id).c_str(), buff->name.c_str()))
+				if (ImGui::BeginCombo(std::format("{}##{}", name, id).c_str(), buff->name.c_str()))
 				{
 					ImGui::InputText("Search...", buffSearch_, sizeof(buffSearch_));
 					std::string_view bs = buffSearch_;
@@ -700,11 +621,11 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind)
 				}
 			};
 
-			buffCombo(editItem.buff, -1);
+			buffCombo(editItem.buff, -1, "Main buff");
 			int removeId = -1;
 			for (auto&& [n, extraBuff] : editItem.additionalBuffs | ranges::views::enumerate)
 			{
-				buffCombo(extraBuff, int(n));
+				buffCombo(extraBuff, int(n), "Secondary buff");
 				ImGui::SameLine();
 				if (ImGuiClose(std::format("RemoveExtraBuff{}", n).c_str()))
 					removeId = int(n);
@@ -712,22 +633,29 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind)
 			if (removeId != -1)
 				editItem.additionalBuffs.erase(editItem.additionalBuffs.begin() + removeId);
 
-			if (ImGui::Button("Add Tracked Buff"))
+			if (ImGui::Button("Add secondary buff"))
 				editItem.additionalBuffs.push_back(&UnknownBuff);
+			ImGuiHelpTooltip("Secondary buffs will activate the buff on screen, but without changing the icon. Useful to combine multiple related effects (e.g. Fixated) in one icon.");
 
-			saveCheck(ImGui::DragInt2("Location", glm::value_ptr(editItem.pos), 0.1f));
-			ImGui::SameLine();
-			if (ImGui::Button("Place"))
+			ImGui::NewLine();
+
+			if (ImGui::Button("Place..."))
 				placingItem_ = true;
+			ImGui::SameLine();
+			saveCheck(ImGui::DragInt2("Location", glm::value_ptr(editItem.pos), 0.1f));
 
-			ImGui::Spacing();
+			ImGui::NewLine();
+			
 			ImGui::PushFont(Core::i().fontBold());
 			ImGui::TextUnformatted("Thresholds");
 			ImGui::PopFont();
+			ImGui::Indent();
+
 			ImGui::TextUnformatted("Simulate thresholds using ");
 			ImGui::SameLine();
 			ImGui::SetNextItemWidth(100.f);
-			ImGui::DragInt("stacks##Simulatedstacks", &editingItemFakeCount_, 0.1f, 0, 25);
+			ImGui::DragInt("stacks##Simulatedstacks", &editingItemFakeCount_, 0.1f, 0, editItem.buff ? editItem.buff->maxStacks : std::numeric_limits<int>::max());
+			ImGuiHelpTooltip("Helper feature to tune threshold effects. Will simulate what the buff icon would look like with the given number of stacks.");
 			for (size_t i = 0; i < editItem.thresholds.size(); i++)
 			{
 				auto& th = editItem.thresholds[i];
@@ -746,8 +674,11 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind)
 
 			std::ranges::sort(editItem.thresholds, [](auto& a, auto& b) { return a.threshold < b.threshold; });
 
+			ImGui::Unindent();
+
 			ImGui::Separator();
 
+			ImGui::PushFont(Core::i().fontBold());
 			if (selectedId_.item == NewSubId && ImGui::Button("Create Item"))
 			{
 				getG(selectedId_).items.push_back(creatingItem_);
@@ -755,131 +686,23 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind)
 				selectedId_ = { selectedId_.grid, getG(selectedId_).items.size() - 1 };
 				needsSaving_ = true;
 			}
+			ImGui::PopFont();
 		}
 	}
-	{
-		ImGuiTitle("Set Editor");
-		if(ImGui::BeginListBox("##SetsList", ImVec2(-FLT_MIN, 0.f))) {
-			short newCurrentHovered = currentHoveredSet_;
-			for (auto&& [sid, s] : sets_ | ranges::views::enumerate)
-			{
-				if (ImGui::Selectable(std::format("{}##Set", s.name).c_str(), selectedSetId_ == sid || currentHoveredSet_ == sid, ImGuiSelectableFlags_AllowItemOverlap))
-				{
-					selectedSetId_ = short(sid);
-					selectedId_ = Unselected();
-				}
-
-				if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) || ImGui::IsItemActive()) {
-					auto& style = ImGui::GetStyle();
-					auto orig = style.Colors[ImGuiCol_Button];
-					style.Colors[ImGuiCol_Button] *= ImVec4(0.5f, 0.5f, 0.5f, 1.f);
-					if(ImGuiClose(std::format("CloseSet{}", sid).c_str(), 0.75f, false))
-					{
-						selectedId_ = Unselected();
-						selectedSetId_ = short(sid);
-						ImGui::OpenPopup(confirmDeletionPopupID_);
-					}
-					if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem))
-						newCurrentHovered = short(sid);
-
-					style.Colors[ImGuiCol_Button] = orig;
-				}
-			}
-			currentHoveredSet_ = newCurrentHovered;
-			ImGui::EndListBox();
-		}
-		if (ImGui::Button("New set"))
-		{
-			selectedSetId_ = NewSubId;
-			selectedId_ = Unselected();
-		}
-
-		bool editingSet = selectedSetId_ != NewSubId;
-		if (selectedSetId_ != UnselectedSubId)
-		{
-			auto& editSet = selectedSetId_ == NewSubId ? creatingSet_ : sets_[selectedSetId_];
-			if (editingSet)
-				ImGuiTitle(std::format("Editing Set '{}'", editSet.name).c_str(), 0.75f);
-			else
-				ImGuiTitle("New Set", 0.75f);
-
-			saveCheck(ImGui::InputText("Name##NewSet", &editSet.name));
-			saveCheck(ImGui::Checkbox("Show in Combat Only##NewSet", &editSet.combatOnly));
-
-			ImGui::Separator();
-
-			for (auto&& [gid, g] : grids_ | ranges::views::enumerate)
-			{
-				bool sel = editSet.grids.count(int(gid)) > 0;
-				if (saveCheck(ImGui::Checkbox(std::format("{}##GridInSet", g.name).c_str(), &sel)))
-				{
-					if (sel)
-						editSet.grids.insert(int(gid));
-					else
-						editSet.grids.erase(int(gid));
-				}
-			}
-
-
-			if (selectedSetId_ == NewSubId && ImGui::Button("Create Set"))
-			{
-				sets_.push_back(creatingSet_);
-				creatingSet_ = {};
-				selectedSetId_ = UnselectedSubId;
-				needsSaving_ = true;
-			}
-			else if(selectedSetId_ >= 0 && ImGui::Button("Delete Set"))
-				ImGui::OpenPopup("Confirm Deletion");
-		}
-	}
-
-	ImGuiKeybindInput(changeGridSetKey_, currentEditedKeybind, "Displays the Quick Set menu to change what buffs are displayed.");
 
 	mstime currentTime = TimeInMilliseconds();
 	if (needsSaving_ && lastSaveTime_ + SaveDelay <= currentTime)
 		Save();
 }
 
-void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
+void Grids::Draw(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set)
 {
 	if (!SettingsMenu::i().isVisible())
 	{
 		selectedId_ = Unselected();
-		selectedSetId_ = UnselectedSubId;
 	}
 
-	if(showSetSelector_ || firstDraw_)
-	{
-		if (ImGui::Begin(ChangeSetPopupName, nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
-		{
-			if (sets_.empty())
-				showSetSelector_ = false;
-
-			if(!ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup | ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) && ImGui::IsMouseDown(ImGuiMouseButton_Left))
-				showSetSelector_ = false;
-
-			for (auto&& [i, s] : sets_ | ranges::views::enumerate)
-			{
-				if (ImGui::Selectable(s.name.c_str(), currentSetId_ == i))
-				{
-					currentSetId_ = short(i);
-					showSetSelector_ = false;
-				}
-			}
-
-			if (ImGui::Selectable("None", currentSetId_ == UnselectedSubId))
-			{
-				currentSetId_ = UnselectedSubId;
-				showSetSelector_ = false;
-			}
-
-			if (ImGui::IsKeyPressed(ImGuiKey_Escape))
-				showSetSelector_ = false;
-		}
-		ImGui::End();
-	}
-
-	DrawItems();
+	DrawItems(set);
 
 #ifdef _DEBUG
 	if(firstDraw_ || showAnalyzer_)
@@ -893,7 +716,7 @@ void Buffs::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 	firstDraw_ = false;
 }
 
-void Buffs::UpdateBuffsTable(StackedBuff* buffs)
+void Grids::UpdateBuffsTable(StackedBuff* buffs)
 {
 #ifdef _DEBUG
 	for (auto& b : activeBuffs_)
@@ -905,7 +728,7 @@ void Buffs::UpdateBuffsTable(StackedBuff* buffs)
 		activeBuffs_[buffs[i].id] = buffs[i].count;
 }
 
-void Buffs::Load()
+void Grids::Load()
 {
 	using namespace nlohmann;
 	grids_.clear();
@@ -942,6 +765,7 @@ void Buffs::Load()
 			Item i;
 			i.pos = getivec2(iIn["pos"]);
 			i.buff = buffsMap_.at(iIn["buff_id"]);
+			i.thresholds.clear();
 
 			if(iIn.contains("additional_buff_ids"))
 				for (auto& bIn : iIn["additional_buff_ids"])
@@ -956,26 +780,9 @@ void Buffs::Load()
 		}
 		grids_.push_back(g);
 	}
-
-	const auto& sets = cfg.json()["buff_sets"];
-	for (const auto& sIn : sets)
-	{
-		Set s;
-		s.name = sIn["name"];
-		s.combatOnly = maybe_at(sIn, "combat_only", true);
-
-		for (const auto& gIn : sIn["grids"])
-		{
-			int id = gIn;
-			if (id < grids_.size())
-				s.grids.insert(id);
-		}
-
-		sets_.push_back(s);
-	}
 }
 
-void Buffs::Save()
+void Grids::Save()
 {
 	using namespace nlohmann;
 
@@ -1021,22 +828,6 @@ void Buffs::Save()
 		grids.push_back(grid);
 	}
 
-	auto& sets = cfg.json()["buff_sets"];
-	sets = json::array();
-	for (const auto& s : sets_)
-	{
-		json set;
-		set["name"] = s.name;
-		set["combat_only"] = s.combatOnly;
-
-		json& setGrids = set["grids"];
-
-		for (int i : s.grids)
-			setGrids.push_back(i);
-
-		sets.push_back(set);
-	}
-
 	cfg.Save();
 
 	needsSaving_ = false;
@@ -1045,7 +836,7 @@ void Buffs::Save()
 
 #include "BuffsList.inc"
 
-std::vector<Buff> Buffs::GenerateBuffsList()
+std::vector<Buff> Grids::GenerateBuffsList()
 {
 	const std::map<std::string, glm::vec4> atlasElements
 	{
@@ -1064,7 +855,7 @@ std::vector<Buff> Buffs::GenerateBuffsList()
 	return buffs;
 }
 
-std::map<int, const Buff*> Buffs::GenerateBuffsMap(const std::vector<Buff>& lst)
+std::map<int, const Buff*> Grids::GenerateBuffsMap(const std::vector<Buff>& lst)
 {
 	std::map<int, const Buff*> m;
 	for (auto& b : lst)

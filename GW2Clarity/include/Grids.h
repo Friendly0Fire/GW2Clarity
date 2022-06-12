@@ -11,6 +11,7 @@
 #include <set>
 #include <ActivationKeybind.h>
 #include <SettingsMenu.h>
+#include <Sets.h>
 
 namespace GW2Clarity
 {
@@ -37,17 +38,19 @@ struct Buff
 		: id(id), name(std::move(name)), uv(uv), maxStacks(maxStacks) {}
 };
 
-class Buffs : public SettingsMenu::Implementer
+class Grids : public SettingsMenu::Implementer
 {
 public:
-	Buffs(ComPtr<ID3D11Device>& dev);
-	~Buffs();
+	Grids(ComPtr<ID3D11Device>& dev);
+	virtual ~Grids();
 
-	void Draw(ComPtr<ID3D11DeviceContext>& ctx);
+	void Draw(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set);
 	void UpdateBuffsTable(StackedBuff* buffs);
 	void DrawMenu(Keybind** currentEditedKeybind) override;
 
-	const char* GetTabName() const override { return "Buffs"; }
+	const char* GetTabName() const override { return "Grids"; }
+
+	void Delete(Id id);
 
 protected:
 	void Load();
@@ -56,7 +59,7 @@ protected:
 	void DrawEditingGrid();
 	void PlaceItem();
 	void DrawGridList();
-	void DrawItems();
+	void DrawItems(const Sets::Set* set);
 
 	static inline constexpr glm::ivec2 GridDefaultSpacing{ 64, 64 };
 	static inline const Buff UnknownBuff{ 0, "Unknown", glm::vec4{ 0.f, 0.f, 0.f, 0.f } };
@@ -67,36 +70,6 @@ protected:
 		ImVec4 tint { 1, 1, 1, 1 };
 	};
 
-	static inline const short UnselectedSubId = -1;
-	static inline const short NewSubId = -2;
-
-	union Id
-	{
-		int id;
-		struct {
-			short grid;
-			short item;
-		};
-
-		template<std::integral T1, std::integral T2>
-		constexpr Id(T1 g, T2 i) : grid(short(g)), item(short(i)) { }
-
-		constexpr bool operator==(const Id& other) const {
-			return id == other.id;
-		}
-		constexpr bool operator!=(const Id& other) const {
-			return id != other.id;
-		}
-	};
-	static_assert(sizeof(Id) == sizeof(int));
-
-	template<std::integral T = short>
-	static Id Unselected(T gid = T(UnselectedSubId)) { return { short(gid), UnselectedSubId }; }
-	template<std::integral T = short>
-	static Id New(T gid = T(NewSubId)) { return { short(gid), NewSubId }; }
-
-	void Delete(Id& id);
-
 	struct Item
 	{
 		glm::ivec2 pos { 0, 0 };
@@ -106,6 +79,8 @@ protected:
 			{ 1, ImVec4(1, 0.5f, 0.5f, 0.33f) }
 		};
 	};
+
+public:
 	struct Grid
 	{
 		glm::ivec2 spacing = GridDefaultSpacing;
@@ -115,24 +90,9 @@ protected:
 		bool attached = false;
 		bool square = true;
 	};
-	struct Set
-	{
-		std::string name;
-		std::set<int> grids;
-		bool combatOnly = true;
-	};
 
-	Grid creatingGrid_;
-	Item creatingItem_;
-	Set creatingSet_;
-	short currentSetId_ = UnselectedSubId;
-	Id currentHovered_ = Unselected();
-	short currentHoveredSet_ = UnselectedSubId;
+	const std::vector<Grid>& grids() const { return grids_; }
 	
-	static inline const char* ChangeSetPopupName = "QuickSet";
-	static inline const char* ConfirmDeletionPopupName = "Confirm Deletion";
-	ImGuiID confirmDeletionPopupID_ = 0;
-
 	inline Grid& getG(const Id& id)
 	{
 		if (id.grid == UnselectedSubId)
@@ -153,13 +113,19 @@ protected:
 			return grids_[id.grid].items[id.item];
 	}
 
+protected:
+	Grid creatingGrid_;
+	Item creatingItem_;
+	Id currentHovered_ = Unselected();
+	
+	static inline const char* ConfirmDeletionPopupName = "Confirm Deletion";
+	ImGuiID confirmDeletionPopupID_ = 0;
+
 	std::vector<Grid> grids_;
-	std::vector<Set> sets_;
 	Texture2D buffsAtlas_;
 	Texture2D numbersAtlas_;
 
 	Id selectedId_ = Unselected();
-	short selectedSetId_ = UnselectedSubId;
 
 	int editingItemFakeCount_ = 1;
 
@@ -167,8 +133,7 @@ protected:
 	const std::map<int, const Buff*> buffsMap_;
 	const std::vector<glm::vec4> numbersMap_;
 	std::unordered_map<uint, int> activeBuffs_;
-
-
+	
 	static std::vector<Buff> GenerateBuffsList();
 	static std::map<int, const Buff*> GenerateBuffsMap(const std::vector<Buff>& lst);
 
@@ -177,16 +142,12 @@ protected:
 	mstime lastSaveTime_ = 0;
 	bool needsSaving_ = false;
 	static inline constexpr mstime SaveDelay = 1000;
-	bool showSetSelector_ = false;
 	char buffSearch_[512];
 	bool firstDraw_ = true;
 
 	static constexpr int InvisibleWindowFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollWithMouse;
-
-	ActivationKeybind changeGridSetKey_;
-
+	
 #ifdef _DEBUG
-	ActivationKeybind showAnalyzerKey_;
 	int guildLogId_ = 3;
 	std::map<uint, std::string> buffNames_;
 	bool hideInactive_ = false;

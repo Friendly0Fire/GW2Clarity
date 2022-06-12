@@ -55,8 +55,9 @@ void Core::InnerInitPreFontImGui()
 void Core::InnerInitPostImGui()
 {
 	firstMessageShown_ = std::make_unique<ConfigurationOption<bool>>("", "first_message_shown_v1", "Core", false);
-
-	buffs_ = std::make_unique<Buffs>(device_);
+	
+	grids_ = std::make_unique<Grids>(device_);
+	sets_ = std::make_unique<Sets>(device_, grids_.get());
 }
 
 void Core::InnerInternalInit()
@@ -101,15 +102,51 @@ void Core::InnerShutdown()
 void Core::InnerFrequentUpdate()
 {
 	if(getBuffs_)
-		buffs_->UpdateBuffsTable(getBuffs_());
+		grids_->UpdateBuffsTable(getBuffs_());
 }
 
 void Core::InnerUpdate()
 {
 }
 
+void Core::DisplayDeletionMenu(DeletionId id)
+{
+	confirmDeletionId_ = id;
+	ImGui::OpenPopup(confirmDeletionPopupID_);
+}
+
 void Core::InnerDraw()
 {
+	if(!confirmDeletionPopupID_)
+		confirmDeletionPopupID_ = ImGui::GetID(ConfirmDeletionPopupName);
+	if (ImGui::BeginPopupModal(ConfirmDeletionPopupName))
+	{
+		bool isSet = std::holds_alternative<short>(confirmDeletionId_);
+		bool isItem = !isSet && std::get<Id>(confirmDeletionId_).item >= 0;
+		const auto& name = isSet ? sets_->sets()[std::get<short>(confirmDeletionId_)].name : isItem ? grids_->getI(std::get<Id>(confirmDeletionId_)).buff->name : grids_->getG(std::get<Id>(confirmDeletionId_)).name;
+		const char* type = isSet ? "set" : isItem ? "item" : "grid";
+		ImGui::TextUnformatted(std::format("Are you sure you want to delete {} '{}'{}?", type, name, isItem ? std::format(" from grid '{}'", grids_->getG(std::get<Id>(confirmDeletionId_)).name) : "").c_str());
+		if (ImGui::Button("Yes"))
+		{
+			if (isSet)
+				sets_->Delete(std::get<short>(confirmDeletionId_));
+			else
+			{
+				auto id = std::get<Id>(confirmDeletionId_);
+				sets_->GridDeleted(id);
+				grids_->Delete(id);
+			}
+
+			confirmDeletionId_ = { short(-1) };
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("No"))
+			ImGui::CloseCurrentPopup();
+
+		ImGui::EndPopup();
+	}
+
 	if (!firstMessageShown_->value())
 		ImGuiPopup("Welcome to GW2Clarity!").Position({ 0.5f, 0.45f }).Size({ 0.35f, 0.2f }).Display([&](const ImVec2& windowSize)
 			{
@@ -124,7 +161,10 @@ void Core::InnerDraw()
 					ShellExecute(0, 0, L"https://github.com/Friendly0Fire/GW2Clarity", 0, 0, SW_SHOW);
 			}, [&]() { firstMessageShown_->value(true); });
 
-	buffs_->Draw(context_);
+	grids_->Draw(context_, sets_->currentSet());
+	sets_->Draw(context_);
 }
+
+
 
 }
