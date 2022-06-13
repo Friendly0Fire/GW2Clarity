@@ -154,7 +154,7 @@ void Core::InnerDraw()
 					ShellExecute(0, 0, L"https://github.com/Friendly0Fire/GW2Clarity", 0, 0, SW_SHOW);
 			}, [&]() { firstMessageShown_->value(true); });
 
-	grids_->Draw(context_, sets_->currentSet());
+	grids_->Draw(context_, sets_->currentSet(), sets_->enableDefaultSet());
 	sets_->Draw(context_);
 }
 

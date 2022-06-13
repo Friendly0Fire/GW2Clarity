@@ -61,7 +61,7 @@ public:
 	Grids(ComPtr<ID3D11Device>& dev);
 	virtual ~Grids();
 
-	void Draw(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set);
+	void Draw(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set, bool shouldIgnoreSet);
 	void UpdateBuffsTable(StackedBuff* buffs);
 	void DrawMenu(Keybind** currentEditedKeybind) override;
 
@@ -76,7 +76,7 @@ protected:
 	void DrawEditingGrid();
 	void PlaceItem();
 	void DrawGridList();
-	void DrawItems(const Sets::Set* set);
+	void DrawItems(const Sets::Set* set, bool shouldIgnoreSet);
 
 	static inline constexpr glm::ivec2 GridDefaultSpacing{ 64, 64 };
 	static inline const Buff UnknownBuff{ 0, "Unknown", glm::vec4{ 0.f, 0.f, 0.f, 0.f } };

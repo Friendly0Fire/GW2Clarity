@@ -40,13 +40,14 @@ public:
 	{
 		std::string name;
 		std::set<int> grids;
-		bool combatOnly = true;
+		bool combatOnly = false;
 	};
 	
 	const std::vector<Set>& sets() const { return sets_; }
 
 	short currentSetId() const { return currentSetId_; }
 	const Set* currentSet() const { return currentSetId_ >= 0 && currentSetId_ < sets_.size() ? &sets_[currentSetId_] : nullptr; }
+	bool enableDefaultSet() const { return sets_.empty(); }
 
 protected:
 	Set creatingSet_;

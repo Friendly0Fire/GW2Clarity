@@ -79,6 +79,11 @@ void Sets::GridDeleted(Id id)
 
 void Sets::DrawMenu(Keybind** currentEditedKeybind)
 {
+	if(enableDefaultSet()) {
+		ImGui::PushStyleColor(ImGuiCol_Text, 0xFF0000FF);
+		ImGui::TextWrapped("Notice: No Set defined! All Grids will be displayed by default at all times unless a Set is created.");
+		ImGui::PopStyleColor();
+	}
 	auto saveCheck = [this](bool changed) { needsSaving_ = needsSaving_ || changed; return changed; };
 
 	if(ImGui::BeginListBox("##SetsList", ImVec2(-FLT_MIN, 0.f))) {
@@ -225,7 +230,7 @@ void Sets::Load(size_t gridCount)
 	{
 		Set s;
 		s.name = sIn["name"];
-		s.combatOnly = maybe_at(sIn, "combat_only", true);
+		s.combatOnly = maybe_at(sIn, "combat_only", false);
 
 		for (const auto& gIn : sIn["grids"])
 		{

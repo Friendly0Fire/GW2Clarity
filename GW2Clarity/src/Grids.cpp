@@ -440,13 +440,13 @@ void Grids::DrawGridList()
 	}
 }
 
-void Grids::DrawItems(const Sets::Set* set)
+void Grids::DrawItems(const Sets::Set* set, bool shouldIgnoreSet)
 {
 	bool editMode = selectedId_.grid != UnselectedSubId;
 
-	if (set || editMode)
+	if (set || shouldIgnoreSet || editMode)
 	{
-		if(!MumbleLink::i().isInCompetitiveMode() && (editMode || !set->combatOnly || MumbleLink::i().isInCombat()))
+		if(!MumbleLink::i().isInCompetitiveMode() && (editMode || shouldIgnoreSet || !set->combatOnly || MumbleLink::i().isInCombat()))
 		{
 			glm::vec2 screen{ ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y };
 			glm::vec2 baseMouse{ ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y };
@@ -487,7 +487,7 @@ void Grids::DrawItems(const Sets::Set* set)
 					}
 				};
 
-				auto drawGrid = [&](Grid& g, short gid)
+				auto drawGrid = [&](const Grid& g, short gid)
 				{
 					glm::vec2 gridOrigin;
 					if(!g.attached || (editMode && !testMouseMode_))
@@ -534,6 +534,9 @@ void Grids::DrawItems(const Sets::Set* set)
 
 				if (editMode)
 					drawGrid(getG(selectedId_), selectedId_.grid);
+				else if(shouldIgnoreSet)
+					for (const auto& g : grids_)
+						drawGrid(g, UnselectedSubId);
 				else
 					for (int gid : set->grids)
 						drawGrid(grids_[gid], UnselectedSubId);
@@ -788,7 +791,7 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind)
 		Save();
 }
 
-void Grids::Draw(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set)
+void Grids::Draw(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set, bool shouldIgnoreSet)
 {
 	if (!SettingsMenu::i().isVisible())
 	{
@@ -796,7 +799,7 @@ void Grids::Draw(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set)
 		testMouseMode_ = false;
 	}
 
-	DrawItems(set);
+	DrawItems(set, shouldIgnoreSet);
 
 #ifdef _DEBUG
 	if(firstDraw_ || showAnalyzer_)
