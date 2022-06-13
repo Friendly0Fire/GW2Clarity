@@ -31,6 +31,9 @@
     <ClCompile Include="src\Sets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Cursor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Resource.h">
@@ -52,6 +55,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="include\Sets.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Cursor.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -152,12 +152,14 @@ cd "$(ProjectDir)shaders"
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="common\imgui\misc\cpp\imgui_stdlib.cpp" />
+    <ClCompile Include="src\Cursor.cpp" />
     <ClCompile Include="src\Grids.cpp" />
     <ClCompile Include="src\Core.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\Sets.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Cursor.h" />
     <ClInclude Include="include\Grids.h" />
     <ClInclude Include="include\Core.h" />
     <ClInclude Include="include\Main.h" />
