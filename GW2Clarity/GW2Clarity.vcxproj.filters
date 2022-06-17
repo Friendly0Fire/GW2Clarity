@@ -80,9 +80,6 @@
     <None Include="shaders\ScreenQuad.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
-    <None Include="shaders\WheelElement.hlsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
     <None Include="vcpkg.json">
       <Filter>Resource Files</Filter>
     </None>

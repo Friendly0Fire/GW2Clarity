@@ -11,7 +11,6 @@
 #include <cppcodec/base64_rfc4648.hpp>
 #include <skyr/percent_encoding/percent_encode.hpp>
 #include <shellapi.h>
-#include <ranges>
 #include <algorithm>
 #include <variant>
 #include <range/v3/all.hpp>
@@ -102,7 +101,7 @@ void Sets::DrawMenu(Keybind** currentEditedKeybind)
 				if(ImGuiClose(std::format("CloseSet{}", sid).c_str(), 0.75f, false))
 				{
 					selectedSetId_ = short(sid);
-					Core::i().DisplayDeletionMenu({ selectedSetId_ });
+					Core::i().DisplayDeletionMenu({ s.name, "set", "", selectedSetId_ });
 				}
 				if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem))
 					newCurrentHovered = short(sid);
@@ -208,6 +207,8 @@ void Sets::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 void Sets::Load(size_t gridCount)
 {
 	using namespace nlohmann;
+	sets_.clear();
+	selectedSetId_ = UnselectedSubId;
 
 	auto& cfg = JSONConfigurationFile::i();
 	cfg.Reload();
@@ -228,7 +229,7 @@ void Sets::Load(size_t gridCount)
 	const auto& sets = cfg.json()["buff_sets"];
 	for (const auto& sIn : sets)
 	{
-		Set s;
+		Set s{};
 		s.name = sIn["name"];
 		s.combatOnly = maybe_at(sIn, "combat_only", false);
 

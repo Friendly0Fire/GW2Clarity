@@ -1,9 +1,4 @@
-cbuffer VS : register(b0)
-{
-	float4 spriteDimensions;
-	float4x4 tiltMatrix;
-	float spriteZ;
-};
+#include "common.hlsli"
 
 struct VS_SCREEN
 {
@@ -17,11 +12,10 @@ VS_SCREEN ScreenQuad(in uint id : SV_VertexID)
 
 	float2 UV = float2(id & 1, id >> 1);
 
-	float2 dims = (UV * 2 - 1) * spriteDimensions.zw;
+	float2 dims = (UV * 2 - 1) * dimensions.zw;
 
     Out.UV = UV;
-    Out.Position = mul(float4(dims + spriteDimensions.xy * 2 - 1, spriteZ, 1.f), tiltMatrix);
-	Out.Position.z += saturate(0.5f - spriteZ);
+    Out.Position = float4(dims + dimensions.xy * 2 - 1, 0.5f, 1.f);
 	Out.Position.y *= -1;
 
     return Out;

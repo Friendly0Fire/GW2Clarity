@@ -73,7 +73,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>IMGUI_USER_CONFIG=&lt;imcfg.h&gt;;D3D_DEBUG_INFO;_DEBUG;GW2Clarity_EXPORTS;_WINDOWS;_USRDLL;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;SHADERS_DIR=LR"sd($(ProjectDir)shaders\)sd";_WIN32_WINNT=0x0600;$(GitHubDefs);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>IMGUI_USER_CONFIG=&lt;imcfg.h&gt;;NOMINMAX;D3D_DEBUG_INFO;_DEBUG;GW2Clarity_EXPORTS;_WINDOWS;_USRDLL;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;SHADERS_DIR=LR"sd($(ProjectDir)shaders\)sd";_WIN32_WINNT=0x0600;$(GitHubDefs);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <LanguageStandard>stdcpplatest</LanguageStandard>
@@ -116,7 +116,7 @@ git describe --always --dirty --match "NOT A TAG" &gt;&gt; "$(ProjectDir)include
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>IMGUI_USER_CONFIG=&lt;imcfg.h&gt;;IMGUI_USER_CONFIG=&lt;imcfg.h&gt;;NDEBUG;GW2Clarity_EXPORTS;_WINDOWS;_USRDLL;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;SHADERS_DIR=LR"sd($(ProjectDir)shaders\)sd";_WIN32_WINNT=0x0600;$(GitHubDefs);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>IMGUI_USER_CONFIG=&lt;imcfg.h&gt;;NOMINMAX;IMGUI_USER_CONFIG=&lt;imcfg.h&gt;;NDEBUG;GW2Clarity_EXPORTS;_WINDOWS;_USRDLL;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;SHADERS_DIR=LR"sd($(ProjectDir)shaders\)sd";_WIN32_WINNT=0x0600;$(GitHubDefs);%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpplatest</LanguageStandard>
@@ -191,17 +191,6 @@ cd "$(ProjectDir)shaders"
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\Cursor.hlsl">
-      <FileType>Document</FileType>
-    </None>
-    <None Include="shaders\WheelElement.hlsl">
-      <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DisableOptimizations>
-      <EnableDebuggingInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</EnableDebuggingInformation>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </EntryPointName>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </EntryPointName>
       <FileType>Document</FileType>
     </None>
     <None Include="shaders\ScreenQuad.hlsl">

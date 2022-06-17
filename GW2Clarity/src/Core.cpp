@@ -58,6 +58,7 @@ void Core::InnerInitPostImGui()
 	
 	grids_ = std::make_unique<Grids>(device_);
 	sets_ = std::make_unique<Sets>(device_, grids_.get());
+	cursor_ = std::make_unique<Cursor>(device_);
 }
 
 void Core::InnerInternalInit()
@@ -102,10 +103,15 @@ void Core::InnerUpdate()
 {
 }
 
-void Core::DisplayDeletionMenu(DeletionId id)
+void Core::DisplayDeletionMenu(DeletionInfo&& info)
 {
-	confirmDeletionId_ = id;
+	confirmDeletionInfo_ = std::move(info);
 	ImGui::OpenPopup(confirmDeletionPopupID_);
+}
+
+void Core::DisplayErrorPopup(const char* message) {
+	errorPopupMessage_ = message;
+	ImGui::OpenPopup(errorPopupID_);
 }
 
 void Core::InnerDraw()
@@ -114,27 +120,39 @@ void Core::InnerDraw()
 		confirmDeletionPopupID_ = ImGui::GetID(ConfirmDeletionPopupName);
 	if (ImGui::BeginPopupModal(ConfirmDeletionPopupName))
 	{
-		bool isSet = std::holds_alternative<short>(confirmDeletionId_);
-		bool isItem = !isSet && std::get<Id>(confirmDeletionId_).item >= 0;
-		const auto& name = isSet ? sets_->sets()[std::get<short>(confirmDeletionId_)].name : isItem ? grids_->getI(std::get<Id>(confirmDeletionId_)).buff->name : grids_->getG(std::get<Id>(confirmDeletionId_)).name;
-		const char* type = isSet ? "set" : isItem ? "item" : "grid";
-		ImGui::TextUnformatted(std::format("Are you sure you want to delete {} '{}'{}?", type, name, isItem ? std::format(" from grid '{}'", grids_->getG(std::get<Id>(confirmDeletionId_)).name) : "").c_str());
+		ImGui::TextUnformatted(std::format("Are you sure you want to delete {} '{}'{}?", confirmDeletionInfo_.typeName, confirmDeletionInfo_.name, confirmDeletionInfo_.tail).c_str());
 		if (ImGui::Button("Yes"))
 		{
-			if (isSet)
-				sets_->Delete(std::get<short>(confirmDeletionId_));
-			else
-			{
-				auto id = std::get<Id>(confirmDeletionId_);
+			switch(confirmDeletionInfo_.id.index()) {
+			case 0:
+				cursor_->Delete(std::get<char>(confirmDeletionInfo_.id));
+				break;
+			case 1:
+				sets_->Delete(std::get<short>(confirmDeletionInfo_.id));
+				break;
+			case 2:
+				auto id = std::get<Id>(confirmDeletionInfo_.id);
 				sets_->GridDeleted(id);
 				grids_->Delete(id);
+				break;
 			}
 
-			confirmDeletionId_ = { short(-1) };
+			confirmDeletionInfo_ = { };
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("No"))
+			ImGui::CloseCurrentPopup();
+
+		ImGui::EndPopup();
+	}
+	
+	if(!errorPopupID_)
+		errorPopupID_ = ImGui::GetID(ErrorPopupName);
+	if (ImGui::BeginPopupModal(ErrorPopupName))
+	{
+		ImGui::TextWrapped("An error has occurred: %s\nAddon stability and effectiveness may be degraded.", errorPopupMessage_.c_str());
+		if (ImGui::Button("OK"))
 			ImGui::CloseCurrentPopup();
 
 		ImGui::EndPopup();
@@ -156,6 +174,7 @@ void Core::InnerDraw()
 
 	grids_->Draw(context_, sets_->currentSet(), sets_->enableDefaultSet());
 	sets_->Draw(context_);
+	cursor_->Draw(context_);
 }
 
 

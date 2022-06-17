@@ -25,36 +25,56 @@ public:
 	void Draw(ComPtr<ID3D11DeviceContext>& ctx);
 	void DrawMenu(Keybind** currentEditedKeybind) override;
 
+	void Delete(char id);
+
 	const char* GetTabName() const override { return "Cursor"; }
+	
+	enum class CursorType : int {
+		CIRCLE = 0,
+		SQUARE = 1,
+		CROSS = 2,
 
-private:
-	struct CursorData {
-		glm::vec4 dimensions;
-		glm::vec4 parameters;
-		glm::vec4 color;
-	};
-	ConstantBuffer<CursorData> cursorCB_;
-	ShaderId screenSpaceVS_;
-	ShaderId cursorImagePS_, cursorCrossPS_;
-
-	ComPtr<ID3D11BlendState> defaultBlend_, invertBlend_;
-	ComPtr<ID3D11SamplerState> defaultSampler_;
-
-	struct ImageParams {
-		float alphaWeight = 1.f;
-	};
-	struct CrossParams {
-		float thickness = 4.f;
+		COUNT
 	};
 
 	struct Layer {
-		glm::vec2 dimensions { 32.f };
-		glm::vec4 color { 1.f };
+		std::string name;
+		
+		glm::vec4 color1 { 1.f }, color2 { 1.f };
 		bool invert = false;
-
-		std::variant<ImageParams, CrossParams> parameters;
+		glm::vec2 dims { 32.f };
+		bool fullscreen = false;
+		float edgeThickness = 1.f, secondaryThickness = 4.f, angle = 0.f;
+		CursorType type = CursorType::CIRCLE;
 	};
 
+protected:
+	void Load();
+	void Save();
+
+	struct CursorData {
+		glm::vec4 dimensions;
+		glm::vec4 parameters;
+		glm::vec4 color1;
+		glm::vec4 color2;
+	};
+	ConstantBuffer<CursorData> cursorCB_;
+	ShaderId screenSpaceVS_;
+	std::array<ShaderId, size_t(CursorType::COUNT)> cursorPS_;
+
+	ComPtr<ID3D11BlendState> defaultBlend_, invertBlend_;
+	ComPtr<ID3D11SamplerState> defaultSampler_;
+	
 	std::vector<Layer> layers_;
+
+	char currentHoveredLayer_ = UnselectedSubId;
+	char selectedLayerId_ = UnselectedSubId;
+	
+	mstime lastSaveTime_ = 0;
+	bool needsSaving_ = false;
+	static inline constexpr mstime SaveDelay = 1000;
+
+	ActivationKeybind activateCursor_;
+	bool visible_ = false;
 };
 }

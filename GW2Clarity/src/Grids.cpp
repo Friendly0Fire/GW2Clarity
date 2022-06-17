@@ -11,7 +11,6 @@
 #include <cppcodec/base64_rfc4648.hpp>
 #include <skyr/percent_encoding/percent_encode.hpp>
 #include <shellapi.h>
-#include <ranges>
 #include <algorithm>
 #include <variant>
 #include <range/v3/all.hpp>
@@ -279,7 +278,7 @@ void Grids::DrawEditingGrid()
 		const auto& sp = getG(selectedId_).spacing;
 		const auto& off = getG(selectedId_).offset;
 		auto d = ImGui::GetIO().DisplaySize;
-		auto c = d * 0.5f + ImVec2(off.x, off.y);
+		auto c = d * 0.5f + ToImGui(off);
 
 		auto* cmdList = ImGui::GetWindowDrawList();
 		cmdList->PushClipRectFullScreen();
@@ -363,7 +362,7 @@ void Grids::DrawGridList()
 					if(ImGuiClose(std::format("CloseGrid{}", gid).c_str(), 0.75f, false))
 					{
 						selectedId_ = u;
-						Core::i().DisplayDeletionMenu(u);
+						Core::i().DisplayDeletionMenu({ g.name, "grid", "", selectedId_ });
 					}
 					if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem))
 						newCurrentHovered = u;
@@ -391,7 +390,8 @@ void Grids::DrawGridList()
 				for (auto&& [iid, i] : g.items | ranges::views::enumerate)
 				{
 					Id id{ gid, iid };
-					if (ImGui::Selectable(std::format("{} ({}, {})##{}", i.buff->name.c_str(), i.pos.x, i.pos.y, iid).c_str(), selectedId_ == id || currentHovered_ == id, ImGuiSelectableFlags_AllowItemOverlap))
+					std::string name = std::format("{} ({}, {})##{}", i.buff->name.c_str(), i.pos.x, i.pos.y, iid);
+					if (ImGui::Selectable(name.c_str(), selectedId_ == id || currentHovered_ == id, ImGuiSelectableFlags_AllowItemOverlap))
 					{
 						selectedId_ = id;
 					}
@@ -403,7 +403,7 @@ void Grids::DrawGridList()
 						if(ImGuiClose(std::format("CloseItem{}", id.id).c_str(), 0.75f, false))
 						{
 							selectedId_ = id;
-							Core::i().DisplayDeletionMenu(id);
+							Core::i().DisplayDeletionMenu({ name, "item", std::format(" from grid '{}'", g.name), selectedId_ });
 						}
 						if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem))
 							newCurrentHovered = id;
@@ -466,7 +466,7 @@ void Grids::DrawItems(const Sets::Set* set, bool shouldIgnoreSet)
 
 				auto drawItem = [&](const Grid& g, const Item& i, const glm::vec2& gridOrigin, int count, bool editing) {
 
-					auto thresh = std::ranges::find_if(i.thresholds, [=](const auto& t) { return count < t.threshold; });
+					auto thresh = ranges::find_if(i.thresholds, [=](const auto& t) { return count < t.threshold; });
 					ImVec4 tint(1, 1, 1, 1);
 					if (thresh != i.thresholds.end())
 						tint = thresh->tint;
@@ -612,7 +612,7 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind)
 			if (editGrid.square)
 				editGrid.spacing.y = editGrid.spacing.x;
 
-			if(saveCheck(ImGui::DragInt2("Grid Offset", glm::value_ptr(editGrid.offset), 0.1f, -ImGui::GetIO().DisplaySize.x / 2, ImGui::GetIO().DisplaySize.x / 2)))
+			if(saveCheck(ImGui::DragInt2("Grid Offset", glm::value_ptr(editGrid.offset), 0.1f, -int(ImGui::GetIO().DisplaySize.x) / 2, int(ImGui::GetIO().DisplaySize.x) / 2)))
 			{
 				draggingGridScale_ |= ImGui::IsMouseDragging(ImGuiMouseButton_Left);
 			}
@@ -768,7 +768,7 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind)
 			if (saveCheck(ImGui::Button("Add threshold")))
 				editItem.thresholds.emplace_back();
 
-			std::ranges::sort(editItem.thresholds, [](auto& a, auto& b) { return a.threshold < b.threshold; });
+			ranges::sort(editItem.thresholds, [](auto& a, auto& b) { return a.threshold < b.threshold; });
 
 			ImGui::Unindent();
 
@@ -821,6 +821,41 @@ void Grids::UpdateBuffsTable(StackedBuff* buffs)
 #else
 	activeBuffs_.clear();
 #endif
+
+	if(buffs[0].id == 0) {
+		int e = lastGetBuffsError_;
+		lastGetBuffsError_ = buffs[0].count;
+		if(lastGetBuffsError_ != e) {
+			switch(lastGetBuffsError_) {
+			case -1:
+				Core::i().DisplayErrorPopup("Character context not found.");
+				break;
+			case -2:
+				LogInfo("Addon is inactive in competitive modes.");
+				break;
+			case -3:
+				LogInfo("Current character not set.");
+				break;
+			case -4:
+				Core::i().DisplayErrorPopup("Fatal error while iterating through buff table.");
+				break;
+			case -11:
+				Core::i().DisplayErrorPopup("Could not take threads snapshot.");
+				break;
+			case -12:
+				Core::i().DisplayErrorPopup("Could not load ntdll.dll.");
+				break;
+			case -13:
+				Core::i().DisplayErrorPopup("Could not find NtQueryInformationThread.");
+				break;
+			case -14:
+				Core::i().DisplayErrorPopup("No matching thread found.");
+				break;
+			}
+		}
+		return;
+	}
+
 	for (size_t i = 0; buffs[i].id; i++)
 		activeBuffs_[buffs[i].id] = buffs[i].count;
 }

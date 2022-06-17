@@ -165,6 +165,7 @@ protected:
 	bool firstDraw_ = true;
 	ScanCode holdingMouseButton_ = ScanCode::NONE;
 	ImVec2 heldMousePos_ {};
+	int lastGetBuffsError_ = 0;
 
 	static constexpr int InvisibleWindowFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollWithMouse;
 	

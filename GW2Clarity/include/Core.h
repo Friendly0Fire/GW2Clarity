@@ -9,6 +9,7 @@
 #include <ConfigurationOption.h>
 #include <Grids.h>
 #include <Sets.h>
+#include <Cursor.h>
 #include <variant>
 
 class ShaderManager;
@@ -24,9 +25,15 @@ public:
 	[[nodiscard]] ImFont* fontBuffCounter() const { return fontBuffCounter_; }
 	[[nodiscard]] ImGuiID confirmDeletionPopupID() const { return confirmDeletionPopupID_; }
 
-	using DeletionId = std::variant<short, Id>;
+	struct DeletionInfo {
+		std::string_view name, typeName, tail;
+		std::variant<char, short, Id> id;
+	};
 
-	void DisplayDeletionMenu(DeletionId id);
+	void DisplayDeletionMenu(DeletionInfo&& id);
+	void DisplayErrorPopup(const char* message);
+
+	glm::vec2 screenDims() const { return glm::vec2(screenWidth_, screenHeight_); }
 
 protected:
 	void InnerDraw() override;
@@ -45,6 +52,7 @@ protected:
 	std::unique_ptr<ConfigurationOption<bool>> firstMessageShown_;
 	std::unique_ptr<Grids> grids_;
 	std::unique_ptr<Sets> sets_;
+	std::unique_ptr<Cursor> cursor_;
 	HMODULE buffLib_ = nullptr;
 	GetBuffsCallback getBuffs_ = nullptr;
 
@@ -52,6 +60,11 @@ protected:
 	
 	static inline const char* ConfirmDeletionPopupName = "Confirm Deletion";
 	ImGuiID                   confirmDeletionPopupID_  = 0;
-	DeletionId                confirmDeletionId_;
+	DeletionInfo              confirmDeletionInfo_;
+	
+	
+	static inline const char* ErrorPopupName = "GW2Clarity Error";
+	ImGuiID                   errorPopupID_  = 0;
+	std::string				  errorPopupMessage_;
 };
 }

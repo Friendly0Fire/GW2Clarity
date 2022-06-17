@@ -1,15 +1,29 @@
 #include "common.hlsli"
 
-float4 Cursor(PS_INPUT In) : SV_Target
+float4 ColorFromDist(float l, float t) {
+	if(l > t)
+		discard;
+	if(l < t - parameters.x)
+		return color2;
+
+	return color1;
+}
+
+float4 Circle(PS_INPUT In) : SV_Target
 {
-	float2 centeredUV = 2 * (In.UV - 0.5f);
-	float2 polar = float2(length(centeredUV), atan2(centeredUV.y, centeredUV.x));
-	polar.y = 2 * (polar.y / PI + 1);
-	float smoothrandom = psrnoise(polar * float2(1.f, 0.5f) - float2(0.5f, 0.05f) * animationTimer, float2(100, 2), wipeMaskData.z / (2 * PI));
+	float l = length(In.UV - 0.5f) * 2.f;
+	return ColorFromDist(l, 1.f);
+}
 
-	float4 color = float4(194/255.f,189/255.f,149/255.f, 1.f);
-	color *= pow(1.f - smoothstep(0.f, 1.f, polar.x), 4.f);
-	color *= 1 - lerp(0.1f, 1.f, smoothstep(0.2f, 0.6f, polar.x)) * smoothrandom;
+float4 Square(PS_INPUT In) : SV_Target
+{
+	float l = max(abs(In.UV.x - 0.5f), abs(In.UV.y - 0.5f)) * 2.f;
+	return ColorFromDist(l, 1.f);
+}
 
-	return float4(color.rgb * globalOpacity, 0.f);
+float4 Cross(PS_INPUT In) : SV_Target
+{
+	float l1 = abs(cos(parameters.z) * (0.5f - In.UV.y) - sin(parameters.z) * (0.5f - In.UV.x));
+	float l2 = abs(cos(parameters.z + PI * 0.5f) * (0.5f - In.UV.y) - sin(parameters.z + PI * 0.5f) * (0.5f - In.UV.x));
+	return ColorFromDist(min(l1, l2), parameters.y);
 }
