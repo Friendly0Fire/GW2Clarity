@@ -1,4 +1,5 @@
 const auto g_Buffs = std::to_array<Buff>({
+	// https://github.com/baaron4/GW2-Elite-Insights-Parser/blob/8e8ebd252eda839f3fa407d347e67a6065c8da74/GW2EIEvtcParser/ParserHelpers/SkillIDs.cs
 	// Common Buffs
 	{ "Buffs" },
 	{ 743, "Aegis", 1 },
@@ -48,6 +49,7 @@ const auto g_Buffs = std::to_array<Buff>({
 	//{ 46842, "Exhaustion" }, // https://wiki.guildwars2.com/images/8/88/Exhaustion.png
 	{ 13017, "Stealth", 1 }, // https://wiki.guildwars2.com/images/1/19/Stealth.png
 	//{ 10269, "Hide in Shadows" }, // https://wiki.guildwars2.com/images/1/19/Stealth.png
+	{ 64936, "Exposed" },
 	{ 890, "Revealed", 1 }, // https://wiki.guildwars2.com/images/d/db/Revealed.png
 	{ 5974, "Superspeed", 1 }, // https://wiki.guildwars2.com/images/c/c8/Superspeed.png
 	//{ 762, "Determined (762)" }, // https://wiki.guildwars2.com/images/e/eb/Determined.png
@@ -160,7 +162,7 @@ const auto g_Buffs = std::to_array<Buff>({
 	//{ 58385, "Power of Valor Tier 1" }, // https://wiki.guildwars2.com/images/6/64/Power_of_Valor.png
 	//{ 58414, "Power of Valor Tier 2" }, // https://wiki.guildwars2.com/images/6/64/Power_of_Valor.png
 	//// Unknown Fixation
-	{ { 48533, 58136, 34508, 47434 }, "Fixated" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
+	{ { 48533, 58136, 34508, 47434, 36998, 61503, 61306, 61304, 61566, 66140 }, "Fixated" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
 	////////////////////////////////////////////////
 	//// Mordremoth
 	//{ 32208, "Parietal Mastery" }, // https://wiki.guildwars2.com/images/7/76/Parietal_Mastery.png
@@ -404,7 +406,7 @@ const auto g_Buffs = std::to_array<Buff>({
 	//{ 56467, "Unbridled Chaos" }, // https://wiki.guildwars2.com/images/4/42/Exposed_%28Statue_of_Darkness%29.png
 	////////////////////////////////////////////////
 	//// Fractals
-	//{ 33652, "Rigorous Certainty" }, // https://wiki.guildwars2.com/images/6/60/Desert_Carapace.png
+	{ 33652, "Rigorous Certainty" }, // https://wiki.guildwars2.com/images/6/60/Desert_Carapace.png
 	//{ 47248, "Fractal Savant" }, // https://wiki.guildwars2.com/images/c/cb/Malign_9_Agony_Infusion.png
 	//{ 48191, "Fractal Prodigy" }, // https://wiki.guildwars2.com/images/1/11/Mighty_9_Agony_Infusion.png
 	//{ 48414, "Fractal Champion" }, // https://wiki.guildwars2.com/images/3/3d/Precise_9_Agony_Infusion.png
@@ -414,19 +416,22 @@ const auto g_Buffs = std::to_array<Buff>({
 	//// Ensolyss
 	//{ 37498, "Determination (Ensolyss)" }, // https://wiki.guildwars2.com/images/4/41/Gambit_Exhausted.png
 	//// Artsariiv
+	{ "Artsariiv" },
 	//{ 36498, "Enraged (Fractal)" }, // https://wiki.guildwars2.com/images/7/78/Vengeance_%28Mordrem%29.png
-	//{ 38880, "Corporeal Reassignment" }, // https://wiki.guildwars2.com/images/9/94/Redirect_Anomaly.png
+	{ 38880, "Corporeal Reassignment" }, // https://wiki.guildwars2.com/images/9/94/Redirect_Anomaly.png
 	//{ 39442, "Blinding Radiance" }, // https://wiki.guildwars2.com/images/5/5f/Monster_Skill.png
 	//{ 38841, "Determination (Viirastra)" }, // https://wiki.guildwars2.com/images/4/41/Gambit_Exhausted.png
 	//// Arkk
+	{ "Arkk" },
 	//{ 39558, "Fixated (Bloom 3)" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
 	//{ 39928, "Fixated (Bloom 2)" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
 	//{ 39131, "Fixated (Bloom 1)" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
 	//{ 38985, "Fixated (Bloom 4)" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
-	//{ 39268, "Cosmic Meteor" }, // https://wiki.guildwars2.com/images/5/5f/Monster_Skill.png
+	{ 39268, "Cosmic Meteor", "monster" }, // https://wiki.guildwars2.com/images/5/5f/Monster_Skill.png
 	//{ 39111, "Diaphanous Shielding" }, // https://wiki.guildwars2.com/images/5/57/Diaphanous_Shielding.png
 	//{ 33750, "Electrocuted" }, // https://wiki.guildwars2.com/images/9/91/Air_Attunement.png
 	//// Ai, Keeper of the Peak
+	{ "Ai, Keeper of the Peak" },
 	//{ 61402, "Tidal Barrier" }, // https://wiki.guildwars2.com/images/b/b1/Primed_Bottle.png
 	//{ 61224, "Whirlwind Shield" }, // https://wiki.guildwars2.com/images/b/b1/Primed_Bottle.png
 	//{ 61220, "Resilient Form" }, // https://wiki.guildwars2.com/images/1/13/Crowd_Favor.png
@@ -436,8 +441,8 @@ const auto g_Buffs = std::to_array<Buff>({
 	//{ 61306, "Fixated (Fear 2)" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
 	//{ 61503, "Fixated (Fear 1)" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
 	//{ 61566, "Fixated (Fear 4)" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
-	//{ 61444, "Charged Leap" }, // https://wiki.guildwars2.com/images/1/13/Crowd_Favor.png
-	//{ 61512, "Tidal Bargain" }, // https://wiki.guildwars2.com/images/1/13/Crowd_Favor.png
+	{ 61444, "Charged Leap" }, // https://wiki.guildwars2.com/images/1/13/Crowd_Favor.png
+	{ 61512, "Tidal Bargain", "waterlogged" }, // https://wiki.guildwars2.com/images/1/13/Crowd_Favor.png
 	////////////////////////////////////////////////
 	//// Icebrood
 	//{ 57969, "Hypothermia" }, // https://wiki.guildwars2.com/images/d/d5/Hypothermia_%28story_effect%29.png
@@ -447,18 +452,22 @@ const auto g_Buffs = std::to_array<Buff>({
 	//// Voice and Claw
 	//{ 58619, "Enraged (V&C)" }, // https://wiki.guildwars2.com/images/7/78/Vengeance_%28Mordrem%29.png
 	//// Boneskinner
-	//{ 58860, "Tormenting Aura" }, // https://wiki.guildwars2.com/images/c/c0/Darkness.png
+	{ "Boneskinner" },
+	{ 58860, "Tormenting Aura" }, // https://wiki.guildwars2.com/images/c/c0/Darkness.png
 	//// Whisper of Jormag
+	{ "Whisper of Jormag" },
 	//{ 59223, "Whisper Teleport Out" }, // https://wiki.guildwars2.com/images/7/78/Vengeance_%28Mordrem%29.png
 	//{ 59054, "Whisper Teleport Back" }, // https://wiki.guildwars2.com/images/7/78/Vengeance_%28Mordrem%29.png
 	//{ 59105, "Frigid Vortex" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
-	//{ 59100, "Chains of Frost Active" }, // https://wiki.guildwars2.com/images/6/63/Use_Soul_Binder.png
+	{ { 59100, 59120 }, "Chains of Frost" }, // https://wiki.guildwars2.com/images/6/63/Use_Soul_Binder.png
 	//{ 59120, "Chains of Frost Application" }, // https://wiki.guildwars2.com/images/5/5f/Monster_Skill.png
 	//{ 59073, "Brain Freeze" }, // https://wiki.guildwars2.com/images/6/6a/Frostbite_%28Bitterfrost_Frontier%29.png
 	//// Frezie
 	//{ 53510, "Icy Barrier" }, // https://wiki.guildwars2.com/images/3/38/Shield_of_Ice.png
 	//// Mai Trin
-	//{ 65900, "Shared Destruction" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
+	{ "Mai Trin" },
+	{ { 65900, 67831 }, "Shared Destruction", "monster" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
+	{ 67872, "Photon Saturation" },
 	//{ 64843, "Immune to damage and conditions." }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
 	//{ 65238, "Mai Trin ?????" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
 	//{ 66409, "Chaos and Destruction" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
@@ -468,17 +477,20 @@ const auto g_Buffs = std::to_array<Buff>({
 	//{ 64179, "Hallucinations" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
 	//{ 63621, "Energy Transfer" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
 	//// Minister Li
-	//{ 65869, "Target Order: 1" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
-	//{ 65088, "Target Order: 2" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
-	//{ 64377, "Target Order: 3" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
-	//{ 64999, "Target Order: 4" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
+	{ 65869, "Target Order 1" },
+	{ 65088, "Target Order 2" },
+	{ 64377, "Target Order 3" },
+	{ 64999, "Target Order 4" },
+	{ 65717, "Target Order 5" },
+	{ 67965, "Infirmity" },
+	{ 67972, "Debilitated" },
 	//{ 64465, "Stronger Together" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
 	//{ 63840, "Vitality Equalizer 1" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
 	//{ 66894, "Vitality Equalizer 2" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
 	//{ 65250, "Destructive Aura" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
 	//{ 67047, "Equalization Matrix" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
 	//{ 64834, "Lethal Inspiration" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
-	//{ 65662, "Extreme Vulnerability" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
+	{ 65662, "Extreme Vulnerability" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
 	//{ 66140, "Fixated (Kaineng Overlook)" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
 	////
 	//{ 64524, "Influence of the Void" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
