@@ -1,4 +1,5 @@
-﻿using CommandLine;
+﻿using System.Globalization;
+using CommandLine;
 using System.IO;
 using DirectXTexNet;
 using System.Text;
@@ -41,6 +42,8 @@ class Program
 
     public static void Main(string[] args)
     {
+        Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+        
         Console.WriteLine("Loading Atlas Tool...");
         _ = Parser.Default.ParseArguments<Options>(args)
             .WithParsed(o =>
