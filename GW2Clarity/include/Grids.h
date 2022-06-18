@@ -23,6 +23,7 @@ struct Buff
 	std::string atlasEntry;
 	glm::vec4 uv {};
 	std::set<uint> extraIds;
+	std::string category;
 	
 	Buff(std::string&& name)
 		: Buff(0xFFFFFFFF, std::move(name)) {}

@@ -687,23 +687,22 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind)
 
 					for (auto& b : buffs_)
 					{
+						auto caseInsensitive = [](char l, char r) { return std::tolower(l) == std::tolower(r); };
+						bool filtered = !bs.empty()
+							&& ranges::search(b.name, bs, caseInsensitive).empty()
+							&& ranges::search(b.category, bs, caseInsensitive).empty();
+						
+						if(filtered)
+							continue;
+
 						if(b.id == 0xFFFFFFFF) {
-							if(bs.empty())
-							{
-								ImGui::PushFont(Core::i().fontBold());
-								ImGui::Text(b.name.c_str());
-								ImGui::PopFont();
-								ImGui::Separator();
-							}
+							ImGui::PushFont(Core::i().fontBold());
+							ImGui::Text(b.name.c_str());
+							ImGui::PopFont();
+							ImGui::Separator();
 							continue;
 						}
-
-						if(!bs.empty() && std::search(
-							b.name.begin(), b.name.end(),
-							bs.begin(), bs.end(),
-							[](char l, char r) { return std::tolower(l) == std::tolower(r); }) == b.name.end())
-							continue;
-
+						
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 20.f);
 
 						ImGui::Image(buffsAtlas_.srv.Get(), ImVec2(32, 32), ToImGui(b.uv.xy), ToImGui(b.uv.zw));
@@ -997,8 +996,14 @@ std::vector<Buff> Grids::GenerateBuffsList()
 	}
 #endif
 
+	std::string cat;
 	for (auto& b : buffs)
 	{
+		if(b.id == 0xFFFFFFFF)
+			cat = b.name;
+		else
+			b.category = cat;
+
 		auto it = atlasElements.find(b.atlasEntry);
 		b.uv = it != atlasElements.end() ? it->second : glm::vec4 { 0.f, 0.f, 0.f, 0.f };
 	}
