@@ -4,7 +4,16 @@
 
 ## Installation
 
-Requires the addon loader. Copy all files into `<Guild Wars 2 installation directory>/addons/gw2clarity/`.
+### Requirements:
+You will need to install GW2 Addon Loader, instructions on installation found here: https://github.com/gw2-addon-loader/loader-core#installation
+
+> Alternatively, you may use the [Addon Manager](https://github.com/gw2-addon-loader/GW2-Addon-Manager) for an automated install
+
+### Clarity:
+
+Download the latest `gw2clarity.zip` from the **Assets** section found here: https://github.com/Friendly0Fire/GW2Clarity/releases/latest
+
+Copy all files into `<Guild Wars 2 installation directory>/addons/gw2clarity/`.
 
 ## Usage
 
