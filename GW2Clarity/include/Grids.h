@@ -54,6 +54,10 @@ struct Buff
 		: id(*ids.begin()), name(std::move(name)), uv(uv), maxStacks(maxStacks) {
 		extraIds.insert(ids.begin() + 1, ids.end());
 	}
+
+	[[nodiscard]] int GetStacks(std::unordered_map<uint, int>& activeBuffs) const {
+		return std::accumulate(extraIds.begin(), extraIds.end(), activeBuffs[id], [&](int a, uint b) { return a + activeBuffs[b]; });
+	}
 };
 
 class Grids : public SettingsMenu::Implementer
@@ -175,7 +179,8 @@ protected:
 	std::map<uint, std::string> buffNames_;
 	bool hideInactive_ = false;
 	std::set<uint> hiddenBuffs_;
-	bool showAnalyzer_ = true;
+	bool showAnalyzer_ = false;
+	std::string debugGridFilter_;
 
 	void SaveNames();
 	void LoadNames();

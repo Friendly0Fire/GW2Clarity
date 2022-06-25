@@ -41,6 +41,49 @@ const auto g_Buffs = std::to_array<Buff>({
 	{ 5684, "Magnetic Aura", 1 }, // https://wiki.guildwars2.com/images/0/0b/Magnetic_Aura_%28effect%29.png
 	{ 5577, "Shocking Aura", 1 }, // https://wiki.guildwars2.com/images/5/5d/Shocking_Aura_%28effect%29.png
 	{ 39978, "Dark Aura", 1 }, // https://wiki.guildwars2.com/images/e/ef/Dark_Aura.png
+	
+	//// Guardian
+	{ "Guardian" },
+	{ 9113, "Virtue of Courage" },
+	{ 9114, "Virtue of Justice" },
+	{ 9119, "Virtue of Resolve" },
+	{ 9123, "Shield of Wrath" },
+	{ 9225, "Binding Blade" },
+	{ 9103, "Zealot's Flame" },
+	{ 21665, "Litany of Wrath" },
+	{ { 9220, 46554 }, "Signet of Resolve" },
+	{ { 9092, 9240 }, "Bane Signet" },
+	{ { 9156, 9239 }, "Signet of Judgment" },
+	{ { 9162, 9238 }, "Signet of Mercy" },
+	{ { 9100, 9237 }, "Signet of Wrath" },
+	{ { 29633, 43487 }, "Signet of Courage" },
+	{ 56890, "Symbolic Avenger" },
+	{ 13796, "Strength in Numbers" },
+	{ 30207, "Invigorated Bulwark" },
+	{ 29485, "Force of Will" },
+	{ 59592, "Inspiring Virtue" },
+
+	{ "Guardian/Dragonhunter" },
+	{ { 29632, 13692 }, "Virtue of Justice (Dragonhunter)" },
+	{ { 30308, 13648, 13603 }, "Virtue of Resolve (Dragonhunter)" },
+
+	{ "Guardian/Willbender" },
+	{ 62529, "Justice (Willbender)" },
+	{ 62632, "Flowing Resolve" },
+	{ 62615, "Crashing Courage" },
+	{ 62663, "Reversal of Fortune" },
+	{ 62638, "Repose" },
+	{ 62509, "Lethal Tempo" },
+
+	{ "Guardian/Firebrand" },
+	{ 46298, "Tome of Resolve" },
+	{ 40530, "Tome of Justice" },
+	{ 43508, "Tome of Courage" },
+	{ 44871, "Eternal Oasis" },
+	{ 43194, "Unbroken Lines" },
+	{ 41957, "Ashes of the Just" },
+	{ 42431, "Quickfire" },
+
 	//// Special
 	{ "Special Status" },
 	//{ 46668, "Diminished" }, // https://wiki.guildwars2.com/images/7/71/Diminished.png
@@ -285,8 +328,8 @@ const auto g_Buffs = std::to_array<Buff>({
 	{ 37868, "Fixated (Samarog)", "fixated" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
 	{ 38223, "Fixated (Guldhem)", "fixated" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
 	{ 37693, "Fixated (Rigom)", "fixated" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
-	{ 37966, "Inevitable Betrayal (Big)" }, // https://wiki.guildwars2.com/images/b/b8/Feeding_Frenzy_%28GW1%29.png
-	{ 38247, "Inevitable Betrayal (Small)" }, // https://wiki.guildwars2.com/images/b/b8/Feeding_Frenzy_%28GW1%29.png
+	{ 37966, "Inevitable Betrayal (Big)", "inevitable_betrayal" }, // https://wiki.guildwars2.com/images/b/b8/Feeding_Frenzy_%28GW1%29.png
+	{ 38247, "Inevitable Betrayal (Small)", "inevitable_betrayal" }, // https://wiki.guildwars2.com/images/b/b8/Feeding_Frenzy_%28GW1%29.png
 	//{ 37892, "Soul Swarm" }, // https://wiki.guildwars2.com/images/0/0e/Soul_Swarm_%28effect%29.png
 	//// Deimos
 	{ "Deimos" },

@@ -443,10 +443,15 @@ void Grids::DrawGridList()
 void Grids::DrawItems(const Sets::Set* set, bool shouldIgnoreSet)
 {
 	bool editMode = selectedId_.grid != UnselectedSubId;
+#ifdef _DEBUG
+	bool showDebugGrid = debugGridFilter_.length() >= 3;
+#else
+	bool showDebugGrid = false;
+#endif
 
-	if (set || shouldIgnoreSet || editMode)
+	if (set || shouldIgnoreSet || editMode || showDebugGrid)
 	{
-		if(!MumbleLink::i().isInCompetitiveMode() && (editMode || shouldIgnoreSet || !set->combatOnly || MumbleLink::i().isInCombat()))
+		if(!MumbleLink::i().isInCompetitiveMode() && (editMode || shouldIgnoreSet || showDebugGrid || !set->combatOnly || MumbleLink::i().isInCombat()))
 		{
 			glm::vec2 screen{ ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y };
 			glm::vec2 baseMouse{ ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y };
@@ -464,16 +469,16 @@ void Grids::DrawItems(const Sets::Set* set, bool shouldIgnoreSet)
 				};
 				std::vector<NumberDraw> delayedDraws;
 
-				auto drawItem = [&](const Grid& g, const Item& i, const glm::vec2& gridOrigin, int count, bool editing) {
+				auto drawItem = [&](const glm::ivec2& spacing, const Item& i, const glm::vec2& gridOrigin, int count, bool editing) {
 
 					auto thresh = ranges::find_if(i.thresholds, [=](const auto& t) { return count < t.threshold; });
 					ImVec4 tint(1, 1, 1, 1);
 					if (thresh != i.thresholds.end())
 						tint = thresh->tint;
 
-					glm::vec2 pos = gridOrigin + glm::vec2(i.pos * g.spacing);
+					glm::vec2 pos = gridOrigin + glm::vec2(i.pos * spacing);
 
-					auto adj = AdjustToArea(128.f, 128.f, float(g.spacing.x));
+					auto adj = AdjustToArea(128.f, 128.f, float(spacing.x));
 
 					if (editing)
 						ImGui::GetWindowDrawList()->AddRect(ToImGui(pos), ToImGui(pos) + adj, 0xFF0000FF);
@@ -517,19 +522,15 @@ void Grids::DrawItems(const Sets::Set* set, bool shouldIgnoreSet)
 							count = std::accumulate(
 								i.additionalBuffs.begin(),
 								i.additionalBuffs.end(),
-								activeBuffs_[i.buff->id],
+								i.buff->GetStacks(activeBuffs_),
 								[&](int a, const Buff* b) {
-									return a + (b->extraIds.empty() ? activeBuffs_[b->id] : std::accumulate(
-										b->extraIds.begin(),
-										b->extraIds.end(),
-										activeBuffs_[b->id],
-										[&](int a, uint b) { return a + activeBuffs_[b]; }));
+									return a + b->GetStacks(activeBuffs_);
 								});
 
-						drawItem(g, i, gridOrigin, count, editing);
+						drawItem(g.spacing, i, gridOrigin, count, editing);
 					}
 					if (editMode && selectedId_ == New(gid))
-						drawItem(g, creatingItem_, screen * 0.5f, editingItemFakeCount_, true);
+						drawItem(g.spacing, creatingItem_, screen * 0.5f, editingItemFakeCount_, true);
 				};
 
 				if (editMode)
@@ -537,9 +538,42 @@ void Grids::DrawItems(const Sets::Set* set, bool shouldIgnoreSet)
 				else if(shouldIgnoreSet)
 					for (const auto& g : grids_)
 						drawGrid(g, UnselectedSubId);
-				else
+				else if(set)
 					for (int gid : set->grids)
 						drawGrid(grids_[gid], UnselectedSubId);
+
+#ifdef _DEBUG
+				if(showDebugGrid)
+				{
+					glm::ivec2 dir(1, 0);
+					int steps = 1, stepCount = 1;
+					Item fakeItem {
+						glm::ivec2(0), nullptr, {}, {
+							{ 1, ImVec4(1, 1, 1, 0.33f) },
+							{ 100, ImVec4(1, 1, 1, 1) }
+						}
+					};
+
+					for (const auto& b : buffs_) {
+						if(!b.name.contains(debugGridFilter_) && !b.category.contains(debugGridFilter_))
+							continue;
+
+						fakeItem.buff = &b;
+
+						int count = b.GetStacks(activeBuffs_);
+						drawItem(glm::ivec2(64), fakeItem, screen * 0.5f, count, false);
+
+						fakeItem.pos += dir;
+						steps--;
+						if(steps == 0) {
+							dir = glm::ivec2(-dir.y, dir.x);
+							if(dir.x != 0)
+								stepCount += 1;
+							steps = stepCount;
+						}
+					}
+				}
+#endif
 
 				for (const auto& dd : delayedDraws)
 				{
@@ -788,6 +822,14 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind)
 	mstime currentTime = TimeInMilliseconds();
 	if (needsSaving_ && lastSaveTime_ + SaveDelay <= currentTime)
 		Save();
+
+#ifdef _DEBUG
+	ImGui::Separator();
+	ImGui::InputText("Debug Grid Filter", &debugGridFilter_);
+	if(ImGui::Button("Open Buff Analyzer"))
+		showAnalyzer_ = true;
+
+#endif
 }
 
 void Grids::Draw(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set, bool shouldIgnoreSet)
@@ -1006,6 +1048,9 @@ std::vector<Buff> Grids::GenerateBuffsList()
 
 		auto it = atlasElements.find(b.atlasEntry);
 		b.uv = it != atlasElements.end() ? it->second : glm::vec4 { 0.f, 0.f, 0.f, 0.f };
+
+		if(b.id != 0xFFFFFFFF && it == atlasElements.end())
+			LogWarn("Buff {} ({}) has no atlas icon.", b.name, b.id);
 	}
 
 	return buffs;
