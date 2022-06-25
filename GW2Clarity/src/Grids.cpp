@@ -543,8 +543,10 @@ void Grids::DrawItems(const Sets::Set* set, bool shouldIgnoreSet)
 						drawGrid(grids_[gid], UnselectedSubId);
 
 #ifdef _DEBUG
+				const Buff* hoveredBuff = nullptr;
 				if(showDebugGrid)
 				{
+					const auto lowerCaseDebugGridFilter = ToLower(debugGridFilter_);
 					glm::ivec2 dir(1, 0);
 					int steps = 1, stepCount = 1;
 					Item fakeItem {
@@ -555,13 +557,19 @@ void Grids::DrawItems(const Sets::Set* set, bool shouldIgnoreSet)
 					};
 
 					for (const auto& b : buffs_) {
-						if(!b.name.contains(debugGridFilter_) && !b.category.contains(debugGridFilter_))
+						if(b.id == 0xFFFFFFFF || !ToLower(b.name).contains(lowerCaseDebugGridFilter) && !ToLower(b.category).contains(lowerCaseDebugGridFilter))
 							continue;
 
 						fakeItem.buff = &b;
 
 						int count = b.GetStacks(activeBuffs_);
 						drawItem(glm::ivec2(64), fakeItem, screen * 0.5f, count, false);
+						
+						glm::vec2 minPos = glm::vec2(fakeItem.pos * 64) + screen * 0.5f;
+						glm::vec2 maxPos = minPos + 64.f;
+
+						if(glm::all(glm::greaterThanEqual(baseMouse, minPos)) && glm::all(glm::lessThan(baseMouse, maxPos)))
+							hoveredBuff = &b;
 
 						fakeItem.pos += dir;
 						steps--;
@@ -580,6 +588,11 @@ void Grids::DrawItems(const Sets::Set* set, bool shouldIgnoreSet)
 					ImGui::SetCursorPos(dd.pos);
 					ImGui::Image(numbersAtlas_.srv.Get(), dd.adj, dd.uv1, dd.uv2);
 				}
+
+#ifdef _DEBUG
+				if(hoveredBuff)
+					ImGui::SetTooltip("%s", hoveredBuff->name.c_str());
+#endif
 			}
 			ImGui::End();
 		}

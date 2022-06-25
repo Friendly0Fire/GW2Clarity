@@ -64,7 +64,7 @@ const auto g_Buffs = std::to_array<Buff>({
 	{ 59592, "Inspiring Virtue" },
 
 	{ "Guardian/Dragonhunter" },
-	{ { 29632, 13692 }, "Virtue of Justice (Dragonhunter)" },
+	{ 29632, "Virtue of Justice (Dragonhunter)" },
 	{ { 30308, 13648, 13603 }, "Virtue of Resolve (Dragonhunter)" },
 
 	{ "Guardian/Willbender" },
