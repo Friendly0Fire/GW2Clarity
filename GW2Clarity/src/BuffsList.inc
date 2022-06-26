@@ -60,12 +60,12 @@ const auto g_Buffs = std::to_array<Buff>({
 	{ 56890, "Symbolic Avenger" },
 	{ 13796, "Strength in Numbers" },
 	{ 30207, "Invigorated Bulwark" },
-	{ 29485, "Force of Will" },
 	{ 59592, "Inspiring Virtue" },
 
 	{ "Guardian/Dragonhunter" },
 	{ 29632, "Virtue of Justice (Dragonhunter)" },
 	{ { 30308, 13648, 13603 }, "Virtue of Resolve (Dragonhunter)" },
+	{ 29523, "Virtue of Courage (Dragonhunter)" },
 
 	{ "Guardian/Willbender" },
 	{ 62529, "Justice (Willbender)" },
