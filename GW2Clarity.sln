@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GW2Clarity", "GW2Clarity\GW2Clarity.vcxproj", "{7EFE6DCC-544A-4116-9EF2-13C0431356E6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C0EF6C70-CA9C-4F0B-9D40-AF0B45609740} = {C0EF6C70-CA9C-4F0B-9D40-AF0B45609740}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F0905902-017B-4EBA-BB11-02243086C993}"
 	ProjectSection(SolutionItems) = preProject
@@ -26,7 +29,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "GW2Clarity\common\z
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Zip", "Zip", "{88C0C950-DD9D-459F-8D19-E191C6CE9B90}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AtlasTool", "AtlasTool\AtlasTool.csproj", "{C0EF6C70-CA9C-4F0B-9D40-AF0B45609740}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AtlasTool", "AtlasTool\AtlasTool.csproj", "{C0EF6C70-CA9C-4F0B-9D40-AF0B45609740}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
