@@ -168,6 +168,50 @@ const auto g_Buffs = std::to_array<Buff>({
 	//{ 54719, "Mistlock Instability: We Bleed Fire" }, // https://wiki.guildwars2.com/images/2/24/Mistlock_Instability_We_Bleed_Fire.png
 	//{ 47288, "Mistlock Instability: Toxic Sickness" }, // https://wiki.guildwars2.com/images/6/6f/Mistlock_Instability_Toxic_Sickness.png
 	//
+
+	//// Boosters
+	{ "Boosters, Banners, Map Buffs" },
+	{ 33106, "Guild Experience Boost", "guild_tavern" },    //  https://wiki.guildwars2.com/index.php?title=Guild_Experience_Boost
+	{ 32103, "Guild Karma Boost", "guild_tavern" },
+	{ 33833, "Guild Item Research", "guild_tavern" },
+	{ 35126, "Guild WvW Reward Track Boost", "guild_tavern" },
+	  
+	{ 17685, "Guild Experience Banner Bonus" },    //  https://wiki.guildwars2.com/wiki/Guild_Experience_Banner_Bonus
+	{ 17683, "Guild Karma Banner Boost"	},    //  https://wiki.guildwars2.com/wiki/Guild_Karma_Banner_Boost
+	{ 17684, "Guild Magic Find Banner Boost"	},    //  https://wiki.guildwars2.com/wiki/Guild_Magic_Find_Banner_Boost
+	{ 17686, "Guild Gold Banner Boost"	},    //  https://wiki.guildwars2.com/wiki/Guild_Gold_Banner_Boost_(15_percent)
+	{ 17682, "Guild Gathering Banner Boost"	},    //  https://wiki.guildwars2.com/wiki/Guild_Gathering_Banner_Boost
+	  
+	{ 56041,	"Spirit Banner"},// 56041	Spirit Banner	https://wiki.guildwars2.com/wiki/Spirit_Banner_Boost
+	  
+	{ 20898,	"Celebration Bonus"	},    //  https://wiki.guildwars2.com/wiki/Celebration_Bonus
+	{ 60607,	"Festival Gobbler Boost"	},    //  https://wiki.guildwars2.com/index.php?title=Festival_Gobbler_Boost
+	{ 39282,	"Black Lion Boost"	},    //  https://wiki.guildwars2.com/wiki/Black_Lion_Boost
+	  
+	{ 929,   "50% Experience Bonus", "exp_boost"},    //  https://wiki.guildwars2.com/wiki/50%25_Experience_Bonus
+	{ 10491, "50% Karma Bonus", "karma_boost"},  	// https://wiki.guildwars2.com/wiki/50%25_Karma_Bonus
+	{ 10497, "50% Magic Find Boost", "magic_find_boost"},  	// https://wiki.guildwars2.com/wiki/Magic_Find_Boost
+	{ 31080, "Item Booster", "magic_find_boost"},  // https://wiki.guildwars2.com/wiki/Item_Booster_(effect)
+	  
+	{ 34227,	"New Year's Gift", "exp_boost_green"},    //  https://wiki.guildwars2.com/wiki/New_Year%27s_Gift
+	{ 26527,	"Ram's Reward", "exp_boost_green"},    //  https://wiki.guildwars2.com/index.php?title=Ram%27s_Reward
+	{ 31078,	"Experience Booster", "exp_boost"},    //  https://wiki.guildwars2.com/index.php?title=Experience_Booster_(effect)
+	{ 22889,	"Active Kill Streak!", "kill_streak"},    //  https://wiki.guildwars2.com/index.php?title=Active_Kill_Streak!
+	  
+	{ 59543, "Explorer Boost"}, // https://wiki.guildwars2.com/wiki/Explorer_Boost
+	  
+	{ 34257,	"Blessings of the New Year", "exp_boost_green"},    //  https://wiki.guildwars2.com/wiki/Blessings_of_the_New_Year
+	{ 34197,	"Winter's Blessing"	},    //  https://wiki.guildwars2.com/wiki/Winter%27s_Blessing_(effect)
+	{ 34210,	"Minty Breath"	},    //  https://wiki.guildwars2.com/wiki/Candy_Cane#nourishment1
+	  
+	{ 64246,	"Incredibly Well Rested", "arborstone_well_rested"},    //  https://wiki.guildwars2.com/index.php?title=Incredibly_Well_Rested
+	{ 63638,	"Enlightenment", "cantha_heart_buff"},    //  https://wiki.guildwars2.com/index.php?title=Enlightenment
+	{ 66005,	"Ancient Canthan Secret", "cantha_heart_buff"},    //  https://wiki.guildwars2.com/wiki/Ancient_Canthan_Secret_(effect)
+	{ 63670, "Community Service Tips", "cantha_heart_buff"}, // https://wiki.guildwars2.com/wiki/Community_Service_Tips_(effect)
+	  
+	{ 65070, "Jade Tech Offensive Overcharge"}, // https://wiki.guildwars2.com/index.php?title=Jade_Tech_Offensive_Overcharge
+	{ 66303, "Jade Tech Defensive Overcharge"}, // https://wiki.guildwars2.com/wiki/Jade_Tech_Defensive_Overcharge
+
 	//// Generic
 	{ "Generic Mechanics" },
 	{ 38077, "Spectral Agony" }, // https://wiki.guildwars2.com/images/7/70/Spectral_Agony.png
