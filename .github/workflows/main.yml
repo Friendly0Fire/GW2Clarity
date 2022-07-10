@@ -74,6 +74,7 @@ jobs:
         run: |
           cd x64/Release
           7z a ../../gw2clarity.zip gw2clarity/
+          7z a ../../gw2clarity_pdb.zip gw2addon_gw2clarity.pdb
           cd ../..
           cd x64/Debug
           7z a ../../gw2clarity_debug.zip gw2clarity/
@@ -86,5 +87,6 @@ jobs:
           prerelease: ${{ contains(github.ref, '-pre') }}
           files: |
             gw2clarity.zip
+            gw2clarity_pdb.zip
             gw2clarity_debug.zip
 
