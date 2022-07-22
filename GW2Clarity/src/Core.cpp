@@ -109,11 +109,6 @@ void Core::DisplayDeletionMenu(DeletionInfo&& info)
 	ImGui::OpenPopup(confirmDeletionPopupID_);
 }
 
-void Core::DisplayErrorPopup(const char* message) {
-	errorPopupMessage_ = message;
-	ImGui::OpenPopup(errorPopupID_);
-}
-
 void Core::InnerDraw()
 {
 	if(!confirmDeletionPopupID_)
@@ -142,17 +137,6 @@ void Core::InnerDraw()
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("No"))
-			ImGui::CloseCurrentPopup();
-
-		ImGui::EndPopup();
-	}
-	
-	if(!errorPopupID_)
-		errorPopupID_ = ImGui::GetID(ErrorPopupName);
-	if (ImGui::BeginPopupModal(ErrorPopupName))
-	{
-		ImGui::TextWrapped("An error has occurred: %s\nAddon stability and effectiveness may be degraded.", errorPopupMessage_.c_str());
-		if (ImGui::Button("OK"))
 			ImGui::CloseCurrentPopup();
 
 		ImGui::EndPopup();

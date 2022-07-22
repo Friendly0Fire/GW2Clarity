@@ -31,7 +31,6 @@ public:
 	};
 
 	void DisplayDeletionMenu(DeletionInfo&& id);
-	void DisplayErrorPopup(const char* message);
 
 	glm::vec2 screenDims() const { return glm::vec2(screenWidth_, screenHeight_); }
 
@@ -61,10 +60,5 @@ protected:
 	static inline const char* ConfirmDeletionPopupName = "Confirm Deletion";
 	ImGuiID                   confirmDeletionPopupID_  = 0;
 	DeletionInfo              confirmDeletionInfo_;
-	
-	
-	static inline const char* ErrorPopupName = "GW2Clarity Error";
-	ImGuiID                   errorPopupID_  = 0;
-	std::string				  errorPopupMessage_;
 };
 }
