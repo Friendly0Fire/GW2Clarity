@@ -44,6 +44,17 @@ jobs:
           nuget-version: '5.x'
       - run: nuget restore "${env:GITHUB_WORKSPACE}\GW2Clarity.sln"
 
+      - name: 'Setup NuGet Credentials'
+        shell: 'bash'
+        run: >
+          `vcpkg fetch nuget | tail -n 1`
+          sources add
+          -source "https://nuget.pkg.github.com/Friendly0Fire/index.json"
+          -storepasswordincleartext
+          -name "GitHub"
+          -username "Friendly0Fire"
+          -password "${{ secrets.GITHUB_TOKEN }}"
+
       - name: Build Release
         if: startsWith(github.ref, 'refs/tags/v')
         run: msbuild.exe "${env:GITHUB_WORKSPACE}\GW2Clarity.sln" /t:Build /p:Configuration=Release /p:Platform=x64 /p:GitHubDefs=USE_GITHUB_VER
