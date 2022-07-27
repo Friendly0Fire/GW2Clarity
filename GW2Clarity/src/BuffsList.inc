@@ -86,12 +86,12 @@ const auto g_Buffs = std::to_array<Buff>({
 
     //// Thief
     { "Thief" },
-    { 13037, "Spider Venom" },           // https://wiki.guildwars2.com/wiki/Spider_Venom
-    { 13055, "Skale Venom" },            // https://wiki.guildwars2.com/wiki/Skale_Venom
+    { 13036, "Spider Venom" },           // https://wiki.guildwars2.com/wiki/Spider_Venom
+    { 13054, "Skale Venom" },            // https://wiki.guildwars2.com/wiki/Skale_Venom
     { 13094, "Devourer Venom" },         // https://wiki.guildwars2.com/wiki/Devourer_Venom
-    { 13096, "Ice Drake Venom" },        // https://wiki.guildwars2.com/wiki/Ice_Drake_Venom
-    { 13132, "Basilisk Venom" },         // https://wiki.guildwars2.com/wiki/Basilisk_Venom
-    { { 21778, 21780 }, "Skelk Venom" }, // https://wiki.guildwars2.com/wiki/Skelk_Venom
+    { 13095, "Ice Drake Venom" },        // https://wiki.guildwars2.com/wiki/Ice_Drake_Venom
+    { 13133, "Basilisk Venom" },         // https://wiki.guildwars2.com/wiki/Basilisk_Venom
+    { 21780, "Skelk Venom" },            // https://wiki.guildwars2.com/wiki/Skelk_Venom
 
     { { 13049, 13050 }, "Signet of Malice" },         // https://wiki.guildwars2.com/wiki/Signet_of_Malice
     { { 13046, 13047, 44597 }, "Assassin's Signet" }, // https://wiki.guildwars2.com/wiki/Assassin%27s_Signet
@@ -113,7 +113,6 @@ const auto g_Buffs = std::to_array<Buff>({
     { 32931, "Unhindered Combatant" },                       // https://wiki.guildwars2.com/wiki/Unhindered_Combatant
     { 32200, "Lotus Training" },                             // https://wiki.guildwars2.com/wiki/Lotus_Training
     { { 30423, 30693 }, "Palm Strike" },                     // https://wiki.guildwars2.com/wiki/Palm_Strike
-    { { 30510, 30770 }, "Pulmonary Impact", "palm_strike" }, // https://wiki.guildwars2.com/wiki/Pulmonary_Impact
 
     { "Thief/Specter" },
     { 63207, "Shrouded Ally" },    // https://wiki.guildwars2.com/wiki/Shrouded_Ally
