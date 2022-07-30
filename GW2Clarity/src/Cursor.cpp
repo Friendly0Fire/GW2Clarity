@@ -37,13 +37,13 @@ Cursor::Cursor(ComPtr<ID3D11Device>& dev)
     blendDesc.RenderTarget[0].DestBlend      = D3D11_BLEND_INV_SRC_ALPHA;
     blendDesc.RenderTarget[0].SrcBlendAlpha  = D3D11_BLEND_ONE;
     blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
-    GW2_HASSERT(dev->CreateBlendState(&blendDesc, defaultBlend_.GetAddressOf()));
+    GW2_CHECKED_HRESULT(dev->CreateBlendState(&blendDesc, defaultBlend_.GetAddressOf()));
 
     blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_SUBTRACT;
-    GW2_HASSERT(dev->CreateBlendState(&blendDesc, invertBlend_.GetAddressOf()));
+    GW2_CHECKED_HRESULT(dev->CreateBlendState(&blendDesc, invertBlend_.GetAddressOf()));
 
     CD3D11_SAMPLER_DESC sampDesc(D3D11_DEFAULT);
-    GW2_HASSERT(dev->CreateSamplerState(&sampDesc, defaultSampler_.GetAddressOf()));
+    GW2_CHECKED_HRESULT(dev->CreateSamplerState(&sampDesc, defaultSampler_.GetAddressOf()));
 
     SettingsMenu::i().AddImplementer(this);
 }
