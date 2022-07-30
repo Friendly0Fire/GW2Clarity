@@ -146,7 +146,12 @@ git describe --always --dirty --match "NOT A TAG" &gt;&gt; "$(ProjectDir)include
       <ShaderModel>3.0</ShaderModel>
     </FxCompile>
     <PreBuildEvent>
-      <Command>mkdir "$(ProjectDir)int"
+      <Command>if defined GW2BUFFS_SOLUTION_DIR (
+copy /Y "$(ProjectDir)src\BuffsList.inc" "%GW2BUFFS_SOLUTION_DIR%\BuffsList.inc"
+msbuild "%GW2BUFFS_SOLUTION_DIR%\GW2Buffs.sln" /property:Configuration=Release /property:Platform=x64 -t:GW2Buffs:Rebuild
+)
+
+mkdir "$(ProjectDir)int"
 del "$(ProjectDir)int\Shaders.zip"
 cd "$(ProjectDir)shaders"
 "$(SolutionDir)tools\zip.exe" "$(ProjectDir)int\Shaders.zip"  *.*

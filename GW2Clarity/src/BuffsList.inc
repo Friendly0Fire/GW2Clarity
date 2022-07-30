@@ -84,6 +84,59 @@ const auto g_Buffs = std::to_array<Buff>({
     { 62638, "Repose" },
     { 62509, "Lethal Tempo" },
 
+    //// Ranger
+    { "Ranger" },
+    { 12574, "Attack of Opportunity" }, // https://wiki.guildwars2.com/wiki/Attack_of_Opportunity_(effect)
+    { 12524, "Blocking" }, // https://wiki.guildwars2.com/wiki/Blocking_(effect)
+    { 58085, "Counter Ready" }, // https://wiki.guildwars2.com/wiki/Counterattack_Kick
+    { 12623, "Serpent's Preparation" }, // https://wiki.guildwars2.com/wiki/Serpent%27s_Preparation
+    { 12650, "\"Sic 'Em!\"" }, // https://wiki.guildwars2.com/wiki/%22Sic_%27Em!%22_(effect)
+    { 12538, "Signet of Renewal" }, // https://wiki.guildwars2.com/wiki/Signet_of_Renewal_(effect)
+    { 12543, "Signet of Stone (passive)", "signet_of_stone" }, // https://wiki.guildwars2.com/wiki/Signet_of_Stone_(passive_effect)
+    { 883, "Signet of Stone (active)", "signet_of_stone" }, // https://wiki.guildwars2.com/wiki/Signet_of_Stone_(active_effect)
+    { 12541, "Signet of the Hunt" }, // https://wiki.guildwars2.com/wiki/Signet_of_the_Hunt_(passive_effect)
+    { { 12518, 12636 }, "Signet of the Wild" }, // https://wiki.guildwars2.com/wiki/Signet_of_the_Wild_(effect)
+    { 12536, "Sharpening Stone" }, // https://wiki.guildwars2.com/wiki/Sharpening_Stone_(effect)
+    { 12554, "Strength of the Pack" }, // https://wiki.guildwars2.com/wiki/Strength_of_the_Pack_(effect)
+    { 34281, "\"Guard!\"" }, // https://wiki.guildwars2.com/wiki/%22Guard!%22_(effect)
+
+    { 13988, "Opening Strike" }, // https://wiki.guildwars2.com/wiki/Opening_Strike_(effect)
+    { 29703, "Quick Draw" }, // https://wiki.guildwars2.com/wiki/Quick_Draw_(effect)
+    { 30673, "Light on your Feet" }, // https://wiki.guildwars2.com/wiki/Light_on_your_Feet_(effect)
+    { 24371, "Poison Master" }, // https://wiki.guildwars2.com/wiki/Poison_Master_(effect)
+
+    { "Ranger/Druid" },
+    { 31508, "Celestial Avatar" }, // https://wiki.guildwars2.com/wiki/Celestial_Avatar_(effect)
+    { 30449, "Natural Healing" }, // https://wiki.guildwars2.com/wiki/Natural_Healing_(effect)
+    { 32248, "Lingering Light" }, // https://wiki.guildwars2.com/wiki/Lingering_Light_(effect)
+    { 31556, "Glyph of Unity (CA)" }, // https://wiki.guildwars2.com/wiki/Glyph_of_Unity_(Celestial_Avatar_effect)
+    { 55048, "Glyph of the Stars (normal)" }, // https://wiki.guildwars2.com/wiki/Glyph_of_the_Stars_(non-celestial)_(effect)
+    { 55026, "Glyph of the Stars (CA)" }, // https://wiki.guildwars2.com/wiki/Glyph_of_the_Stars_(Celestial_Avatar)_(effect)
+
+    { "Ranger/Soulbeast" },
+    { 45910, "Defy Pain" }, // https://wiki.guildwars2.com/wiki/Defy_Pain_(soulbeast_effect)
+    { 31825, "Sharpen Spines" }, // https://wiki.guildwars2.com/wiki/Sharpen_Spines_(effect)
+    { 43401, "Unflinching Fortitude" }, // https://wiki.guildwars2.com/wiki/Unflinching_Fortitude_(effect)
+    { 40272, "Stout (Archetype)" }, // https://wiki.guildwars2.com/wiki/Stout_(Archetype)
+    { 44932, "Deadly (Archetype)" }, // https://wiki.guildwars2.com/wiki/Deadly_(Archetype)
+    { 44693, "Versatile (Archetype)" }, // https://wiki.guildwars2.com/wiki/Versatile_(Archetype)
+    { 41720, "Ferocious (Archetype)" }, // https://wiki.guildwars2.com/wiki/Ferocious_(Archetype)
+    { 40069, "Supportive (Archetype)" }, // https://wiki.guildwars2.com/wiki/Supportive_(Archetype)
+    { 40045, "Bear Stance" }, // https://wiki.guildwars2.com/wiki/Bear_Stance_(effect)
+    { 41815, "Dolyak Stance" }, // https://wiki.guildwars2.com/wiki/Dolyak_Stance_(effect)
+    { 46280, "Griffon Stance" }, // https://wiki.guildwars2.com/wiki/Griffon_Stance_(effect)
+    { 45038, "Moa Stance" }, // https://wiki.guildwars2.com/wiki/Moa_Stance_(effect)
+    { 44651, "Vulture Stance" }, // https://wiki.guildwars2.com/wiki/Vulture_Stance_(effect)
+    { 44139, "One Wolf Pack" }, // https://wiki.guildwars2.com/wiki/Vulture_Stance_(effect)
+    { 45600, "Twice as Vicious" }, // https://wiki.guildwars2.com/wiki/Twice_as_Vicious_(effect)
+
+    { "Ranger/Untamed" },
+    { { 63317, 63232 }, "Unleashed" }, // https://wiki.guildwars2.com/wiki/Unleashed
+    { 63145, "Pet Unleashed" }, // https://wiki.guildwars2.com/wiki/Pet_Unleashed
+    { 63284, "Perilous Gift" }, // https://wiki.guildwars2.com/wiki/Perilous_Gift_(effect)
+    { 63240, "Forest's Fortification" }, // https://wiki.guildwars2.com/wiki/Forest%27s_Fortification_(effect)
+    { 63191, "Ferocious Symbiosis" }, // https://wiki.guildwars2.com/wiki/Ferocious_Symbiosis_(effect)
+
     //// Thief
     { "Thief" },
     { 13036, "Spider Venom" },           // https://wiki.guildwars2.com/wiki/Spider_Venom
@@ -145,7 +198,7 @@ const auto g_Buffs = std::to_array<Buff>({
     //{ 48209, "Exposed (48209)" }, // https://wiki.guildwars2.com/images/6/6b/Exposed.png
     //{ 31589, "Exposed (31589)" }, // https://wiki.guildwars2.com/images/6/6b/Exposed.png
     //{ 64936, "Exposed (64936)" }, // https://wiki.guildwars2.com/images/6/6b/Exposed.png
-    //{ 36781, "Unblockable" }, // https://wiki.guildwars2.com/images/f/f0/Unblockable_%28effect%29.png
+    { { 18843, 29896, 36781 }, "Unblockable" }, // https://wiki.guildwars2.com/images/f/f0/Unblockable_%28effect%29.png
     //{ 1159, "Encumbered" }, // https://wiki.guildwars2.com/images/d/d7/Encumbered.png
     { 27048, "Celeritas Spores", 1 },  // https://wiki.guildwars2.com/images/7/7b/Blazing_Speed_Mushrooms.png
     { 52182, "Branded Accumulation" }, // https://wiki.guildwars2.com/images/5/55/Achilles_Bane.png

@@ -34,7 +34,7 @@ struct Buff
         , name(std::move(name))
         , maxStacks(maxStacks)
     {
-        atlasEntry = ReplaceChar(ToLower(this->name), ' ', '_');
+        atlasEntry = ReplaceChars(ToLower(this->name), { { ' ', '_' }, { '\"', '_' } });
     }
 
     Buff(uint id, std::string&& name, std::string&& atlas, int maxStacks = std::numeric_limits<int>::max())
