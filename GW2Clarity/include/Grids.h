@@ -114,9 +114,7 @@ protected:
     void                               DrawItems(const Sets::Set* set, bool shouldIgnoreSet);
 
     static inline constexpr glm::ivec2 GridDefaultSpacing{ 64, 64 };
-    static inline const Buff           UnknownBuff{
-        0, "Unknown", glm::vec4{0.f, 0.f, 0.f, 0.f}
-    };
+    static inline const Buff           UnknownBuff{ 0, "Unknown", 1 };
 
     struct Threshold
     {

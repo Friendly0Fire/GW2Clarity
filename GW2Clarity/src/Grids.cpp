@@ -538,7 +538,7 @@ void Grids::DrawItems(const Sets::Set* set, bool shouldIgnoreSet)
                         int  count   = 0;
                         if (editing)
                             count = editingItemFakeCount_;
-                        else
+                        else if (i.buff)
                             count = std::accumulate(i.additionalBuffs.begin(), i.additionalBuffs.end(), i.buff->GetStacks(activeBuffs_),
                                                     [&](int a, const Buff* b) { return a + b->GetStacks(activeBuffs_); });
 
@@ -951,7 +951,7 @@ void Grids::Load()
     auto& cfg   = JSONConfigurationFile::i();
     cfg.Reload();
 
-    auto maybe_at = []<typename D>(const json& j, const char* n, const D& def, const std::variant<std::monostate, std::function<D(const json&)>>& cvt = {})
+    auto maybeAt = []<typename D>(const json& j, const char* n, const D& def, const std::variant<std::monostate, std::function<D(const json&)>>& cvt = {})
     {
         auto it = j.find(n);
         if (it == j.end())
@@ -962,35 +962,56 @@ void Grids::Load()
             return std::get<1>(cvt)(*it);
     };
 
-    auto        getivec2  = [](const json& j) { return glm::ivec2(j[0].get<int>(), j[1].get<int>()); };
-    auto        getivec4  = [](const json& j) { return glm::ivec4(j[0].get<int>(), j[1].get<int>(), j[2].get<int>(), j[3].get<int>()); };
-    auto        getImVec4 = [](const json& j) { return ImVec4(j[0].get<float>(), j[1].get<float>(), j[2].get<float>(), j[3].get<float>()); };
+    auto getivec2  = [](const json& j) { return glm::ivec2(j[0].get<int>(), j[1].get<int>()); };
+    auto getivec4  = [](const json& j) { return glm::ivec4(j[0].get<int>(), j[1].get<int>(), j[2].get<int>(), j[3].get<int>()); };
+    auto getImVec4 = [](const json& j) { return ImVec4(j[0].get<float>(), j[1].get<float>(), j[2].get<float>(), j[3].get<float>()); };
+    auto getBuff   = [this](const json& j) -> const Buff*
+    {
+        int  id = j;
+        auto it = buffsMap_.find(id);
+        if (it != buffsMap_.end())
+            return it->second;
+        else
+            return nullptr;
+    };
 
-    const auto& grids     = cfg.json()["buff_grids"];
+    const auto& grids = cfg.json()["buff_grids"];
     for (const auto& gIn : grids)
     {
         Grid g;
-        g.spacing             = maybe_at(gIn, "spacing", glm::ivec2(32, 32), { getivec2 });
-        g.offset              = maybe_at(gIn, "offset", glm::ivec2(), { getivec2 });
-        g.attached            = maybe_at(gIn, "attached", false);
-        g.centralWeight       = maybe_at(gIn, "central_weight", 0.f);
-        g.mouseClipMin        = maybe_at(gIn, "mouse_clip_min", glm::ivec2{ std::numeric_limits<int>::max() }, { getivec2 });
-        g.mouseClipMax        = maybe_at(gIn, "mouse_clip_max", glm::ivec2{ std::numeric_limits<int>::min() }, { getivec2 });
-        g.trackMouseWhileHeld = maybe_at(gIn, "track_mouse_while_held", true);
-        g.square              = maybe_at(gIn, "square", true);
+        g.spacing             = maybeAt(gIn, "spacing", glm::ivec2(32, 32), { getivec2 });
+        g.offset              = maybeAt(gIn, "offset", glm::ivec2(), { getivec2 });
+        g.attached            = maybeAt(gIn, "attached", false);
+        g.centralWeight       = maybeAt(gIn, "central_weight", 0.f);
+        g.mouseClipMin        = maybeAt(gIn, "mouse_clip_min", glm::ivec2{ std::numeric_limits<int>::max() }, { getivec2 });
+        g.mouseClipMax        = maybeAt(gIn, "mouse_clip_max", glm::ivec2{ std::numeric_limits<int>::min() }, { getivec2 });
+        g.trackMouseWhileHeld = maybeAt(gIn, "track_mouse_while_held", true);
+        g.square              = maybeAt(gIn, "square", true);
         g.name                = gIn["name"];
 
         for (const auto& iIn : gIn["items"])
         {
             Item i;
             i.pos  = getivec2(iIn["pos"]);
-            i.buff = buffsMap_.at(iIn["buff_id"]);
+            i.buff = getBuff(iIn["buff_id"]);
             i.thresholds.clear();
 
             if (iIn.contains("additional_buff_ids"))
                 for (auto& bIn : iIn["additional_buff_ids"])
-                    if (const Buff* b = buffsMap_.at(bIn); b)
+                    if (const Buff* b = getBuff(bIn); b)
                         i.additionalBuffs.push_back(b);
+
+            if (!i.buff)
+            {
+                i.buff = &UnknownBuff;
+                LogWarn("Configuration has unknown buff: Grid '{}', location ({}, {}), buff ID '{}'.", g.name, i.pos.x, i.pos.y, static_cast<std::string>(iIn["buff_id"]));
+            }
+
+            if (!i.buff && !i.additionalBuffs.empty())
+            {
+                i.buff = i.additionalBuffs.back();
+                i.additionalBuffs.pop_back();
+            }
 
             if (iIn.contains("thresholds"))
                 for (auto& tIn : iIn["thresholds"])
