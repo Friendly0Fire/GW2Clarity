@@ -2,6 +2,7 @@
 #define SQRT2 1.4142136f
 #define ONE_OVER_SQRT2 0.707107f
 
+#ifdef CURSOR_HLSL
 cbuffer Cursor : register(b0)
 {
 	float4 dimensions;
@@ -9,6 +10,7 @@ cbuffer Cursor : register(b0)
 	float4 color1;
 	float4 color2;
 };
+#endif
 
 SamplerState MainSampler : register(s0);
 SamplerState SecondarySampler : register(s1);

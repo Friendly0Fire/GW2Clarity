@@ -229,6 +229,11 @@ git describe --always --dirty --match "NOT A TAG" &gt;&gt; "$(ProjectDir)include
     <Image Include="assets\boons.dds" />
     <Image Include="assets\numbers.dds" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\Grids.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
   <Import Condition=" '$(VCPKG_INSTALLATION_ROOT)' != '' " Project="$(VCPKG_INSTALLATION_ROOT)\scripts\buildsystems\msbuild\vcpkg.targets" />

@@ -111,15 +111,15 @@ protected:
     void                               DrawEditingGrid();
     void                               PlaceItem();
     void                               DrawGridList();
-    void                               DrawItems(const Sets::Set* set, bool shouldIgnoreSet);
+    void                               DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set, bool shouldIgnoreSet);
 
     static inline constexpr glm::ivec2 GridDefaultSpacing{ 64, 64 };
     static inline const Buff           UnknownBuff{ 0, "Unknown", 1 };
 
     struct Threshold
     {
-        int    threshold = 1;
-        ImVec4 tint{ 1, 1, 1, 1 };
+        int       threshold = 1;
+        glm::vec4 tint{ 1, 1, 1, 1 };
     };
 
     struct Item
@@ -128,7 +128,7 @@ protected:
         const Buff*              buff = &UnknownBuff;
         std::vector<const Buff*> additionalBuffs;
         std::vector<Threshold>   thresholds{
-            {1, ImVec4(1, 0.5f, 0.5f, 0.33f)}
+            {1, glm::vec4(1, 0.5f, 0.5f, 0.33f)}
         };
     };
 
@@ -173,39 +173,69 @@ public:
     }
 
 protected:
-    Grid                              creatingGrid_;
-    Item                              creatingItem_;
-    Id                                currentHovered_ = Unselected();
+    Grid              creatingGrid_;
+    Item              creatingItem_;
+    Id                currentHovered_ = Unselected();
 
-    std::vector<Grid>                 grids_;
-    Texture2D                         buffsAtlas_;
-    Texture2D                         numbersAtlas_;
+    std::vector<Grid> grids_;
+    Texture2D         buffsAtlas_;
+    Texture2D         numbersAtlas_;
 
-    Id                                selectedId_           = Unselected();
+    struct GridsData
+    {
+        glm::vec4 screenSize;
+    };
+    ConstantBuffer<GridsData> gridsCB_;
+    ShaderId                  screenSpaceVS_;
+    ShaderId                  gridsPS_;
 
-    int                               editingItemFakeCount_ = 1;
+    struct InstanceData
+    {
+        glm::vec4 posDims;
+        glm::vec4 uv;
+        glm::vec4 numberUV;
+        glm::vec4 tint;
+        glm::vec4 borderColor;
+        glm::vec4 glowColor;
+        float     borderThickness;
+        float     glowSize;
+        bool      showNumber;
+        int       _;
+    };
+    ComPtr<ID3D11Buffer>                           instanceBuffer_;
+    ComPtr<ID3D11ShaderResourceView>               instanceBufferView_;
+    ComPtr<ID3D11BlendState>                       defaultBlend_;
+    ComPtr<ID3D11SamplerState>                     defaultSampler_;
 
-    const std::vector<Buff>           buffs_;
-    const std::map<int, const Buff*>  buffsMap_;
-    const std::vector<glm::vec4>      numbersMap_;
-    std::unordered_map<uint, int>     activeBuffs_;
+    static constexpr size_t                        instanceBufferSize_s = 1024;
+    std::array<InstanceData, instanceBufferSize_s> instanceBufferSource_;
+    uint                                           instanceBufferCount_  = 0;
 
-    static std::vector<Buff>          GenerateBuffsList();
-    static std::map<int, const Buff*> GenerateBuffsMap(const std::vector<Buff>& lst);
+    Id                                             selectedId_           = Unselected();
 
-    bool                              draggingGridScale_ = false, draggingMouseBoundaries_ = false;
-    bool                              testMouseMode_ = false;
-    bool                              placingItem_   = false;
-    mstime                            lastSaveTime_  = 0;
-    bool                              needsSaving_   = false;
-    static inline constexpr mstime    SaveDelay      = 1000;
-    char                              buffSearch_[512];
-    bool                              firstDraw_          = true;
-    ScanCode                          holdingMouseButton_ = ScanCode::NONE;
-    ImVec2                            heldMousePos_{};
-    int                               lastGetBuffsError_ = 0;
+    int                                            editingItemFakeCount_ = 1;
 
-    static constexpr int              InvisibleWindowFlags =
+    const std::vector<Buff>                        buffs_;
+    const std::map<int, const Buff*>               buffsMap_;
+    const std::vector<glm::vec4>                   numbersMap_;
+    std::unordered_map<uint, int>                  activeBuffs_;
+
+    static std::vector<Buff>                       GenerateBuffsList();
+    static std::map<int, const Buff*>              GenerateBuffsMap(const std::vector<Buff>& lst);
+
+    bool                                           draggingGridScale_ = false, draggingMouseBoundaries_ = false;
+    bool                                           testMouseMode_ = false;
+    bool                                           placingItem_   = false;
+    mstime                                         lastSaveTime_  = 0;
+    bool                                           needsSaving_   = false;
+    static inline constexpr mstime                 SaveDelay      = 1000;
+    char                                           buffSearch_[512];
+    bool                                           firstDraw_          = true;
+    ScanCode                                       holdingMouseButton_ = ScanCode::NONE;
+    ImVec2                                         heldMousePos_{};
+    int                                            lastGetBuffsError_ = 0;
+
+    static constexpr int                           InvisibleWindowFlags =
         ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollWithMouse;
 
 #ifdef _DEBUG

@@ -69,7 +69,6 @@ protected:
     std::array<ShaderId, size_t(CursorType::COUNT)> cursorPS_;
 
     ComPtr<ID3D11BlendState>                        defaultBlend_, invertBlend_;
-    ComPtr<ID3D11SamplerState>                      defaultSampler_;
 
     std::vector<Layer>                              layers_;
 

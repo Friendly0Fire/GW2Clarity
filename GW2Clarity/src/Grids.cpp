@@ -14,9 +14,10 @@
 
 namespace GW2Clarity
 {
-ImVec2 AdjustToArea(float w, float h, float availW)
+template<VectorLike<float, 2> T>
+T AdjustToArea(float w, float h, float availW)
 {
-    ImVec2 dims(w, h);
+    T dims(w, h);
     if (dims.x < dims.y)
         dims.x = dims.y * w / h;
     else if (dims.x > dims.y)
@@ -87,6 +88,46 @@ Grids::Grids(ComPtr<ID3D11Device>& dev)
 #ifdef _DEBUG
     LoadNames();
 #endif
+
+    auto& sm       = ShaderManager::i();
+    gridsCB_       = sm.MakeConstantBuffer<GridsData>();
+    screenSpaceVS_ = sm.GetShader(L"Grids.hlsl", D3D11_SHVER_VERTEX_SHADER, "Grids_VS");
+    gridsPS_       = sm.GetShader(L"Grids.hlsl", D3D11_SHVER_PIXEL_SHADER, "Grids_PS");
+
+    D3D11_BUFFER_DESC instanceBufferDesc;
+
+    instanceBufferDesc.Usage               = D3D11_USAGE_DYNAMIC;
+    instanceBufferDesc.ByteWidth           = sizeof(InstanceData) * instanceBufferSize_s;
+    instanceBufferDesc.BindFlags           = D3D11_BIND_VERTEX_BUFFER;
+    instanceBufferDesc.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
+    instanceBufferDesc.MiscFlags           = 0;
+    instanceBufferDesc.StructureByteStride = 0;
+
+    GW2_CHECKED_HRESULT(dev->CreateBuffer(&instanceBufferDesc, nullptr, instanceBuffer_.GetAddressOf()));
+
+    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+
+    srvDesc.Format               = DXGI_FORMAT_UNKNOWN;
+    srvDesc.ViewDimension        = D3D11_SRV_DIMENSION_BUFFER;
+    srvDesc.Buffer.FirstElement  = 0;
+    srvDesc.Buffer.ElementOffset = 0;
+    srvDesc.Buffer.NumElements   = instanceBufferSize_s;
+    srvDesc.Buffer.ElementWidth  = sizeof(InstanceData);
+
+    ComPtr<ID3D11Resource> instanceBufferRes;
+    instanceBufferView_->GetResource(instanceBufferRes.GetAddressOf());
+    GW2_CHECKED_HRESULT(dev->CreateShaderResourceView(instanceBufferRes.Get(), &srvDesc, instanceBufferView_.GetAddressOf()));
+
+    CD3D11_BLEND_DESC blendDesc(D3D11_DEFAULT);
+    blendDesc.RenderTarget[0].BlendEnable    = true;
+    blendDesc.RenderTarget[0].SrcBlend       = D3D11_BLEND_ONE;
+    blendDesc.RenderTarget[0].DestBlend      = D3D11_BLEND_INV_SRC_ALPHA;
+    blendDesc.RenderTarget[0].SrcBlendAlpha  = D3D11_BLEND_ONE;
+    blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
+    GW2_CHECKED_HRESULT(dev->CreateBlendState(&blendDesc, defaultBlend_.GetAddressOf()));
+
+    CD3D11_SAMPLER_DESC sampDesc(D3D11_DEFAULT);
+    GW2_CHECKED_HRESULT(dev->CreateSamplerState(&sampDesc, defaultSampler_.GetAddressOf()));
 
     SettingsMenu::i().AddImplementer(this);
 }
@@ -458,7 +499,7 @@ void Grids::DrawGridList()
     }
 }
 
-void Grids::DrawItems(const Sets::Set* set, bool shouldIgnoreSet)
+void Grids::DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set, bool shouldIgnoreSet)
 {
     bool editMode = selectedId_.grid != UnselectedSubId;
 #ifdef _DEBUG
@@ -471,92 +512,121 @@ void Grids::DrawItems(const Sets::Set* set, bool shouldIgnoreSet)
     {
         if (!MumbleLink::i().isInCompetitiveMode() && (editMode || shouldIgnoreSet || showDebugGrid || !set->combatOnly || MumbleLink::i().isInCombat()))
         {
-            glm::vec2 screen{ ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y };
-            glm::vec2 baseMouse{ ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y };
+            instanceBufferCount_ = 0;
+            const glm::vec2 screen{ ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y };
+            const glm::vec2 mouse{ ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y };
 
-            ImGui::SetNextWindowPos(ImVec2(0, 0));
-            ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
-            if (ImGui::Begin("Display Area", nullptr, InvisibleWindowFlags))
+            auto            drawItem = [&](const glm::ivec2& spacing, const Item& i, const glm::vec2& gridOrigin, int count, bool editing)
             {
-                struct NumberDraw
+                auto      thresh = ranges::find_if(i.thresholds, [=](const auto& t) { return count < t.threshold; });
+                glm::vec4 tint(1, 1, 1, 1);
+                if (thresh != i.thresholds.end())
+                    tint = thresh->tint;
+
+                glm::vec2 pos  = gridOrigin + glm::vec2(i.pos * spacing);
+
+                auto      adj  = AdjustToArea<glm::vec2>(128.f, 128.f, float(spacing.x));
+
+                auto&     inst = instanceBufferSource_[instanceBufferCount_++];
+                inst.posDims   = glm::vec4(pos, adj);
+                inst.uv        = i.buff->uv;
+                if (count > 1 && i.buff->maxStacks > 1)
                 {
-                    ImVec2 adj;
-                    ImVec2 pos;
-                    ImVec2 uv1;
-                    ImVec2 uv2;
-                };
-                std::vector<NumberDraw> delayedDraws;
+                    inst.showNumber = true;
+                    inst.numberUV   = numbersMap_[count];
+                }
+                else
+                    inst.showNumber = false;
+                inst.tint            = tint;
+                inst.borderColor     = glm::vec4(0.f);
+                inst.glowColor       = glm::vec4(0.f);
+                inst.borderThickness = 0.f;
+                inst.glowSize        = 0.f;
 
-                auto                    drawItem = [&](const glm::ivec2& spacing, const Item& i, const glm::vec2& gridOrigin, int count, bool editing)
+                // if (editing)
+                //     ImGui::GetWindowDrawList()->AddRect(ToImGui(pos), ToImGui(pos) + adj, 0xFF0000FF);
+
+                // ImGui::SetCursorPos(ToImGui(pos));
+                // ImGui::Image(buffsAtlas_.srv.Get(), adj, ToImGui(i.buff->uv.xy), ToImGui(i.buff->uv.zw), tint);
+                // if (count > 1 && i.buff->maxStacks > 1)
+                //{
+                //     count = std::min({ count, i.buff->maxStacks, int(numbersMap_.size()) - 1 });
+                //     delayedDraws.emplace_back(adj, ToImGui(pos), ToImGui(numbersMap_[count].xy), ToImGui(numbersMap_[count].zw));
+                // }
+            };
+
+            auto drawGrid = [&](const Grid& g, short gid)
+            {
+                glm::vec2 gridOrigin;
+                if (!g.attached || (editMode && !testMouseMode_))
+                    gridOrigin = screen * 0.5f + glm::vec2(g.offset);
+                else
                 {
-                    auto   thresh = ranges::find_if(i.thresholds, [=](const auto& t) { return count < t.threshold; });
-                    ImVec4 tint(1, 1, 1, 1);
-                    if (thresh != i.thresholds.end())
-                        tint = thresh->tint;
-
-                    glm::vec2 pos = gridOrigin + glm::vec2(i.pos * spacing);
-
-                    auto      adj = AdjustToArea(128.f, 128.f, float(spacing.x));
-
-                    if (editing)
-                        ImGui::GetWindowDrawList()->AddRect(ToImGui(pos), ToImGui(pos) + adj, 0xFF0000FF);
-
-                    ImGui::SetCursorPos(ToImGui(pos));
-                    ImGui::Image(buffsAtlas_.srv.Get(), adj, ToImGui(i.buff->uv.xy), ToImGui(i.buff->uv.zw), tint);
-                    if (count > 1 && i.buff->maxStacks > 1)
-                    {
-                        count = std::min({ count, i.buff->maxStacks, int(numbersMap_.size()) - 1 });
-                        delayedDraws.emplace_back(adj, ToImGui(pos), ToImGui(numbersMap_[count].xy), ToImGui(numbersMap_[count].zw));
-                    }
-                };
-
-                auto drawGrid = [&](const Grid& g, short gid)
-                {
-                    glm::vec2 gridOrigin;
-                    if (!g.attached || (editMode && !testMouseMode_))
-                        gridOrigin = screen * 0.5f + glm::vec2(g.offset);
+                    if (!g.trackMouseWhileHeld && holdingMouseButton_ != ScanCode::NONE)
+                        gridOrigin = glm::vec2{ heldMousePos_.x, heldMousePos_.y };
                     else
+                        gridOrigin = mouse;
+
+                    if (g.mouseClipMin.x != std::numeric_limits<int>::max())
                     {
-                        if (!g.trackMouseWhileHeld && holdingMouseButton_ != ScanCode::NONE)
-                            gridOrigin = glm::vec2{ heldMousePos_.x, heldMousePos_.y };
-                        else
-                            gridOrigin = baseMouse;
-
-                        if (g.mouseClipMin.x != std::numeric_limits<int>::max())
-                        {
-                            gridOrigin = glm::max(gridOrigin, glm::vec2(g.mouseClipMin));
-                            gridOrigin = glm::min(gridOrigin, glm::vec2(g.mouseClipMax));
-                        }
-
-                        if (g.centralWeight > 0.f)
-                            gridOrigin = glm::mix(gridOrigin, screen * 0.5f, g.centralWeight);
+                        gridOrigin = glm::max(gridOrigin, glm::vec2(g.mouseClipMin));
+                        gridOrigin = glm::min(gridOrigin, glm::vec2(g.mouseClipMax));
                     }
 
-                    for (const auto&& [iid, i] : g.items | ranges::views::enumerate)
-                    {
-                        bool editing = editMode && selectedId_ == Id{ gid, iid };
-                        int  count   = 0;
-                        if (editing)
-                            count = editingItemFakeCount_;
-                        else if (i.buff)
-                            count = std::accumulate(i.additionalBuffs.begin(), i.additionalBuffs.end(), i.buff->GetStacks(activeBuffs_),
-                                                    [&](int a, const Buff* b) { return a + b->GetStacks(activeBuffs_); });
+                    if (g.centralWeight > 0.f)
+                        gridOrigin = glm::mix(gridOrigin, screen * 0.5f, g.centralWeight);
+                }
 
-                        drawItem(g.spacing, i, gridOrigin, count, editing);
-                    }
-                    if (editMode && selectedId_ == New(gid))
-                        drawItem(g.spacing, creatingItem_, screen * 0.5f, editingItemFakeCount_, true);
-                };
+                for (const auto&& [iid, i] : g.items | ranges::views::enumerate)
+                {
+                    bool editing = editMode && selectedId_ == Id{ gid, iid };
+                    int  count   = 0;
+                    if (editing)
+                        count = editingItemFakeCount_;
+                    else if (i.buff)
+                        count = std::accumulate(i.additionalBuffs.begin(), i.additionalBuffs.end(), i.buff->GetStacks(activeBuffs_),
+                                                [&](int a, const Buff* b) { return a + b->GetStacks(activeBuffs_); });
 
-                if (editMode)
-                    drawGrid(getG(selectedId_), selectedId_.grid);
-                else if (shouldIgnoreSet)
-                    for (const auto& g : grids_)
-                        drawGrid(g, UnselectedSubId);
-                else if (set)
-                    for (int gid : set->grids)
-                        drawGrid(grids_[gid], UnselectedSubId);
+                    drawItem(g.spacing, i, gridOrigin, count, editing);
+                }
+                if (editMode && selectedId_ == New(gid))
+                    drawItem(g.spacing, creatingItem_, screen * 0.5f, editingItemFakeCount_, true);
+            };
 
+            if (editMode)
+                drawGrid(getG(selectedId_), selectedId_.grid);
+            else if (shouldIgnoreSet)
+                for (const auto& g : grids_)
+                    drawGrid(g, UnselectedSubId);
+            else if (set)
+                for (int gid : set->grids)
+                    drawGrid(grids_[gid], UnselectedSubId);
+
+            D3D11_MAPPED_SUBRESOURCE map;
+            ctx->Map(instanceBuffer_.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &map);
+            memcpy_s(map.pData, instanceBufferSize_s * sizeof(InstanceData), instanceBufferSource_.data(), instanceBufferCount_ * sizeof(InstanceData));
+            ctx->Unmap(instanceBuffer_.Get(), 0);
+
+            gridsCB_->screenSize = glm::vec4(screen, 1.f / screen);
+            gridsCB_.Update(ctx.Get());
+            ShaderManager::i().SetConstantBuffers(ctx.Get(), gridsCB_);
+            ID3D11ShaderResourceView* srvs[] = { instanceBufferView_.Get(), buffsAtlas_.srv.Get(), numbersAtlas_.srv.Get() };
+            ctx->VSSetShaderResources(0, 3, srvs);
+            ctx->PSSetShaderResources(0, 3, srvs);
+            ctx->IASetVertexBuffers(0, 0, NULL, NULL, NULL);
+            ctx->IASetInputLayout(NULL);
+            ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+
+            auto& sm = ShaderManager::i();
+            sm.SetShaders(ctx.Get(), screenSpaceVS_, gridsPS_);
+
+            ID3D11SamplerState* samps[] = { defaultSampler_.Get() };
+            ctx->PSSetSamplers(0, 1, samps);
+
+            ctx->OMSetBlendState(defaultBlend_.Get(), nullptr, 0xffffffff);
+
+            ctx->DrawInstanced(4, instanceBufferCount_, 0, 0);
+#if 0
 #ifdef _DEBUG
                 const Buff* hoveredBuff = nullptr;
                 if (showDebugGrid)
@@ -608,8 +678,7 @@ void Grids::DrawItems(const Sets::Set* set, bool shouldIgnoreSet)
                 if (hoveredBuff)
                     ImGui::SetTooltip("%s", hoveredBuff->name.c_str());
 #endif
-            }
-            ImGui::End();
+#endif
         }
     }
 }
@@ -878,7 +947,7 @@ void Grids::Draw(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set, bool sh
         testMouseMode_ = false;
     }
 
-    DrawItems(set, shouldIgnoreSet);
+    DrawItems(ctx, set, shouldIgnoreSet);
 
 #ifdef _DEBUG
     if (firstDraw_ || showAnalyzer_)
@@ -965,6 +1034,7 @@ void Grids::Load()
     auto getivec2  = [](const json& j) { return glm::ivec2(j[0].get<int>(), j[1].get<int>()); };
     auto getivec4  = [](const json& j) { return glm::ivec4(j[0].get<int>(), j[1].get<int>(), j[2].get<int>(), j[3].get<int>()); };
     auto getImVec4 = [](const json& j) { return ImVec4(j[0].get<float>(), j[1].get<float>(), j[2].get<float>(), j[3].get<float>()); };
+    auto getvec4   = [](const json& j) { return glm::vec4(j[0].get<float>(), j[1].get<float>(), j[2].get<float>(), j[3].get<float>()); };
     auto getBuff   = [this](const json& j) -> const Buff*
     {
         int  id = j;
@@ -1015,7 +1085,7 @@ void Grids::Load()
 
             if (iIn.contains("thresholds"))
                 for (auto& tIn : iIn["thresholds"])
-                    i.thresholds.emplace_back(tIn["threshold"], getImVec4(tIn["tint"]));
+                    i.thresholds.emplace_back(tIn["threshold"], getvec4(tIn["tint"]));
 
             g.items.push_back(i);
         }

@@ -1,3 +1,4 @@
+#define CURSOR_HLSL
 #include "common.hlsli"
 
 float4 ColorFromDist(float l, float t) {

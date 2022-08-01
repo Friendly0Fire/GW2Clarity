@@ -86,6 +86,9 @@
     <None Include="src\BuffsList.inc">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="shaders\Grids.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc">
