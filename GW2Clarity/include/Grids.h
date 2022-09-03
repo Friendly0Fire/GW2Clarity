@@ -185,6 +185,7 @@ protected:
 
     ShaderId          screenSpaceVS_;
     ShaderId          gridsPS_;
+    ShaderId          gridsFilteredPS_;
 
     struct GridConstants
     {
@@ -239,6 +240,8 @@ protected:
     ScanCode                                       holdingMouseButton_ = ScanCode::NONE;
     ImVec2                                         heldMousePos_{};
     int                                            lastGetBuffsError_ = 0;
+
+    ConfigurationOption<bool>                      enableBetterFiltering_;
 
     static constexpr int                           InvisibleWindowFlags =
         ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollWithMouse;

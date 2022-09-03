@@ -65,20 +65,42 @@ VS_OUT Grids_VS(in uint instance : SV_InstanceID, in uint id : SV_VertexID)
     return Out;
 }
 
-float4 Grids_PS(in VS_OUT In) : SV_Target
+float4 MaybeFiltered(in Texture2D<float4> tex, in SamplerState linearSampler, in float2 uv, in bool filtered)
 {
-    float2 threshold = abs(In.UV - 0.5f) * 2;
-    bool inCore = all(threshold <= 1.f);
-    float4 tex = inCore * Atlas.Sample(MainSampler, In.TexUVs.xy + In.UV.xy * atlasUVSize);
-    float4 num = inCore * In.ShowNumber * Numbers.Sample(MainSampler, In.TexUVs.zw + In.UV.xy * numbersUVSize);
+    if(filtered)
+    {
+        float w, h;
+        tex.GetDimensions(w, h);
+        return SampleTextureBSpline(tex, linearSampler, uv, float2(w, h));
+    }
+    else
+        return tex.Sample(linearSampler, uv);
+}
+
+float4 Grids(in VS_OUT In, bool filtered)
+{
+    float2 constrainedUV = saturate(In.UV.xy);
+    float4 tex = MaybeFiltered(Atlas, MainSampler, In.TexUVs.xy + constrainedUV * atlasUVSize, filtered);
+    float4 num = In.ShowNumber * Numbers.Sample(MainSampler, In.TexUVs.zw + constrainedUV * numbersUVSize);
 
     float4 c = float4(lerp(tex.rgb, num.rgb, num.a), tex.a);
     c.rgb *= In.Tint.rgb;
-
-    c += In.BorderColor * (inCore && any(threshold >= 1.f - In.BorderGlow.xy));
+    
+    float2 threshold = abs(In.UV - 0.5f) * 2;
+    c += In.BorderColor * (all(threshold <= 1.f) && any(threshold >= 1.f - In.BorderGlow.xy));
     c += In.GlowColor * saturate((1.f - c.a) - 2.f * length(In.UV.zw - 0.5f));
 
     c *= In.Tint.a;
 
     return c;
+}
+
+float4 FilteredGrids_PS(in VS_OUT In) : SV_Target
+{
+    return Grids(In, true);
+}
+
+float4 Grids_PS(in VS_OUT In) : SV_Target
+{
+    return Grids(In, false);
 }

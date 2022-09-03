@@ -56,6 +56,7 @@ Grids::Grids(ComPtr<ID3D11Device>& dev)
     : buffs_(GenerateBuffsList(buffsAtlasUVSize_))
     , buffsMap_(GenerateBuffsMap(buffs_))
     , numbersMap_(GenerateNumbersMap(numbersAtlasUVSize_))
+    , enableBetterFiltering_("Enable better texture filtering", "better_tex_filtering", "Grids", true)
 {
     buffsAtlas_   = CreateTextureFromResource(dev.Get(), Core::i().dllModule(), IDR_BUFFS);
     numbersAtlas_ = CreateTextureFromResource(dev.Get(), Core::i().dllModule(), IDR_NUMBERS);
@@ -76,11 +77,12 @@ Grids::Grids(ComPtr<ID3D11Device>& dev)
     LoadNames();
 #endif
 
-    auto& sm       = ShaderManager::i();
+    auto& sm         = ShaderManager::i();
 
-    gridCB_        = ShaderManager::i().MakeConstantBuffer<GridConstants>();
-    screenSpaceVS_ = sm.GetShader(L"Grids.hlsl", D3D11_SHVER_VERTEX_SHADER, "Grids_VS");
-    gridsPS_       = sm.GetShader(L"Grids.hlsl", D3D11_SHVER_PIXEL_SHADER, "Grids_PS");
+    gridCB_          = ShaderManager::i().MakeConstantBuffer<GridConstants>();
+    screenSpaceVS_   = sm.GetShader(L"Grids.hlsl", D3D11_SHVER_VERTEX_SHADER, "Grids_VS");
+    gridsPS_         = sm.GetShader(L"Grids.hlsl", D3D11_SHVER_PIXEL_SHADER, "Grids_PS");
+    gridsFilteredPS_ = sm.GetShader(L"Grids.hlsl", D3D11_SHVER_PIXEL_SHADER, "FilteredGrids_PS");
 
     D3D11_BUFFER_DESC instanceBufferDesc;
 
@@ -604,7 +606,7 @@ void Grids::DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set, bo
             gridCB_->numbersUVSize = numbersAtlasUVSize_;
             gridCB_.Update(ctx.Get());
             sm.SetConstantBuffers(ctx.Get(), gridCB_);
-            sm.SetShaders(ctx.Get(), screenSpaceVS_, gridsPS_);
+            sm.SetShaders(ctx.Get(), screenSpaceVS_, enableBetterFiltering_.value() ? gridsFilteredPS_ : gridsPS_);
 
             ID3D11SamplerState* samps[] = { defaultSampler_.Get() };
             ctx->PSSetSamplers(0, 1, samps);
@@ -695,6 +697,9 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind)
 {
     DrawEditingGrid();
     PlaceItem();
+
+    ImGuiConfigurationWrapper(ImGui::Checkbox, enableBetterFiltering_);
+    ImGuiHelpTooltip("Enables higher quality texture filtering, improving the icons' appearance at a cost to performance.");
 
     auto saveCheck = [this](bool changed)
     {
