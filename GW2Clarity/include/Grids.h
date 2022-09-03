@@ -181,13 +181,8 @@ protected:
     Texture2D         buffsAtlas_;
     Texture2D         numbersAtlas_;
 
-    struct GridsData
-    {
-        glm::vec4 screenSize;
-    };
-    ConstantBuffer<GridsData> gridsCB_;
-    ShaderId                  screenSpaceVS_;
-    ShaderId                  gridsPS_;
+    ShaderId          screenSpaceVS_;
+    ShaderId          gridsPS_;
 
     struct InstanceData
     {

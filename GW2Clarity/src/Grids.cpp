@@ -90,7 +90,6 @@ Grids::Grids(ComPtr<ID3D11Device>& dev)
 #endif
 
     auto& sm       = ShaderManager::i();
-    gridsCB_       = sm.MakeConstantBuffer<GridsData>();
     screenSpaceVS_ = sm.GetShader(L"Grids.hlsl", D3D11_SHVER_VERTEX_SHADER, "Grids_VS");
     gridsPS_       = sm.GetShader(L"Grids.hlsl", D3D11_SHVER_PIXEL_SHADER, "Grids_PS");
 
@@ -98,10 +97,10 @@ Grids::Grids(ComPtr<ID3D11Device>& dev)
 
     instanceBufferDesc.Usage               = D3D11_USAGE_DYNAMIC;
     instanceBufferDesc.ByteWidth           = sizeof(InstanceData) * instanceBufferSize_s;
-    instanceBufferDesc.BindFlags           = D3D11_BIND_VERTEX_BUFFER;
+    instanceBufferDesc.BindFlags           = D3D11_BIND_SHADER_RESOURCE;
     instanceBufferDesc.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
-    instanceBufferDesc.MiscFlags           = 0;
-    instanceBufferDesc.StructureByteStride = 0;
+    instanceBufferDesc.MiscFlags           = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+    instanceBufferDesc.StructureByteStride = sizeof(InstanceData);
 
     GW2_CHECKED_HRESULT(dev->CreateBuffer(&instanceBufferDesc, nullptr, instanceBuffer_.GetAddressOf()));
 
@@ -114,9 +113,7 @@ Grids::Grids(ComPtr<ID3D11Device>& dev)
     srvDesc.Buffer.NumElements   = instanceBufferSize_s;
     srvDesc.Buffer.ElementWidth  = sizeof(InstanceData);
 
-    ComPtr<ID3D11Resource> instanceBufferRes;
-    instanceBufferView_->GetResource(instanceBufferRes.GetAddressOf());
-    GW2_CHECKED_HRESULT(dev->CreateShaderResourceView(instanceBufferRes.Get(), &srvDesc, instanceBufferView_.GetAddressOf()));
+    GW2_CHECKED_HRESULT(dev->CreateShaderResourceView(instanceBuffer_.Get(), &srvDesc, instanceBufferView_.GetAddressOf()));
 
     CD3D11_BLEND_DESC blendDesc(D3D11_DEFAULT);
     blendDesc.RenderTarget[0].BlendEnable    = true;
@@ -528,7 +525,7 @@ void Grids::DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set, bo
                 auto      adj  = AdjustToArea<glm::vec2>(128.f, 128.f, float(spacing.x));
 
                 auto&     inst = instanceBufferSource_[instanceBufferCount_++];
-                inst.posDims   = glm::vec4(pos, adj);
+                inst.posDims   = glm::vec4(pos, adj) / glm::vec4(screen, screen);
                 inst.uv        = i.buff->uv;
                 if (count > 1 && i.buff->maxStacks > 1)
                 {
@@ -538,9 +535,9 @@ void Grids::DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set, bo
                 else
                     inst.showNumber = false;
                 inst.tint            = tint;
-                inst.borderColor     = glm::vec4(0.f);
+                inst.borderColor     = editing ? glm::vec4(1.f, 0.f, 0.f, 1.f) : glm::vec4(0.f);
                 inst.glowColor       = glm::vec4(0.f);
-                inst.borderThickness = 0.f;
+                inst.borderThickness = editing ? 1.f : 0.f;
                 inst.glowSize        = 0.f;
 
                 // if (editing)
@@ -607,9 +604,6 @@ void Grids::DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set, bo
             memcpy_s(map.pData, instanceBufferSize_s * sizeof(InstanceData), instanceBufferSource_.data(), instanceBufferCount_ * sizeof(InstanceData));
             ctx->Unmap(instanceBuffer_.Get(), 0);
 
-            gridsCB_->screenSize = glm::vec4(screen, 1.f / screen);
-            gridsCB_.Update(ctx.Get());
-            ShaderManager::i().SetConstantBuffers(ctx.Get(), gridsCB_);
             ID3D11ShaderResourceView* srvs[] = { instanceBufferView_.Get(), buffsAtlas_.srv.Get(), numbersAtlas_.srv.Get() };
             ctx->VSSetShaderResources(0, 3, srvs);
             ctx->PSSetShaderResources(0, 3, srvs);
@@ -618,6 +612,7 @@ void Grids::DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set, bo
             ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
             auto& sm = ShaderManager::i();
+            sm.SetConstantBuffers(ctx.Get(), Core::i().commonCB());
             sm.SetShaders(ctx.Get(), screenSpaceVS_, gridsPS_);
 
             ID3D11SamplerState* samps[] = { defaultSampler_.Get() };

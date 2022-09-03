@@ -53,6 +53,8 @@ void Core::InnerInitPostImGui()
 {
     firstMessageShown_ = std::make_unique<ConfigurationOption<bool>>("", "first_message_shown_v1", "Core", false);
 
+    commonCB_          = ShaderManager::i().MakeConstantBuffer<CommonConstants>();
+
     grids_             = std::make_unique<Grids>(device_);
     sets_              = std::make_unique<Sets>(device_, grids_.get());
     cursor_            = std::make_unique<Cursor>(device_);
@@ -160,6 +162,8 @@ void Core::InnerDraw()
                 },
                 [&]() { firstMessageShown_->value(true); });
 
+    commonCB_->screenSize = glm::vec4(screenWidth(), screenHeight(), 1.f / screenWidth(), 1.f / screenHeight());
+    commonCB_.Update(context_.Get());
     grids_->Draw(context_, sets_->currentSet(), sets_->enableDefaultSet());
     sets_->Draw(context_);
     cursor_->Draw(context_);

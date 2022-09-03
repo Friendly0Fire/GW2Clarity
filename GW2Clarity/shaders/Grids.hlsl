@@ -20,18 +20,19 @@ Texture2D<float4> Numbers : register(t2);
 
 struct VS_OUT
 {
-	float4 Position : SV_Position;
-    float2 UV : TEXCOORD0;
+	float4 Position    : SV_Position;
+    float4 UV          : TEXCOORD0;
 
     float4 TexUV       : TEXCOORD1;
     float4 NumUV       : TEXCOORD2;
     float4 Tint        : TEXCOORD3;
     float4 BorderColor : TEXCOORD4;
     float4 GlowColor   : TEXCOORD5;
-    float3 Data        : TEXCOORD6;
+    float3 BorderGlow  : TEXCOORD6;
+    float  ShowNumber  : TEXCOORD7;
 };
 
-VS_OUT Grids_VS(in int instance : SV_InstanceID, in int id : SV_VertexID)
+VS_OUT Grids_VS(in uint instance : SV_InstanceID, in uint id : SV_VertexID)
 {
     VS_OUT Out = (VS_OUT)0;
 
@@ -39,10 +40,11 @@ VS_OUT Grids_VS(in int instance : SV_InstanceID, in int id : SV_VertexID)
 
     float2 UV = float2(id & 1, id >> 1);
 
-	float2 dims = (UV * 2 - 1) * data.posDims.zw;
+	float2 dims = data.posDims.zw + 2.f * data.glowSize * screenSize.zw;
 
-    Out.UV = UV;
-    Out.Position = float4(dims + data.posDims.xy * 2 - 1, 0.5f, 1.f);
+    Out.UV.xy = UV * (dims / data.posDims.zw) - 0.5f * ((dims / data.posDims.zw) - 1.f);
+    Out.UV.zw = UV;
+    Out.Position = float4((UV * 2 - 1) * dims + data.posDims.xy * 2 - 1, 0.5f, 1.f);
 	Out.Position.y *= -1;
 
     Out.TexUV = data.uv;
@@ -50,12 +52,26 @@ VS_OUT Grids_VS(in int instance : SV_InstanceID, in int id : SV_VertexID)
     Out.Tint = data.tint;
     Out.BorderColor = data.borderColor;
     Out.GlowColor = data.glowColor;
-    Out.Data = float3(data.borderThickness, data.glowSize, data.showNumber);
+    Out.ShowNumber = data.showNumber;
+    Out.BorderGlow = float3(2.f * data.borderThickness / (data.posDims.zw * screenSize.xy), data.posDims.z * screenSize.x / data.glowSize);
 
     return Out;
 }
 
 float4 Grids_PS(in VS_OUT In) : SV_Target
 {
-    return 1.f;
+    float2 threshold = abs(In.UV - 0.5f) * 2;
+    bool inCore = all(threshold <= 1.f);
+    float4 tex = inCore * Atlas.Sample(MainSampler, In.TexUV.xy + In.UV.xy * (In.TexUV.zw - In.TexUV.xy));
+    float4 num = inCore * In.ShowNumber * Numbers.Sample(MainSampler, In.NumUV.xy + In.UV.xy * (In.NumUV.zw - In.NumUV.xy));
+
+    float4 c = float4(lerp(tex.rgb, num.rgb, num.a), tex.a);
+    c.rgb *= In.Tint.rgb;
+
+    c += In.BorderColor * (inCore && any(threshold >= 1.f - In.BorderGlow.xy));
+    c += In.GlowColor * saturate((1.f - c.a) - 2.f * length(In.UV.zw - 0.5f));
+
+    c *= In.Tint.a;
+
+    return c;
 }

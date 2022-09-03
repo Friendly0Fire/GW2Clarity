@@ -17,6 +17,11 @@ class ShaderManager;
 namespace GW2Clarity
 {
 
+struct CommonConstants
+{
+    glm::vec4 screenSize;
+};
+
 using GetBuffsCallback = StackedBuff*(__cdecl*)();
 
 class Core : public BaseCore, public Singleton<Core>
@@ -42,6 +47,11 @@ public:
     glm::vec2 screenDims() const
     {
         return glm::vec2(screenWidth_, screenHeight_);
+    }
+
+    auto& commonCB()
+    {
+        return commonCB_;
     }
 
 protected:
@@ -71,6 +81,7 @@ protected:
     std::unique_ptr<Grids>                     grids_;
     std::unique_ptr<Sets>                      sets_;
     std::unique_ptr<Cursor>                    cursor_;
+    ConstantBuffer<CommonConstants>            commonCB_;
     HMODULE                                    buffLib_                 = nullptr;
     GetBuffsCallback                           getBuffs_                = nullptr;
 

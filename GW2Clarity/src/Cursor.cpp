@@ -74,7 +74,7 @@ void Cursor::Draw(ComPtr<ID3D11DeviceContext>& ctx)
         cursorCB_->dimensions = glm::vec4(mp, l.dims / Core::i().screenDims());
         cursorCB_.Update(ctx.Get());
 
-        ShaderManager::i().SetConstantBuffers(ctx.Get(), cursorCB_);
+        ShaderManager::i().SetConstantBuffers(ctx.Get(), Core::i().commonCB(), cursorCB_);
         ShaderManager::i().SetShaders(ctx.Get(), screenSpaceVS_, cursorPS_[int(l.type)]);
 
         DrawScreenQuad(ctx.Get());
