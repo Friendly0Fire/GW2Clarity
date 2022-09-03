@@ -32,43 +32,30 @@ T AdjustToArea(float w, float h, float availW)
     return dims;
 }
 
-std::vector<glm::vec4> GenerateNumbersMap()
+std::vector<glm::vec2> GenerateNumbersMap(glm::vec2& uvSize)
 {
-    return {
-        {0.f,            0.f,           0.f,         0.f        },
-        { 0.f,           0.f,           0.f,         0.f        },
-        { 0.0015337423f, 0.0015337423f, 0.19785276f, 0.19785276f},
-        { 0.20092024f,   0.0015337423f, 0.39723927f, 0.19785276f},
-        { 0.40030676f,   0.0015337423f, 0.59662575f, 0.19785276f},
-        { 0.59969324f,   0.0015337423f, 0.7960123f,  0.19785276f},
-        { 0.7990798f,    0.0015337423f, 0.99539876f, 0.19785276f},
-        { 0.0015337423f, 0.20092024f,   0.19785276f, 0.39723927f},
-        { 0.20092024f,   0.20092024f,   0.39723927f, 0.39723927f},
-        { 0.40030676f,   0.20092024f,   0.59662575f, 0.39723927f},
-        { 0.59969324f,   0.20092024f,   0.7960123f,  0.39723927f},
-        { 0.7990798f,    0.20092024f,   0.99539876f, 0.39723927f},
-        { 0.0015337423f, 0.40030676f,   0.19785276f, 0.59662575f},
-        { 0.20092024f,   0.40030676f,   0.39723927f, 0.59662575f},
-        { 0.40030676f,   0.40030676f,   0.59662575f, 0.59662575f},
-        { 0.59969324f,   0.40030676f,   0.7960123f,  0.59662575f},
-        { 0.7990798f,    0.40030676f,   0.99539876f, 0.59662575f},
-        { 0.0015337423f, 0.59969324f,   0.19785276f, 0.7960123f },
-        { 0.20092024f,   0.59969324f,   0.39723927f, 0.7960123f },
-        { 0.40030676f,   0.59969324f,   0.59662575f, 0.7960123f },
-        { 0.59969324f,   0.59969324f,   0.7960123f,  0.7960123f },
-        { 0.7990798f,    0.59969324f,   0.99539876f, 0.7960123f },
-        { 0.0015337423f, 0.7990798f,    0.19785276f, 0.99539876f},
-        { 0.20092024f,   0.7990798f,    0.39723927f, 0.99539876f},
-        { 0.40030676f,   0.7990798f,    0.59662575f, 0.99539876f},
-        { 0.59969324f,   0.7990798f,    0.7960123f,  0.99539876f},
-        { 0.7990798f,    0.7990798f,    0.99539876f, 0.99539876f},
+    const std::map<std::string, glm::vec2> atlasElements{
+#include <assets/numbers.inc>
     };
+
+    uvSize = atlasElements.at("");
+
+    std::vector<glm::vec2> numbers;
+    numbers.resize(atlasElements.size() + 1);
+
+    for (const auto& [name, pos] : atlasElements)
+    {
+        int idx      = atoi(name.c_str());
+        numbers[idx] = pos;
+    }
+
+    return numbers;
 }
 
 Grids::Grids(ComPtr<ID3D11Device>& dev)
-    : buffs_(GenerateBuffsList())
+    : buffs_(GenerateBuffsList(buffsAtlasUVSize_))
     , buffsMap_(GenerateBuffsMap(buffs_))
-    , numbersMap_(GenerateNumbersMap())
+    , numbersMap_(GenerateNumbersMap(numbersAtlasUVSize_))
 {
     buffsAtlas_   = CreateTextureFromResource(dev.Get(), Core::i().dllModule(), IDR_BUFFS);
     numbersAtlas_ = CreateTextureFromResource(dev.Get(), Core::i().dllModule(), IDR_NUMBERS);
@@ -90,6 +77,8 @@ Grids::Grids(ComPtr<ID3D11Device>& dev)
 #endif
 
     auto& sm       = ShaderManager::i();
+
+    gridCB_        = ShaderManager::i().MakeConstantBuffer<GridConstants>();
     screenSpaceVS_ = sm.GetShader(L"Grids.hlsl", D3D11_SHVER_VERTEX_SHADER, "Grids_VS");
     gridsPS_       = sm.GetShader(L"Grids.hlsl", D3D11_SHVER_PIXEL_SHADER, "Grids_PS");
 
@@ -106,12 +95,10 @@ Grids::Grids(ComPtr<ID3D11Device>& dev)
 
     D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
 
-    srvDesc.Format               = DXGI_FORMAT_UNKNOWN;
-    srvDesc.ViewDimension        = D3D11_SRV_DIMENSION_BUFFER;
-    srvDesc.Buffer.FirstElement  = 0;
-    srvDesc.Buffer.ElementOffset = 0;
-    srvDesc.Buffer.NumElements   = instanceBufferSize_s;
-    srvDesc.Buffer.ElementWidth  = sizeof(InstanceData);
+    srvDesc.Format              = DXGI_FORMAT_UNKNOWN;
+    srvDesc.ViewDimension       = D3D11_SRV_DIMENSION_BUFFER;
+    srvDesc.Buffer.FirstElement = 0;
+    srvDesc.Buffer.NumElements  = instanceBufferSize_s;
 
     GW2_CHECKED_HRESULT(dev->CreateShaderResourceView(instanceBuffer_.Get(), &srvDesc, instanceBufferView_.GetAddressOf()));
 
@@ -611,8 +598,12 @@ void Grids::DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set, bo
             ctx->IASetInputLayout(NULL);
             ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-            auto& sm = ShaderManager::i();
-            sm.SetConstantBuffers(ctx.Get(), Core::i().commonCB());
+            auto& sm               = ShaderManager::i();
+            gridCB_->screenSize    = glm::vec4(screen.x, screen.y, 1.f / screen.x, 1.f / screen.y);
+            gridCB_->atlasUVSize   = buffsAtlasUVSize_;
+            gridCB_->numbersUVSize = numbersAtlasUVSize_;
+            gridCB_.Update(ctx.Get());
+            sm.SetConstantBuffers(ctx.Get(), gridCB_);
             sm.SetShaders(ctx.Get(), screenSpaceVS_, gridsPS_);
 
             ID3D11SamplerState* samps[] = { defaultSampler_.Get() };
@@ -839,7 +830,7 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind)
 
                         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 20.f);
 
-                        ImGui::Image(buffsAtlas_.srv.Get(), ImVec2(32, 32), ToImGui(b.uv.xy), ToImGui(b.uv.zw));
+                        ImGui::Image(buffsAtlas_.srv.Get(), ImVec2(32, 32), ToImGui(b.uv.xy), ToImGui(b.uv.xy + buffsAtlasUVSize_));
                         ImGui::SameLine();
                         if (saveCheck(ImGui::Selectable(b.name.c_str(), false)))
                             buff = &b;
@@ -1149,11 +1140,13 @@ void Grids::Save()
 
 #include "BuffsList.inc"
 
-std::vector<Buff> Grids::GenerateBuffsList()
+std::vector<Buff> Grids::GenerateBuffsList(glm::vec2& uvSize)
 {
-    const std::map<std::string, glm::vec4> atlasElements{
+    const std::map<std::string, glm::vec2> atlasElements{
 #include <assets/atlas.inc>
     };
+
+    uvSize = atlasElements.at("");
 
     std::vector<Buff> buffs;
     buffs.assign(g_Buffs.begin(), g_Buffs.end());

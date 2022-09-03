@@ -21,7 +21,7 @@ struct Buff
     int            maxStacks;
     std::string    name;
     std::string    atlasEntry;
-    glm::vec4      uv{};
+    glm::vec2      uv{};
     std::set<uint> extraIds;
     std::string    category;
 
@@ -31,8 +31,8 @@ struct Buff
 
     Buff(uint id, std::string&& name, int maxStacks = std::numeric_limits<int>::max())
         : id(id)
-        , name(std::move(name))
         , maxStacks(maxStacks)
+        , name(std::move(name))
     {
         atlasEntry = ReplaceChars(ToLower(this->name), {
                                                            {' ',   '_'},
@@ -42,22 +42,22 @@ struct Buff
 
     Buff(uint id, std::string&& name, std::string&& atlas, int maxStacks = std::numeric_limits<int>::max())
         : id(id)
+        , maxStacks(maxStacks)
         , name(std::move(name))
         , atlasEntry(std::move(atlas))
-        , maxStacks(maxStacks)
     {}
 
     Buff(uint id, std::string&& name, glm::vec4&& uv, int maxStacks = std::numeric_limits<int>::max())
         : id(id)
-        , name(std::move(name))
-        , uv(uv)
         , maxStacks(maxStacks)
+        , name(std::move(name))
+        , uv(std::move(uv))
     {}
 
     Buff(std::initializer_list<uint> ids, std::string&& name, int maxStacks = std::numeric_limits<int>::max())
         : id(*ids.begin())
-        , name(std::move(name))
         , maxStacks(maxStacks)
+        , name(std::move(name))
     {
         atlasEntry = ReplaceChar(ToLower(this->name), ' ', '_');
         extraIds.insert(ids.begin() + 1, ids.end());
@@ -65,18 +65,18 @@ struct Buff
 
     Buff(std::initializer_list<uint> ids, std::string&& name, std::string&& atlas, int maxStacks = std::numeric_limits<int>::max())
         : id(*ids.begin())
+        , maxStacks(maxStacks)
         , name(std::move(name))
         , atlasEntry(std::move(atlas))
-        , maxStacks(maxStacks)
     {
         extraIds.insert(ids.begin() + 1, ids.end());
     }
 
-    Buff(std::initializer_list<uint> ids, std::string&& name, glm::vec4&& uv, int maxStacks = std::numeric_limits<int>::max())
+    Buff(std::initializer_list<uint> ids, std::string&& name, glm::vec2&& uv, int maxStacks = std::numeric_limits<int>::max())
         : id(*ids.begin())
-        , name(std::move(name))
-        , uv(uv)
         , maxStacks(maxStacks)
+        , name(std::move(name))
+        , uv(std::move(uv))
     {
         extraIds.insert(ids.begin() + 1, ids.end());
     }
@@ -180,15 +180,25 @@ protected:
     std::vector<Grid> grids_;
     Texture2D         buffsAtlas_;
     Texture2D         numbersAtlas_;
+    glm::vec2         buffsAtlasUVSize_;
+    glm::vec2         numbersAtlasUVSize_;
 
     ShaderId          screenSpaceVS_;
     ShaderId          gridsPS_;
 
+    struct GridConstants
+    {
+        glm::vec4 screenSize;
+        glm::vec2 atlasUVSize;
+        glm::vec2 numbersUVSize;
+    };
+    ConstantBuffer<GridConstants> gridCB_;
+
     struct InstanceData
     {
         glm::vec4 posDims;
-        glm::vec4 uv;
-        glm::vec4 numberUV;
+        glm::vec2 uv;
+        glm::vec2 numberUV;
         glm::vec4 tint;
         glm::vec4 borderColor;
         glm::vec4 glowColor;
@@ -212,10 +222,10 @@ protected:
 
     const std::vector<Buff>                        buffs_;
     const std::map<int, const Buff*>               buffsMap_;
-    const std::vector<glm::vec4>                   numbersMap_;
+    const std::vector<glm::vec2>                   numbersMap_;
     std::unordered_map<uint, int>                  activeBuffs_;
 
-    static std::vector<Buff>                       GenerateBuffsList();
+    static std::vector<Buff>                       GenerateBuffsList(glm::vec2& uvSize);
     static std::map<int, const Buff*>              GenerateBuffsMap(const std::vector<Buff>& lst);
 
     bool                                           draggingGridScale_ = false, draggingMouseBoundaries_ = false;

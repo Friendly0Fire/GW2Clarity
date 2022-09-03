@@ -1,10 +1,17 @@
 #include "common.hlsli"
 
+cbuffer Common : register(b0)
+{
+    float4 screenSize;
+    float2 atlasUVSize;
+    float2 numbersUVSize;
+};
+
 struct InstanceData
 {
     float4 posDims;
-    float4 uv;
-    float4 numberUV;
+    float2 uv;
+    float2 numberUV;
     float4 tint;
     float4 borderColor;
     float4 glowColor;
@@ -23,13 +30,12 @@ struct VS_OUT
 	float4 Position    : SV_Position;
     float4 UV          : TEXCOORD0;
 
-    float4 TexUV       : TEXCOORD1;
-    float4 NumUV       : TEXCOORD2;
-    float4 Tint        : TEXCOORD3;
-    float4 BorderColor : TEXCOORD4;
-    float4 GlowColor   : TEXCOORD5;
-    float3 BorderGlow  : TEXCOORD6;
-    float  ShowNumber  : TEXCOORD7;
+    nointerpolation float4 TexUVs      : TEXCOORD1;
+    nointerpolation float4 Tint        : TEXCOORD3;
+    nointerpolation float4 BorderColor : TEXCOORD4;
+    nointerpolation float4 GlowColor   : TEXCOORD5;
+    nointerpolation float3 BorderGlow  : TEXCOORD6;
+    nointerpolation float  ShowNumber  : TEXCOORD7;
 };
 
 VS_OUT Grids_VS(in uint instance : SV_InstanceID, in uint id : SV_VertexID)
@@ -40,15 +46,16 @@ VS_OUT Grids_VS(in uint instance : SV_InstanceID, in uint id : SV_VertexID)
 
     float2 UV = float2(id & 1, id >> 1);
 
-	float2 dims = data.posDims.zw + 2.f * data.glowSize * screenSize.zw;
+	float2 expandedDims = data.posDims.zw + 2.f * data.glowSize * screenSize.zw;
+    float2 dimsRatio = expandedDims / data.posDims.zw;
+    float2 dimsExpansion = dimsRatio - 1.f;
 
-    Out.UV.xy = UV * (dims / data.posDims.zw) - 0.5f * ((dims / data.posDims.zw) - 1.f);
+    Out.UV.xy = UV * dimsRatio - 0.5f * dimsExpansion;
     Out.UV.zw = UV;
-    Out.Position = float4((UV * 2 - 1) * dims + data.posDims.xy * 2 - 1, 0.5f, 1.f);
+    Out.Position = float4((UV * 2 - 1) * expandedDims + data.posDims.xy * 2 - 1, 0.5f, 1.f);
 	Out.Position.y *= -1;
 
-    Out.TexUV = data.uv;
-    Out.NumUV = data.numberUV;
+    Out.TexUVs = float4(data.uv, data.numberUV);
     Out.Tint = data.tint;
     Out.BorderColor = data.borderColor;
     Out.GlowColor = data.glowColor;
@@ -62,8 +69,8 @@ float4 Grids_PS(in VS_OUT In) : SV_Target
 {
     float2 threshold = abs(In.UV - 0.5f) * 2;
     bool inCore = all(threshold <= 1.f);
-    float4 tex = inCore * Atlas.Sample(MainSampler, In.TexUV.xy + In.UV.xy * (In.TexUV.zw - In.TexUV.xy));
-    float4 num = inCore * In.ShowNumber * Numbers.Sample(MainSampler, In.NumUV.xy + In.UV.xy * (In.NumUV.zw - In.NumUV.xy));
+    float4 tex = inCore * Atlas.Sample(MainSampler, In.TexUVs.xy + In.UV.xy * atlasUVSize);
+    float4 num = inCore * In.ShowNumber * Numbers.Sample(MainSampler, In.TexUVs.zw + In.UV.xy * numbersUVSize);
 
     float4 c = float4(lerp(tex.rgb, num.rgb, num.a), tex.a);
     c.rgb *= In.Tint.rgb;

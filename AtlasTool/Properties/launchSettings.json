@@ -7,11 +7,11 @@
     },
     "Icon Atlas": {
       "commandName": "Project",
-      "commandLineArgs": "--directory \"$(SolutionDir)GW2Clarity\\assets\\atlas\" --output \"$(SolutionDir)GW2Clarity\\assets\\atlas.dds\" --verbose --border 2"
+      "commandLineArgs": "--directory \"$(SolutionDir)GW2Clarity/assets/atlas\"\r\n--output \"$(SolutionDir)GW2Clarity/assets/atlas.dds\"\r\n--verbose --border 2"
     },
     "Numbers Atlas": {
       "commandName": "Project",
-      "commandLineArgs": "--directory \"$(SolutionDir)GW2Clarity\\assets\\numbers\" --output \"$(SolutionDir)GW2Clarity\\assets\\numbers.dds\" --verbose"
+      "commandLineArgs": "--directory \"$(SolutionDir)GW2Clarity/assets/numbers\"\r\n--output \"$(SolutionDir)GW2Clarity/assets/numbers.dds\"\r\n--verbose"
     }
   }
 }

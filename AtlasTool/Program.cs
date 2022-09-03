@@ -48,14 +48,16 @@ class Program
         _ = Parser.Default.ParseArguments<Options>(args)
             .WithParsed(o =>
             {
+                o.InputDirectory = Path.GetFullPath(o.InputDirectory);
+                var inputFiles = o.InputFiles.Select(Path.GetFullPath).ToList();
                 IEnumerable<string> files;
-                if (o.InputFiles.Any())
+                if (inputFiles.Any())
                 { 
-                    files = o.InputFiles.Where(x => SupportedExtensions.Contains(Path.GetExtension(x).ToLowerInvariant()));
+                    files = inputFiles.Where(x => SupportedExtensions.Contains(Path.GetExtension(x).ToLowerInvariant()));
                 }
                 else
                     files = Directory.EnumerateFiles(o.InputDirectory);
-                files = files.OrderBy(x => Path.GetFileName(x));
+                files = files.OrderBy(Path.GetFileName);
 
                 if(o.Verbose)
                 {
@@ -104,6 +106,9 @@ class Program
 
         StringBuilder sidecar = new StringBuilder();
 
+        float uvSide = (float)size / (float)squareEdge;
+        _ = sidecar.AppendLine($"{{ \"\", {{ {uvSide}, {uvSide} }} }},");
+
         var output = texHelper.Initialize2D(DXGI_FORMAT.R8G8B8A8_UNORM, squareEdge, squareEdge, 1, 0, CP_FLAGS.NONE);
         var output0 = output.GetImage(0);
         int x = border, y = border;
@@ -128,7 +133,7 @@ class Program
 
             texHelper.CopyRectangle(i0, 0, 0, i0.Width, i0.Height, output0, TEX_FILTER_FLAGS.DEFAULT, xOff, yOff);
 
-            _ = sidecar.AppendLine($"{{ \"{Path.GetFileNameWithoutExtension(p).ToLowerInvariant()}\", {{ {(float)x / squareEdge}, {(float)y / squareEdge}, {(float)(x + i0.Width) / squareEdge}, {(float)(y + i0.Height) / squareEdge} }} }},");
+            _ = sidecar.AppendLine($"{{ \"{Path.GetFileNameWithoutExtension(p).ToLowerInvariant()}\", {{ {(float)x / squareEdge}, {(float)y / squareEdge} }} }},");
 
             x += sizeWithBorders;
             if(x >= baseSquareEdge)

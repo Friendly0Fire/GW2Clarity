@@ -2,13 +2,8 @@
 #define SQRT2 1.4142136f
 #define ONE_OVER_SQRT2 0.707107f
 
-cbuffer Common : register(b0)
-{
-    float4 screenSize;
-};
-
 #ifdef CURSOR_HLSL
-cbuffer Cursor : register(b1)
+cbuffer Cursor : register(b0)
 {
 	float4 dimensions;
 	float4 parameters;
