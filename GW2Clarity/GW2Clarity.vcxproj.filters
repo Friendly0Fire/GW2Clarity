@@ -34,6 +34,15 @@
     <ClCompile Include="src\Cursor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Styles.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GridRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Buffs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Resource.h">
@@ -58,6 +67,15 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="include\Cursor.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Styles.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GridRenderer.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Buffs.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,0 +1,88 @@
+#pragma once
+
+#include <ActivationKeybind.h>
+#include <ConfigurationFile.h>
+#include <Graphics.h>
+#include <Main.h>
+#include <SettingsMenu.h>
+#include <glm/glm.hpp>
+#include <imgui.h>
+#include <map>
+#include <mutex>
+#include <set>
+#include <span>
+
+namespace GW2Clarity
+{
+
+struct GridInstanceData;
+
+class Styles : public SettingsMenu::Implementer
+{
+public:
+    Styles(ComPtr<ID3D11Device>& dev);
+    virtual ~Styles();
+
+    void        Draw(ComPtr<ID3D11DeviceContext>& ctx);
+    void        DrawMenu(Keybind** currentEditedKeybind) override;
+
+    const char* GetTabName() const override
+    {
+        return "Styles";
+    }
+
+    void Delete(uint id);
+
+protected:
+    void Load();
+    void Save();
+
+public:
+    struct Threshold
+    {
+        uint      threshold = 1;
+
+        glm::vec4 tint{ 1, 1, 1, 1 };
+        glm::vec4 border{ 0 };
+        glm::vec4 glow{ 0 };
+        float     borderThickness = 0.f;
+        float     glowSize        = 0.f;
+        glm::vec2 glowPulse{ 0 };
+    };
+
+    struct Style
+    {
+        std::string            name;
+        std::vector<Threshold> thresholds;
+    };
+
+    [[nodiscard]] const auto& styles() const
+    {
+        return styles_;
+    }
+
+    [[nodiscard]] const Style& style(uint id) const
+    {
+        return id < styles_.size() ? styles_[id] : styles_[0];
+    }
+    uint FindStyle(const std::string& name) const
+    {
+        auto it = ranges::find_if(styles_, [&](const auto& s) { return s.name == name; });
+        if (it != styles_.end())
+            return std::distance(styles_.begin(), it);
+        else
+            return 0;
+    }
+
+    void ApplyStyle(uint id, int count, GridInstanceData& out) const;
+
+protected:
+    std::vector<Style>             styles_;
+    uint                           selectedId_           = 0;
+    int                            editingItemFakeCount_ = 1;
+
+    mstime                         lastSaveTime_         = 0;
+    bool                           needsSaving_          = false;
+    static inline constexpr mstime SaveDelay             = 1000;
+};
+} // namespace GW2Clarity

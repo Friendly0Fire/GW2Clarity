@@ -21,6 +21,11 @@ struct InstanceData
     int _;
 };
 
+cbuffer SingleInstance : register(b1)
+{
+    InstanceData inst;
+};
+
 StructuredBuffer<InstanceData> Instances : register(t0);
 Texture2D<float4> Atlas : register(t1);
 Texture2D<float4> Numbers : register(t2);
@@ -38,11 +43,9 @@ struct VS_OUT
     nointerpolation float  ShowNumber  : TEXCOORD7;
 };
 
-VS_OUT Grids_VS(in uint instance : SV_InstanceID, in uint id : SV_VertexID)
+VS_OUT Base_VS(in uint instance, in uint id, in InstanceData data)
 {
     VS_OUT Out = (VS_OUT)0;
-
-    InstanceData data = Instances[instance];
 
     float2 UV = float2(id & 1, id >> 1);
 
@@ -65,22 +68,33 @@ VS_OUT Grids_VS(in uint instance : SV_InstanceID, in uint id : SV_VertexID)
     return Out;
 }
 
-float4 MaybeFiltered(in Texture2D<float4> tex, in SamplerState linearSampler, in float2 uv, in bool filtered)
+VS_OUT Single_VS(in uint instance : SV_InstanceID, in uint id : SV_VertexID)
+{
+    return Base_VS(instance, id, inst);
+}
+
+VS_OUT Grids_VS(in uint instance : SV_InstanceID, in uint id : SV_VertexID)
+{
+    InstanceData data = Instances[instance];
+    return Base_VS(instance, id, data);
+}
+
+float4 MaybeFiltered(in Texture2D<float4> tex, in float2 uv, in bool filtered)
 {
     if(filtered)
     {
         float w, h;
         tex.GetDimensions(w, h);
-        return SampleTextureBSpline(tex, linearSampler, uv, float2(w, h));
+        return SampleTextureBSpline(tex, MainSampler, uv, float2(w, h));
     }
     else
-        return tex.Sample(linearSampler, uv);
+        return tex.Sample(MainSampler, uv);
 }
 
 float4 Grids(in VS_OUT In, bool filtered)
 {
     float2 constrainedUV = saturate(In.UV.xy);
-    float4 tex = MaybeFiltered(Atlas, MainSampler, In.TexUVs.xy + constrainedUV * atlasUVSize, filtered);
+    float4 tex = MaybeFiltered(Atlas, In.TexUVs.xy + constrainedUV * atlasUVSize, filtered);
     float4 num = In.ShowNumber * Numbers.Sample(MainSampler, In.TexUVs.zw + constrainedUV * numbersUVSize);
 
     float4 c = float4(lerp(tex.rgb, num.rgb, num.a), tex.a);
