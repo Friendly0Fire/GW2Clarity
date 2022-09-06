@@ -23,7 +23,7 @@ class Grids : public SettingsMenu::Implementer
     using Style = Styles::Style;
 
 public:
-    Grids(const Buffs* buffs, const Styles* styles, GridRenderer* gridRenderer);
+    Grids(ComPtr<ID3D11Device>& dev, const Buffs* buffs, const Styles* styles);
     Grids(const Grids&)            = delete;
     Grids(Grids&&)                 = delete;
     Grids& operator=(const Grids&) = delete;
@@ -102,7 +102,7 @@ public:
 protected:
     const Buffs*                   buffs_;
     const Styles*                  styles_;
-    GridRenderer*                  gridRenderer_;
+    GridRenderer<1024>             gridRenderer_;
     Grid                           creatingGrid_;
     Item                           creatingItem_;
     Id                             currentHovered_ = Unselected();

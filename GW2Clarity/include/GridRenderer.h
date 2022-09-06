@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ActivationKeybind.h>
+#include <Buffs.h>
 #include <Graphics.h>
 #include <Main.h>
 #include <Sets.h>
@@ -23,32 +24,21 @@ struct GridInstanceData
     int       _;
 };
 
-class GridRenderer
+class BaseGridRenderer
 {
     using InstanceData = GridInstanceData;
 
 public:
-    GridRenderer(ComPtr<ID3D11Device>& dev);
-    GridRenderer(const GridRenderer&)            = delete;
-    GridRenderer(GridRenderer&&)                 = delete;
-    GridRenderer& operator=(const GridRenderer&) = delete;
-    GridRenderer& operator=(GridRenderer&&)      = delete;
-    ~GridRenderer()                              = default;
-
-    void                      Draw(ComPtr<ID3D11DeviceContext>& ctx);
-
-    [[nodiscard]] const auto& buffsAtlas() const
-    {
-        return buffsAtlas_;
-    }
+    BaseGridRenderer(ComPtr<ID3D11Device>& dev, const Buffs* buffs, size_t sz);
 
 protected:
-    Texture2D buffsAtlas_;
-    Texture2D numbersAtlas_;
+    void         Draw(ComPtr<ID3D11DeviceContext>& ctx, std::span<InstanceData> data, bool betterFiltering, RenderTarget* rt);
 
-    ShaderId  screenSpaceVS_;
-    ShaderId  gridsPS_;
-    ShaderId  gridsFilteredPS_;
+    const Buffs* buffs_;
+
+    ShaderId     screenSpaceVS_;
+    ShaderId     gridsPS_;
+    ShaderId     gridsFilteredPS_;
 
     struct GridConstants
     {
@@ -56,15 +46,46 @@ protected:
         glm::vec2 atlasUVSize;
         glm::vec2 numbersUVSize;
     };
-    ConstantBuffer<GridConstants>                  gridCB_;
+    ConstantBuffer<GridConstants>    gridCB_;
 
-    ComPtr<ID3D11Buffer>                           instanceBuffer_;
-    ComPtr<ID3D11ShaderResourceView>               instanceBufferView_;
-    ComPtr<ID3D11BlendState>                       defaultBlend_;
-    ComPtr<ID3D11SamplerState>                     defaultSampler_;
+    ComPtr<ID3D11Buffer>             instanceBuffer_;
+    ComPtr<ID3D11ShaderResourceView> instanceBufferView_;
+    ComPtr<ID3D11BlendState>         defaultBlend_;
+    ComPtr<ID3D11SamplerState>       defaultSampler_;
+};
 
-    static constexpr size_t                        instanceBufferSize_s = 1024;
-    std::array<InstanceData, instanceBufferSize_s> instanceBufferSource_;
+template<size_t N>
+class GridRenderer : public BaseGridRenderer
+{
+    using InstanceData = GridInstanceData;
+
+public:
+    GridRenderer(ComPtr<ID3D11Device>& dev, const Buffs* buffs)
+        : BaseGridRenderer(dev, buffs, N)
+    {}
+    GridRenderer(const GridRenderer&)            = delete;
+    GridRenderer(GridRenderer&&)                 = delete;
+    GridRenderer& operator=(const GridRenderer&) = delete;
+    GridRenderer& operator=(GridRenderer&&)      = delete;
+    ~GridRenderer()                              = default;
+
+    void Add(InstanceData&& data)
+    {
+        if (instanceBufferCount_ >= instanceBufferSize_s)
+            return;
+
+        instanceBufferSource_[instanceBufferCount_++] = std::move(data);
+    }
+
+    void Draw(ComPtr<ID3D11DeviceContext>& ctx, bool betterFiltering, RenderTarget* rt = nullptr)
+    {
+        BaseGridRenderer::Draw(ctx, std::span{ instanceBufferSource_.begin(), instanceBufferCount_ }, betterFiltering, rt);
+        instanceBufferCount_ = 0;
+    }
+
+protected:
+    static constexpr size_t                        instanceBufferSize_s = N;
+    std::array<InstanceData, instanceBufferSize_s> instanceBufferSource_{};
     uint                                           instanceBufferCount_ = 0;
 };
 } // namespace GW2Clarity

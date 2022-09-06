@@ -29,31 +29,11 @@ T AdjustToArea(float w, float h, float availW)
     return dims;
 }
 
-std::vector<glm::vec2> GenerateNumbersMap(glm::vec2& uvSize)
-{
-    const std::map<std::string, glm::vec2> atlasElements{
-#include <assets/numbers.inc>
-    };
-
-    uvSize = atlasElements.at("");
-
-    std::vector<glm::vec2> numbers;
-    numbers.resize(atlasElements.size() + 1);
-
-    for (const auto& [name, pos] : atlasElements)
-    {
-        int idx      = atoi(name.c_str());
-        numbers[idx] = pos;
-    }
-
-    return numbers;
-}
-
-Grids::Grids(const Buffs* buffs, const Styles* styles, GridRenderer* gridRenderer)
+Grids::Grids(ComPtr<ID3D11Device>& dev, const Buffs* buffs, const Styles* styles)
     : enableBetterFiltering_("Enable better texture filtering", "better_tex_filtering", "Grids", true)
     , buffs_(buffs)
     , styles_(styles)
-    , gridRenderer_(gridRenderer)
+    , gridRenderer_(dev, buffs)
 {
     Input::i().mouseButtonEvent().AddCallback(
         [&](EventKey ek, bool&)
@@ -160,7 +140,7 @@ void Grids::DrawGridList()
             for (auto it : grids_ | ranges::views::enumerate)
             {
                 // Need explicit types to shut up IntelliSense, still present as of 17.2.6
-                short gid = it.first;
+                short gid = short(it.first);
                 Grid& g   = it.second;
 
                 auto  u   = Unselected(gid);
@@ -277,21 +257,23 @@ void Grids::DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set, bo
 
     if (set || shouldIgnoreSet || editMode || showDebugGrid)
     {
+        auto  currentTime        = TimeInMilliseconds();
+        float editingBorderCycle = sin(float(currentTime) * 2.f * M_PI / 1000.f) * 0.5f + 0.5f;
+
         if (!MumbleLink::i().isInCompetitiveMode() && (editMode || shouldIgnoreSet || showDebugGrid || !set->combatOnly || MumbleLink::i().isInCombat()))
         {
-            instanceBufferCount_ = 0;
             const glm::vec2 screen{ ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y };
             const glm::vec2 mouse{ ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y };
 
             auto            drawItem = [&](const glm::ivec2& spacing, const Item& i, const glm::vec2& gridOrigin, int count, bool editing)
             {
-                glm::vec2 pos  = gridOrigin + glm::vec2(i.pos * spacing);
+                glm::vec2        pos = gridOrigin + glm::vec2(i.pos * spacing);
 
-                auto      adj  = AdjustToArea<glm::vec2>(128.f, 128.f, float(spacing.x));
+                auto             adj = AdjustToArea<glm::vec2>(128.f, 128.f, float(spacing.x));
 
-                auto&     inst = instanceBufferSource_[instanceBufferCount_++];
-                inst.posDims   = glm::vec4(pos, adj) / glm::vec4(screen, screen);
-                inst.uv        = i.buff->uv;
+                GridInstanceData inst;
+                inst.posDims = glm::vec4(pos, adj) / glm::vec4(screen, screen);
+                inst.uv      = i.buff->uv;
                 if (count > 1 && i.buff->maxStacks > 1)
                 {
                     inst.showNumber = true;
@@ -302,21 +284,13 @@ void Grids::DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set, bo
 
                 styles_->ApplyStyle(i.style, count, inst);
 
-                // inst.borderColor     = editing ? glm::vec4(1.f, 0.f, 0.f, 1.f) : glm::vec4(0.f);
-                // inst.glowColor       = glm::vec4(0.f);
-                // inst.borderThickness = editing ? 1.f : 0.f;
-                // inst.glowSize        = 0.f;
+                if (editing)
+                {
+                    inst.borderColor     = glm::mix(inst.borderColor, glm::vec4(1, 0, 0, 1), editingBorderCycle);
+                    inst.borderThickness = std::max(inst.borderThickness, 1.f);
+                }
 
-                // if (editing)
-                //     ImGui::GetWindowDrawList()->AddRect(ToImGui(pos), ToImGui(pos) + adj, 0xFF0000FF);
-
-                // ImGui::SetCursorPos(ToImGui(pos));
-                // ImGui::Image(buffsAtlas_.srv.Get(), adj, ToImGui(i.buff->uv.xy), ToImGui(i.buff->uv.zw), tint);
-                // if (count > 1 && i.buff->maxStacks > 1)
-                //{
-                //     count = std::min({ count, i.buff->maxStacks, int(numbersMap_.size()) - 1 });
-                //     delayedDraws.emplace_back(adj, ToImGui(pos), ToImGui(numbersMap_[count].xy), ToImGui(numbersMap_[count].zw));
-                // }
+                gridRenderer_.Add(std::move(inst));
             };
 
             auto drawGrid = [&](const Grid& g, short gid)
@@ -352,8 +326,8 @@ void Grids::DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set, bo
                     if (editing)
                         count = editingItemFakeCount_;
                     else if (i.buff)
-                        count = std::accumulate(i.additionalBuffs.begin(), i.additionalBuffs.end(), i.buff->GetStacks(activeBuffs_),
-                                                [&](int a, const Buff* b) { return a + b->GetStacks(activeBuffs_); });
+                        count = std::accumulate(i.additionalBuffs.begin(), i.additionalBuffs.end(), i.buff->GetStacks(buffs_->activeBuffs()),
+                                                [&](int a, const Buff* b) { return a + b->GetStacks(buffs_->activeBuffs()); });
 
                     drawItem(g.spacing, i, gridOrigin, count, editing);
                 }
@@ -370,32 +344,7 @@ void Grids::DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set, bo
                 for (int gid : set->grids)
                     drawGrid(grids_[gid], UnselectedSubId);
 
-            D3D11_MAPPED_SUBRESOURCE map;
-            ctx->Map(instanceBuffer_.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &map);
-            memcpy_s(map.pData, instanceBufferSize_s * sizeof(InstanceData), instanceBufferSource_.data(), instanceBufferCount_ * sizeof(InstanceData));
-            ctx->Unmap(instanceBuffer_.Get(), 0);
-
-            ID3D11ShaderResourceView* srvs[] = { instanceBufferView_.Get(), buffsAtlas_.srv.Get(), numbersAtlas_.srv.Get() };
-            ctx->VSSetShaderResources(0, 3, srvs);
-            ctx->PSSetShaderResources(0, 3, srvs);
-            ctx->IASetVertexBuffers(0, 0, NULL, NULL, NULL);
-            ctx->IASetInputLayout(NULL);
-            ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-
-            auto& sm               = ShaderManager::i();
-            gridCB_->screenSize    = glm::vec4(screen.x, screen.y, 1.f / screen.x, 1.f / screen.y);
-            gridCB_->atlasUVSize   = buffsAtlasUVSize_;
-            gridCB_->numbersUVSize = numbersAtlasUVSize_;
-            gridCB_.Update(ctx.Get());
-            sm.SetConstantBuffers(ctx.Get(), gridCB_);
-            sm.SetShaders(ctx.Get(), screenSpaceVS_, enableBetterFiltering_.value() ? gridsFilteredPS_ : gridsPS_);
-
-            ID3D11SamplerState* samps[] = { defaultSampler_.Get() };
-            ctx->PSSetSamplers(0, 1, samps);
-
-            ctx->OMSetBlendState(defaultBlend_.Get(), nullptr, 0xffffffff);
-
-            ctx->DrawInstanced(4, instanceBufferCount_, 0, 0);
+            gridRenderer_.Draw(ctx, enableBetterFiltering_.value());
 #if 0
 #ifdef _DEBUG
                 const Buff* hoveredBuff = nullptr;
@@ -591,47 +540,14 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind)
             else
                 ImGuiTitle(std::format("New Item in '{}'", getG(selectedId_).name).c_str(), 0.75f);
 
-            auto buffCombo = [&](auto& buff, int id, const char* name)
-            {
-                if (ImGui::BeginCombo(std::format("{}##{}", name, id).c_str(), buff->name.c_str()))
-                {
-                    ImGui::InputText("Search...", buffSearch_, sizeof(buffSearch_));
-                    std::string_view bs = buffSearch_;
-
-                    for (auto& b : buffs_->buffs())
-                    {
-                        auto caseInsensitive = [](char l, char r) { return std::tolower(l) == std::tolower(r); };
-                        bool filtered        = !bs.empty() && ranges::search(b.name, bs, caseInsensitive).empty() && ranges::search(b.category, bs, caseInsensitive).empty();
-
-                        if (filtered)
-                            continue;
-
-                        if (b.id == 0xFFFFFFFF)
-                        {
-                            ImGui::PushFont(Core::i().fontBold());
-                            ImGui::Text(b.name.c_str());
-                            ImGui::PopFont();
-                            ImGui::Separator();
-                            continue;
-                        }
-
-                        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 20.f);
-
-                        ImGui::Image(gridRenderer_->buffsAtlas().srv.Get(), ImVec2(32, 32), ToImGui(b.uv.xy), ToImGui(b.uv.xy + buffs_->buffsAtlasUVSize()));
-                        ImGui::SameLine();
-                        if (saveCheck(ImGui::Selectable(b.name.c_str(), false)))
-                            buff = &b;
-                    }
-                    ImGui::EndCombo();
-                }
-            };
+            auto buffCombo = [&](auto& buff, int id, const char* name) { saveCheck(buffs_->DrawBuffCombo(std::format("{}##{}", name, id).c_str(), buff, buffSearch_)); };
 
             buffCombo(editItem.buff, -1, "Main buff");
             int removeId = -1;
             for (auto it : editItem.additionalBuffs | ranges::views::enumerate)
             {
                 // Need explicit types to shut up IntelliSense, still present as of 17.2.6
-                short        n         = it.first;
+                short        n         = short(it.first);
                 const Buff*& extraBuff = it.second;
 
                 buffCombo(extraBuff, int(n), "Secondary buff");

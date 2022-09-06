@@ -68,7 +68,6 @@ protected:
     }
 
     std::unique_ptr<ConfigurationOption<bool>> firstMessageShown_;
-    std::unique_ptr<GridRenderer>              gridRenderer_;
     std::unique_ptr<Styles>                    styles_;
     std::unique_ptr<Buffs>                     buffs_;
     std::unique_ptr<Grids>                     grids_;

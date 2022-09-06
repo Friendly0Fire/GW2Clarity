@@ -1,6 +1,8 @@
 #include <Buffs.h>
 #include <Core.h>
+#include <ImGuiExtensions.h>
 #include <cppcodec/base64_rfc4648.hpp>
+#include <misc/cpp/imgui_stdlib.h>
 #include <shellapi.h>
 #include <skyr/percent_encoding/percent_encode.hpp>
 
@@ -20,18 +22,21 @@ std::vector<glm::vec2> GenerateNumbersMap(glm::vec2& uvSize)
 
     for (const auto& [name, pos] : atlasElements)
     {
-        int idx      = atoi(name.c_str());
+        int idx      = strtol(name.c_str(), nullptr, 10);
         numbers[idx] = pos;
     }
 
     return numbers;
 }
 
-Buffs::Buffs()
+Buffs::Buffs(ComPtr<ID3D11Device>& dev)
     : buffs_(GenerateBuffsList(buffsAtlasUVSize_))
     , buffsMap_(GenerateBuffsMap(buffs_))
     , numbers_(GenerateNumbersMap(numbersAtlasUVSize_))
 {
+    buffsAtlas_   = CreateTextureFromResource(dev.Get(), Core::i().dllModule(), IDR_BUFFS);
+    numbersAtlas_ = CreateTextureFromResource(dev.Get(), Core::i().dllModule(), IDR_NUMBERS);
+
 #ifdef _DEBUG
     LoadNames();
 #endif
@@ -265,6 +270,47 @@ void Buffs::UpdateBuffsTable(StackedBuff* buffs)
 
     for (size_t i = 0; buffs[i].id; i++)
         activeBuffs_[buffs[i].id] = buffs[i].count;
+}
+
+bool Buffs::DrawBuffCombo(const char* name, const Buff*& selectedBuf, std::span<char> searchBuffer) const
+{
+    bool changed = false;
+    if (ImGui::BeginCombo(name, selectedBuf ? selectedBuf->name.c_str() : "<none>"))
+    {
+        ImGui::InputText("Search...", searchBuffer.data(), searchBuffer.size());
+        std::string_view bs{ searchBuffer.data() };
+
+        for (auto& b : buffs_)
+        {
+            auto caseInsensitive = [](char l, char r) { return std::tolower(l) == std::tolower(r); };
+            bool filtered        = !bs.empty() && ranges::search(b.name, bs, caseInsensitive).empty() && ranges::search(b.category, bs, caseInsensitive).empty();
+
+            if (filtered)
+                continue;
+
+            if (b.id == 0xFFFFFFFF)
+            {
+                ImGui::PushFont(Core::i().fontBold());
+                ImGui::Text(b.name.c_str());
+                ImGui::PopFont();
+                ImGui::Separator();
+                continue;
+            }
+
+            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 20.f);
+
+            ImGui::Image(buffsAtlas_.srv.Get(), ImVec2(32, 32), ToImGui(b.uv.xy), ToImGui(b.uv.xy + buffsAtlasUVSize()));
+            ImGui::SameLine();
+            if (ImGui::Selectable(b.name.c_str(), false))
+            {
+                selectedBuf = &b;
+                changed     = true;
+            }
+        }
+        ImGui::EndCombo();
+    }
+
+    return changed;
 }
 
 #include "BuffsList.inc"

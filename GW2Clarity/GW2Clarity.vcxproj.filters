@@ -78,6 +78,9 @@
     <ClInclude Include="include\Buffs.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\BuffsList.inc">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="rt_rcdat.bin">
@@ -100,9 +103,6 @@
     </None>
     <None Include="vcpkg.json">
       <Filter>Resource Files</Filter>
-    </None>
-    <None Include="src\BuffsList.inc">
-      <Filter>Source Files</Filter>
     </None>
     <None Include="shaders\Grids.hlsl">
       <Filter>Resource Files\Shaders</Filter>

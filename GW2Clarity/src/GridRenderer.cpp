@@ -1,25 +1,12 @@
 #include <Core.h>
 #include <GridRenderer.h>
-#include <ImGuiExtensions.h>
-#include <SimpleIni.h>
-#include <algorithm>
-#include <cppcodec/base64_rfc4648.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <imgui.h>
-#include <misc/cpp/imgui_stdlib.h>
-#include <range/v3/all.hpp>
-#include <shellapi.h>
-#include <skyr/percent_encoding/percent_encode.hpp>
-#include <variant>
 
 namespace GW2Clarity
 {
 
-GridRenderer::GridRenderer(ComPtr<ID3D11Device>& dev)
+BaseGridRenderer::BaseGridRenderer(ComPtr<ID3D11Device>& dev, const Buffs* buffs, size_t sz)
+    : buffs_(buffs)
 {
-    buffsAtlas_      = CreateTextureFromResource(dev.Get(), Core::i().dllModule(), IDR_BUFFS);
-    numbersAtlas_    = CreateTextureFromResource(dev.Get(), Core::i().dllModule(), IDR_NUMBERS);
-
     auto& sm         = ShaderManager::i();
 
     gridCB_          = ShaderManager::i().MakeConstantBuffer<GridConstants>();
@@ -30,7 +17,7 @@ GridRenderer::GridRenderer(ComPtr<ID3D11Device>& dev)
     D3D11_BUFFER_DESC instanceBufferDesc;
 
     instanceBufferDesc.Usage               = D3D11_USAGE_DYNAMIC;
-    instanceBufferDesc.ByteWidth           = sizeof(InstanceData) * instanceBufferSize_s;
+    instanceBufferDesc.ByteWidth           = UINT(sizeof(InstanceData) * sz);
     instanceBufferDesc.BindFlags           = D3D11_BIND_SHADER_RESOURCE;
     instanceBufferDesc.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
     instanceBufferDesc.MiscFlags           = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
@@ -43,7 +30,7 @@ GridRenderer::GridRenderer(ComPtr<ID3D11Device>& dev)
     srvDesc.Format              = DXGI_FORMAT_UNKNOWN;
     srvDesc.ViewDimension       = D3D11_SRV_DIMENSION_BUFFER;
     srvDesc.Buffer.FirstElement = 0;
-    srvDesc.Buffer.NumElements  = instanceBufferSize_s;
+    srvDesc.Buffer.NumElements  = UINT(sz);
 
     GW2_CHECKED_HRESULT(dev->CreateShaderResourceView(instanceBuffer_.Get(), &srvDesc, instanceBufferView_.GetAddressOf()));
 
@@ -55,8 +42,57 @@ GridRenderer::GridRenderer(ComPtr<ID3D11Device>& dev)
     blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
     GW2_CHECKED_HRESULT(dev->CreateBlendState(&blendDesc, defaultBlend_.GetAddressOf()));
 
-    CD3D11_SAMPLER_DESC sampDesc(D3D11_DEFAULT);
-    GW2_CHECKED_HRESULT(dev->CreateSamplerState(&sampDesc, defaultSampler_.GetAddressOf()));
+    CD3D11_SAMPLER_DESC samplerDesc(D3D11_DEFAULT);
+    GW2_CHECKED_HRESULT(dev->CreateSamplerState(&samplerDesc, defaultSampler_.GetAddressOf()));
+}
+
+void BaseGridRenderer::Draw(ComPtr<ID3D11DeviceContext>& ctx, std::span<InstanceData> data, bool betterFiltering, RenderTarget* rt)
+{
+    D3D11_MAPPED_SUBRESOURCE map;
+    ctx->Map(instanceBuffer_.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &map);
+    memcpy_s(map.pData, data.size_bytes(), data.data(), data.size_bytes());
+    ctx->Unmap(instanceBuffer_.Get(), 0);
+
+    ID3D11ShaderResourceView* srvs[] = { instanceBufferView_.Get(), buffs_->buffsAtlas().srv.Get(), buffs_->numbersAtlas().srv.Get() };
+    ctx->VSSetShaderResources(0, 3, srvs);
+    ctx->PSSetShaderResources(0, 3, srvs);
+    ctx->IASetVertexBuffers(0, 0, nullptr, nullptr, nullptr);
+    ctx->IASetInputLayout(nullptr);
+    ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+
+    auto& sm = ShaderManager::i();
+    if (rt)
+    {
+        D3D11_TEXTURE2D_DESC desc;
+        rt->texture->GetDesc(&desc);
+        gridCB_->screenSize = glm::vec4(desc.Width, desc.Height, 1.f / desc.Width, 1.f / desc.Height);
+    }
+    else
+        gridCB_->screenSize = glm::vec4(Core::i().screenDims(), 1.f / Core::i().screenDims());
+    gridCB_->atlasUVSize   = buffs_->buffsAtlasUVSize();
+    gridCB_->numbersUVSize = buffs_->numbersAtlasUVSize();
+    gridCB_.Update(ctx.Get());
+    sm.SetConstantBuffers(ctx.Get(), gridCB_);
+    sm.SetShaders(ctx.Get(), screenSpaceVS_, betterFiltering ? gridsFilteredPS_ : gridsPS_);
+
+    ID3D11SamplerState* samplers[] = { defaultSampler_.Get() };
+    ctx->PSSetSamplers(0, 1, samplers);
+
+    ctx->OMSetBlendState(defaultBlend_.Get(), nullptr, 0xffffffff);
+
+    if (rt)
+    {
+        ID3D11RenderTargetView* rtvs[] = { rt->rtv.Get() };
+        ctx->OMSetRenderTargets(1, rtvs, nullptr);
+    }
+
+    ctx->DrawInstanced(4, UINT(data.size()), 0, 0);
+
+    if (rt)
+    {
+        ID3D11RenderTargetView* rtvs[] = { Core::i().backBufferRTV().Get() };
+        ctx->OMSetRenderTargets(1, rtvs, nullptr);
+    }
 }
 
 } // namespace GW2Clarity

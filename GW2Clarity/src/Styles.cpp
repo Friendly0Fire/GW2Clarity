@@ -15,16 +15,13 @@
 namespace GW2Clarity
 {
 
-Styles::Styles(ComPtr<ID3D11Device>& dev)
+Styles::Styles(ComPtr<ID3D11Device>& dev, const Buffs* buffs)
+    : buffs_(buffs)
+    , previewRenderer_(dev, buffs)
 {
     Load();
 
-    auto& sm         = ShaderManager::i();
-
-    gridCB_          = ShaderManager::i().MakeConstantBuffer<GridConstants>();
-    screenSpaceVS_   = sm.GetShader(L"Grids.hlsl", D3D11_SHVER_VERTEX_SHADER, "Grids_VS");
-    gridsPS_         = sm.GetShader(L"Grids.hlsl", D3D11_SHVER_PIXEL_SHADER, "Grids_PS");
-    gridsFilteredPS_ = sm.GetShader(L"Grids.hlsl", D3D11_SHVER_PIXEL_SHADER, "FilteredGrids_PS");
+    preview_ = MakeRenderTarget(dev, 512, 512, DXGI_FORMAT_R8G8B8A8_UNORM);
 
     SettingsMenu::i().AddImplementer(this);
 }
@@ -42,6 +39,7 @@ void Styles::Delete(uint id)
 
 void Styles::DrawMenu(Keybind** currentEditedKeybind)
 {
+    drewMenu_      = true;
     auto saveCheck = [this](bool changed)
     {
         needsSaving_ = needsSaving_ || changed;
@@ -55,7 +53,7 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
         for (auto it : styles_ | ranges::views::enumerate)
         {
             // Need explicit types to shut up IntelliSense, still present as of 17.2.6
-            uint   sid = it.first;
+            uint   sid = uint(it.first);
             Style& s   = it.second;
 
             if (ImGui::Selectable(s.name.c_str(), selectedId_ == sid, ImGuiSelectableFlags_AllowItemOverlap))
@@ -89,8 +87,15 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
         ImGui::TextUnformatted("Visualize style with ");
         ImGui::SameLine();
         ImGui::SetNextItemWidth(100.f);
-        ImGui::DragInt("stacks##Simulatedstacks", &editingItemFakeCount_, 0.1f);
+        ImGui::DragInt("stacks##SimulatedStacks", &editingItemFakeCount_, 0.1f, 0, 100);
         ImGuiHelpTooltip("Helper feature to tune styles. Will simulate what the buff icon would look like with the given number of stacks.");
+        ImGui::SameLine();
+        ImGui::TextUnformatted(" of buff ");
+        buffs_->DrawBuffCombo("##PreviewBuff", previewBuff_, buffSearch_);
+        ImGui::Separator();
+
+        ImGui::Image(preview_.srv.Get(), ImVec2(128.f, 128.f));
+
         ImGui::Separator();
 
         for (size_t i = 0; i < s.thresholds.size(); i++)
@@ -124,7 +129,24 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
 }
 
 void Styles::Draw(ComPtr<ID3D11DeviceContext>& ctx)
-{}
+{
+    if (selectedId_ == UnselectedSubId || !drewMenu_ || !previewBuff_)
+        return;
+
+    GridInstanceData data{
+        .posDims = {0, 0, 1, 1},
+          .uv = previewBuff_->uv, .numberUV = buffs_->numbers()[editingItemFakeCount_], .showNumber = editingItemFakeCount_ > 1
+    };
+    ApplyStyle(selectedId_, editingItemFakeCount_, data);
+
+    float clear[4] = { 0.f, 0.f, 0.f, 0.f };
+    ctx->ClearRenderTargetView(preview_.rtv.Get(), clear);
+
+    previewRenderer_.Add(std::move(data));
+    previewRenderer_.Draw(ctx, true, &preview_);
+
+    drewMenu_ = false;
+}
 
 void Styles::Load()
 {
@@ -147,7 +169,7 @@ void Styles::Load()
             return std::get<1>(cvt)(*it);
     };
 
-    const auto& sets = cfg.json()["buff_sets"];
+    const auto& sets = cfg.json()["styles"];
     for (const auto& sIn : sets)
     {
         Style s{};

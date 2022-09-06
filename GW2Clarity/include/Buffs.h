@@ -8,8 +8,6 @@
 #include <SettingsMenu.h>
 #include <glm/glm.hpp>
 #include <imgui.h>
-#include <include/GridRenderer.h>
-#include <include/Styles.h>
 #include <map>
 #include <mutex>
 #include <set>
@@ -27,7 +25,7 @@ struct Buff
     std::set<uint> extraIds;
     std::string    category;
 
-    explicit Buff(std::string&& name)
+    implicit       Buff(std::string&& name)
         : Buff(0xFFFFFFFF, std::move(name))
     {}
 
@@ -95,7 +93,7 @@ class Buffs
 #endif
 {
 public:
-    Buffs();
+    Buffs(ComPtr<ID3D11Device>& dev);
 
 #ifdef _DEBUG
     void                      DrawMenu(Keybind** currentEditedKeybind) override;
@@ -122,7 +120,7 @@ public:
     {
         return buffsMap_;
     }
-    [[nodiscard]] const auto& activeBuffs() const
+    [[nodiscard]] auto& activeBuffs() const
     {
         return activeBuffs_;
     }
@@ -136,18 +134,32 @@ public:
         return numbersAtlasUVSize_;
     }
 
+    [[nodiscard]] const Texture2D& buffsAtlas() const
+    {
+        return buffsAtlas_;
+    }
+    [[nodiscard]] const Texture2D& numbersAtlas() const
+    {
+        return numbersAtlas_;
+    }
+
+    bool DrawBuffCombo(const char* name, const Buff*& selectedBuf, std::span<char> searchBuffer) const;
+
 protected:
-    glm::vec2                         buffsAtlasUVSize_;
-    glm::vec2                         numbersAtlasUVSize_;
+    Texture2D                             buffsAtlas_;
+    Texture2D                             numbersAtlas_;
 
-    const std::vector<Buff>           buffs_;
-    const std::map<int, const Buff*>  buffsMap_;
-    const std::vector<glm::vec2>      numbers_;
-    std::unordered_map<uint, int>     activeBuffs_;
-    int                               lastGetBuffsError_ = 0;
+    glm::vec2                             buffsAtlasUVSize_;
+    glm::vec2                             numbersAtlasUVSize_;
 
-    static std::vector<Buff>          GenerateBuffsList(glm::vec2& uvSize);
-    static std::map<int, const Buff*> GenerateBuffsMap(const std::vector<Buff>& lst);
+    const std::vector<Buff>               buffs_;
+    const std::map<int, const Buff*>      buffsMap_;
+    const std::vector<glm::vec2>          numbers_;
+    mutable std::unordered_map<uint, int> activeBuffs_;
+    int                                   lastGetBuffsError_ = 0;
+
+    static std::vector<Buff>              GenerateBuffsList(glm::vec2& uvSize);
+    static std::map<int, const Buff*>     GenerateBuffsMap(const std::vector<Buff>& lst);
 
 #ifdef _DEBUG
     int                         guildLogId_ = 3;

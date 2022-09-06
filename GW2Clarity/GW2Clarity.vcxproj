@@ -201,7 +201,9 @@ git describe --always --dirty --match "NOT A TAG" &gt;&gt; "$(ProjectDir)include
     <None Include="Main.def" />
     <None Include="rt_rcdat.bin" />
     <None Include="shaders\common.hlsli" />
-    <None Include="src\BuffsList.inc" />
+    <ClInclude Include="src\BuffsList.inc">
+      <FileType>Document</FileType>
+    </ClInclude>
     <None Include="vcpkg.json" />
   </ItemGroup>
   <ItemGroup>

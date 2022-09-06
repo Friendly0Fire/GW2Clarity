@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ActivationKeybind.h>
+#include <Buffs.h>
 #include <ConfigurationFile.h>
 #include <Graphics.h>
 #include <Main.h>
@@ -20,7 +21,7 @@ struct GridInstanceData;
 class Styles : public SettingsMenu::Implementer
 {
 public:
-    Styles(ComPtr<ID3D11Device>& dev);
+    Styles(ComPtr<ID3D11Device>& dev, const Buffs* buffs);
     virtual ~Styles();
 
     void        Draw(ComPtr<ID3D11DeviceContext>& ctx);
@@ -69,7 +70,7 @@ public:
     {
         auto it = ranges::find_if(styles_, [&](const auto& s) { return s.name == name; });
         if (it != styles_.end())
-            return std::distance(styles_.begin(), it);
+            return uint(std::distance(styles_.begin(), it));
         else
             return 0;
     }
@@ -77,12 +78,18 @@ public:
     void ApplyStyle(uint id, int count, GridInstanceData& out) const;
 
 protected:
+    const Buffs*                   buffs_;
     std::vector<Style>             styles_;
-    uint                           selectedId_           = 0;
+    short                          selectedId_           = UnselectedSubId;
     int                            editingItemFakeCount_ = 1;
+    const Buff*                    previewBuff_          = nullptr;
+    char                           buffSearch_[512];
+    RenderTarget                   preview_;
+    GridRenderer<1>                previewRenderer_;
+    bool                           drewMenu_     = false;
 
-    mstime                         lastSaveTime_         = 0;
-    bool                           needsSaving_          = false;
-    static inline constexpr mstime SaveDelay             = 1000;
+    mstime                         lastSaveTime_ = 0;
+    bool                           needsSaving_  = false;
+    static inline constexpr mstime SaveDelay     = 1000;
 };
 } // namespace GW2Clarity
