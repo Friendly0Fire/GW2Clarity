@@ -66,7 +66,8 @@ public:
     {
         return id < styles_.size() ? styles_[id] : styles_[0];
     }
-    uint FindStyle(const std::string& name) const
+
+    [[nodiscard]] uint FindStyle(const std::string& name) const
     {
         auto it = ranges::find_if(styles_, [&](const auto& s) { return s.name == name; });
         if (it != styles_.end())
@@ -91,5 +92,6 @@ protected:
     mstime                         lastSaveTime_ = 0;
     bool                           needsSaving_  = false;
     static inline constexpr mstime SaveDelay     = 1000;
+    static inline constexpr int    PreviewSize   = 512;
 };
 } // namespace GW2Clarity

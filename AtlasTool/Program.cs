@@ -106,7 +106,7 @@ class Program
 
         StringBuilder sidecar = new StringBuilder();
 
-        float uvSide = (float)size / (float)squareEdge;
+        float uvSide = (float)(size + border) / (float)squareEdge;
         _ = sidecar.AppendLine($"{{ \"\", {{ {uvSide}, {uvSide} }} }},");
 
         var output = texHelper.Initialize2D(DXGI_FORMAT.R8G8B8A8_UNORM, squareEdge, squareEdge, 1, 0, CP_FLAGS.NONE);
@@ -133,7 +133,7 @@ class Program
 
             texHelper.CopyRectangle(i0, 0, 0, i0.Width, i0.Height, output0, TEX_FILTER_FLAGS.DEFAULT, xOff, yOff);
 
-            _ = sidecar.AppendLine($"{{ \"{Path.GetFileNameWithoutExtension(p).ToLowerInvariant()}\", {{ {(float)x / squareEdge}, {(float)y / squareEdge} }} }},");
+            _ = sidecar.AppendLine($"{{ \"{Path.GetFileNameWithoutExtension(p).ToLowerInvariant()}\", {{ {((float)x - border * 0.5f) / squareEdge}, {((float)y - border * 0.5f) / squareEdge} }} }},");
 
             x += sizeWithBorders;
             if(x >= baseSquareEdge)

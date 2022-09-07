@@ -274,13 +274,8 @@ void Grids::DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set, bo
                 GridInstanceData inst;
                 inst.posDims = glm::vec4(pos, adj) / glm::vec4(screen, screen);
                 inst.uv      = i.buff->uv;
-                if (count > 1 && i.buff->maxStacks > 1)
-                {
-                    inst.showNumber = true;
-                    inst.numberUV   = buffs_->numbers()[count];
-                }
-                else
-                    inst.showNumber = false;
+                if ((inst.showNumber = i.buff->ShowNumber(count)))
+                    inst.numberUV = buffs_->GetNumber(count);
 
                 styles_->ApplyStyle(i.style, count, inst);
 

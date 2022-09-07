@@ -20,7 +20,7 @@ struct GridInstanceData
     glm::vec4 glowColor;
     float     borderThickness;
     float     glowSize;
-    bool      showNumber;
+    int       showNumber;
     int       _;
 };
 
@@ -32,11 +32,12 @@ public:
     BaseGridRenderer(ComPtr<ID3D11Device>& dev, const Buffs* buffs, size_t sz);
 
 protected:
-    void         Draw(ComPtr<ID3D11DeviceContext>& ctx, std::span<InstanceData> data, bool betterFiltering, RenderTarget* rt);
+    void         Draw(ComPtr<ID3D11DeviceContext>& ctx, std::span<InstanceData> data, bool betterFiltering, RenderTarget* rt, bool expandVS);
 
     const Buffs* buffs_;
 
     ShaderId     screenSpaceVS_;
+    ShaderId     screenSpaceNoExpandVS_;
     ShaderId     gridsPS_;
     ShaderId     gridsFilteredPS_;
 
@@ -52,6 +53,8 @@ protected:
     ComPtr<ID3D11ShaderResourceView> instanceBufferView_;
     ComPtr<ID3D11BlendState>         defaultBlend_;
     ComPtr<ID3D11SamplerState>       defaultSampler_;
+
+    size_t                           bufferSize_;
 };
 
 template<size_t N>
@@ -77,9 +80,9 @@ public:
         instanceBufferSource_[instanceBufferCount_++] = std::move(data);
     }
 
-    void Draw(ComPtr<ID3D11DeviceContext>& ctx, bool betterFiltering, RenderTarget* rt = nullptr)
+    void Draw(ComPtr<ID3D11DeviceContext>& ctx, bool betterFiltering, RenderTarget* rt = nullptr, bool expandVS = true)
     {
-        BaseGridRenderer::Draw(ctx, std::span{ instanceBufferSource_.begin(), instanceBufferCount_ }, betterFiltering, rt);
+        BaseGridRenderer::Draw(ctx, std::span{ instanceBufferSource_.begin(), instanceBufferCount_ }, betterFiltering, rt, expandVS);
         instanceBufferCount_ = 0;
     }
 

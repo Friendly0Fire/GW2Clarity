@@ -85,6 +85,11 @@ struct Buff
     {
         return std::accumulate(extraIds.begin(), extraIds.end(), activeBuffs[id], [&](int a, uint b) { return a + activeBuffs[b]; });
     }
+
+    [[nodiscard]] bool ShowNumber(int count) const
+    {
+        return maxStacks > 1 && count > 1;
+    }
 };
 
 class Buffs
@@ -112,9 +117,11 @@ public:
     {
         return std::span{ buffs_ };
     }
-    [[nodiscard]] auto numbers() const
+    [[nodiscard]] glm::vec2 GetNumber(int n) const
     {
-        return std::span{ numbers_ };
+        // 0 and 1 are not in the array, so 2 is at index 0
+        n -= 2;
+        return n < 0 ? glm::vec2{} : n < int(numbers_.size()) ? numbers_[n] : numbers_.back();
     }
     [[nodiscard]] const auto& buffsMap() const
     {

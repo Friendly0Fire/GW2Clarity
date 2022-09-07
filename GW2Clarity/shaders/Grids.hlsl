@@ -17,13 +17,8 @@ struct InstanceData
     float4 glowColor;
     float borderThickness;
     float glowSize;
-    bool showNumber;
+    int   showNumber;
     int _;
-};
-
-cbuffer SingleInstance : register(b1)
-{
-    InstanceData inst;
 };
 
 StructuredBuffer<InstanceData> Instances : register(t0);
@@ -43,8 +38,9 @@ struct VS_OUT
     nointerpolation float  ShowNumber  : TEXCOORD7;
 };
 
-VS_OUT Base_VS(in uint instance, in uint id, in InstanceData data)
+VS_OUT Base_VS(in uint instance, in uint id, in bool expand)
 {
+    InstanceData data = Instances[instance];
     VS_OUT Out = (VS_OUT)0;
 
     float2 UV = float2(id & 1, id >> 1);
@@ -55,28 +51,27 @@ VS_OUT Base_VS(in uint instance, in uint id, in InstanceData data)
 
     Out.UV.xy = UV * dimsRatio - 0.5f * dimsExpansion;
     Out.UV.zw = UV;
-    Out.Position = float4((UV * 2 - 1) * expandedDims + data.posDims.xy * 2 - 1, 0.5f, 1.f);
+    Out.Position = float4((UV * 2 - 1) * (expand ? expandedDims : data.posDims.zw) + data.posDims.xy * 2 - 1, 0.5f, 1.f);
 	Out.Position.y *= -1;
 
     Out.TexUVs = float4(data.uv, data.numberUV);
     Out.Tint = data.tint;
     Out.BorderColor = data.borderColor;
     Out.GlowColor = data.glowColor;
-    Out.ShowNumber = data.showNumber;
+    Out.ShowNumber = data.showNumber ? 1.f : 0.f;
     Out.BorderGlow = float3(2.f * data.borderThickness / (data.posDims.zw * screenSize.xy), data.posDims.z * screenSize.x / data.glowSize);
 
     return Out;
 }
 
-VS_OUT Single_VS(in uint instance : SV_InstanceID, in uint id : SV_VertexID)
+VS_OUT GridsNoExpand_VS(in uint instance : SV_InstanceID, in uint id : SV_VertexID)
 {
-    return Base_VS(instance, id, inst);
+    return Base_VS(instance, id, false);
 }
 
 VS_OUT Grids_VS(in uint instance : SV_InstanceID, in uint id : SV_VertexID)
 {
-    InstanceData data = Instances[instance];
-    return Base_VS(instance, id, data);
+    return Base_VS(instance, id, true);
 }
 
 float4 MaybeFiltered(in Texture2D<float4> tex, in float2 uv, in bool filtered)

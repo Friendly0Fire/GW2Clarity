@@ -6,13 +6,15 @@ namespace GW2Clarity
 
 BaseGridRenderer::BaseGridRenderer(ComPtr<ID3D11Device>& dev, const Buffs* buffs, size_t sz)
     : buffs_(buffs)
+    , bufferSize_(sz * sizeof(InstanceData))
 {
-    auto& sm         = ShaderManager::i();
+    auto& sm               = ShaderManager::i();
 
-    gridCB_          = ShaderManager::i().MakeConstantBuffer<GridConstants>();
-    screenSpaceVS_   = sm.GetShader(L"Grids.hlsl", D3D11_SHVER_VERTEX_SHADER, "Grids_VS");
-    gridsPS_         = sm.GetShader(L"Grids.hlsl", D3D11_SHVER_PIXEL_SHADER, "Grids_PS");
-    gridsFilteredPS_ = sm.GetShader(L"Grids.hlsl", D3D11_SHVER_PIXEL_SHADER, "FilteredGrids_PS");
+    gridCB_                = ShaderManager::i().MakeConstantBuffer<GridConstants>();
+    screenSpaceVS_         = sm.GetShader(L"Grids.hlsl", D3D11_SHVER_VERTEX_SHADER, "Grids_VS");
+    screenSpaceNoExpandVS_ = sm.GetShader(L"Grids.hlsl", D3D11_SHVER_VERTEX_SHADER, "GridsNoExpand_VS");
+    gridsPS_               = sm.GetShader(L"Grids.hlsl", D3D11_SHVER_PIXEL_SHADER, "Grids_PS");
+    gridsFilteredPS_       = sm.GetShader(L"Grids.hlsl", D3D11_SHVER_PIXEL_SHADER, "FilteredGrids_PS");
 
     D3D11_BUFFER_DESC instanceBufferDesc;
 
@@ -46,11 +48,11 @@ BaseGridRenderer::BaseGridRenderer(ComPtr<ID3D11Device>& dev, const Buffs* buffs
     GW2_CHECKED_HRESULT(dev->CreateSamplerState(&samplerDesc, defaultSampler_.GetAddressOf()));
 }
 
-void BaseGridRenderer::Draw(ComPtr<ID3D11DeviceContext>& ctx, std::span<InstanceData> data, bool betterFiltering, RenderTarget* rt)
+void BaseGridRenderer::Draw(ComPtr<ID3D11DeviceContext>& ctx, std::span<InstanceData> data, bool betterFiltering, RenderTarget* rt, bool expandVS)
 {
     D3D11_MAPPED_SUBRESOURCE map;
     ctx->Map(instanceBuffer_.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &map);
-    memcpy_s(map.pData, data.size_bytes(), data.data(), data.size_bytes());
+    memcpy_s(map.pData, bufferSize_, data.data(), data.size_bytes());
     ctx->Unmap(instanceBuffer_.Get(), 0);
 
     ID3D11ShaderResourceView* srvs[] = { instanceBufferView_.Get(), buffs_->buffsAtlas().srv.Get(), buffs_->numbersAtlas().srv.Get() };
@@ -60,12 +62,26 @@ void BaseGridRenderer::Draw(ComPtr<ID3D11DeviceContext>& ctx, std::span<Instance
     ctx->IASetInputLayout(nullptr);
     ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-    auto& sm = ShaderManager::i();
+    D3D11_VIEWPORT oldVP;
+    auto&          sm = ShaderManager::i();
     if (rt)
     {
+        UINT numVPs = 1;
+        ctx->RSGetViewports(&numVPs, &oldVP);
+
         D3D11_TEXTURE2D_DESC desc;
         rt->texture->GetDesc(&desc);
         gridCB_->screenSize = glm::vec4(desc.Width, desc.Height, 1.f / desc.Width, 1.f / desc.Height);
+
+        // Setup viewport
+        D3D11_VIEWPORT vp;
+        memset(&vp, 0, sizeof(D3D11_VIEWPORT));
+        vp.Width    = FLOAT(desc.Width);
+        vp.Height   = FLOAT(desc.Height);
+        vp.MinDepth = 0.0f;
+        vp.MaxDepth = 1.0f;
+        vp.TopLeftX = vp.TopLeftY = 0;
+        ctx->RSSetViewports(1, &vp);
     }
     else
         gridCB_->screenSize = glm::vec4(Core::i().screenDims(), 1.f / Core::i().screenDims());
@@ -73,7 +89,7 @@ void BaseGridRenderer::Draw(ComPtr<ID3D11DeviceContext>& ctx, std::span<Instance
     gridCB_->numbersUVSize = buffs_->numbersAtlasUVSize();
     gridCB_.Update(ctx.Get());
     sm.SetConstantBuffers(ctx.Get(), gridCB_);
-    sm.SetShaders(ctx.Get(), screenSpaceVS_, betterFiltering ? gridsFilteredPS_ : gridsPS_);
+    sm.SetShaders(ctx.Get(), expandVS ? screenSpaceVS_ : screenSpaceNoExpandVS_, betterFiltering ? gridsFilteredPS_ : gridsPS_);
 
     ID3D11SamplerState* samplers[] = { defaultSampler_.Get() };
     ctx->PSSetSamplers(0, 1, samplers);
@@ -92,6 +108,7 @@ void BaseGridRenderer::Draw(ComPtr<ID3D11DeviceContext>& ctx, std::span<Instance
     {
         ID3D11RenderTargetView* rtvs[] = { Core::i().backBufferRTV().Get() };
         ctx->OMSetRenderTargets(1, rtvs, nullptr);
+        ctx->RSSetViewports(1, &oldVP);
     }
 }
 

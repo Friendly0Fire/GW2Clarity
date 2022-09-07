@@ -14,14 +14,13 @@
 
 namespace GW2Clarity
 {
-
 Styles::Styles(ComPtr<ID3D11Device>& dev, const Buffs* buffs)
     : buffs_(buffs)
     , previewRenderer_(dev, buffs)
 {
     Load();
 
-    preview_ = MakeRenderTarget(dev, 512, 512, DXGI_FORMAT_R8G8B8A8_UNORM);
+    preview_ = MakeRenderTarget(dev, PreviewSize, PreviewSize, DXGI_FORMAT_R8G8B8A8_UNORM);
 
     SettingsMenu::i().AddImplementer(this);
 }
@@ -53,7 +52,7 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
         for (auto it : styles_ | ranges::views::enumerate)
         {
             // Need explicit types to shut up IntelliSense, still present as of 17.2.6
-            uint   sid = uint(it.first);
+            uint   sid = static_cast<uint>(it.first);
             Style& s   = it.second;
 
             if (ImGui::Selectable(s.name.c_str(), selectedId_ == sid, ImGuiSelectableFlags_AllowItemOverlap))
@@ -87,14 +86,14 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
         ImGui::TextUnformatted("Visualize style with ");
         ImGui::SameLine();
         ImGui::SetNextItemWidth(100.f);
-        ImGui::DragInt("stacks##SimulatedStacks", &editingItemFakeCount_, 0.1f, 0, 100);
+        ImGui::DragInt("stacks##SimulatedStacks", &editingItemFakeCount_, 0.1f, 0, 100, "%d", ImGuiSliderFlags_AlwaysClamp);
         ImGuiHelpTooltip("Helper feature to tune styles. Will simulate what the buff icon would look like with the given number of stacks.");
         ImGui::SameLine();
         ImGui::TextUnformatted(" of buff ");
         buffs_->DrawBuffCombo("##PreviewBuff", previewBuff_, buffSearch_);
         ImGui::Separator();
 
-        ImGui::Image(preview_.srv.Get(), ImVec2(128.f, 128.f));
+        ImGui::Image(preview_.srv.Get(), ImVec2(PreviewSize, PreviewSize));
 
         ImGui::Separator();
 
@@ -104,14 +103,23 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
             ImGui::TextUnformatted("When less than ");
             ImGui::SameLine();
             ImGui::SetNextItemWidth(100.f);
-            saveCheck(ImGui::DragInt(std::format("##Threshold{}", i).c_str(), (int*)&th.threshold, 0.1f));
+            saveCheck(ImGui::DragInt(std::format("##Threshold{}", i).c_str(), (int*)&th.threshold, 0.1f, 0, 100, "%d", ImGuiSliderFlags_AlwaysClamp));
             ImGui::SameLine();
             ImGui::TextUnformatted("stacks:");
 
             ImGui::Indent();
 
-            saveCheck(ImGui::ColorEdit4(std::format("Tint##{}", i).c_str(), &th.tint.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
-            saveCheck(ImGui::ColorEdit4(std::format("Glow##{}", i).c_str(), &th.glow.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
+            saveCheck(ImGui::ColorEdit4(std::format("Tint Color##{}", i).c_str(), &th.tint.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
+            saveCheck(ImGui::DragFloat(std::format("Glow Size##{}", i).c_str(), &th.glowSize, 0.1f, 0.f, 512.f));
+            if (th.glowSize > 0.f)
+            {
+                saveCheck(ImGui::ColorEdit4(std::format("Glow Color##{}", i).c_str(), &th.glow.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
+                saveCheck(ImGui::DragFloat(std::format("Glow Pulse Intensity##{}", i).c_str(), &th.glowPulse.x, 0.1f, 0.f, 1.f));
+                saveCheck(ImGui::DragFloat(std::format("Glow Pulse Speed##{}", i).c_str(), &th.glowPulse.y, 0.1f, 0.f, 60.f));
+            }
+            saveCheck(ImGui::DragFloat(std::format("Border Thickness##{}", i).c_str(), &th.borderThickness, 0.1f, 0.f, 512.f));
+            if (th.borderThickness > 0.f)
+                saveCheck(ImGui::ColorEdit4(std::format("Border Color##{}", i).c_str(), &th.border.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
 
             ImGui::Unindent();
 
@@ -120,7 +128,8 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
         if (saveCheck(ImGui::Button("Add threshold")))
             s.thresholds.emplace_back();
 
-        ranges::sort(s.thresholds, [](auto& a, auto& b) { return a.threshold < b.threshold; });
+        if (!ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+            ranges::sort(s.thresholds, [](auto& a, auto& b) { return a.threshold < b.threshold; });
     }
 
     mstime currentTime = TimeInMilliseconds();
@@ -134,8 +143,10 @@ void Styles::Draw(ComPtr<ID3D11DeviceContext>& ctx)
         return;
 
     GridInstanceData data{
-        .posDims = {0, 0, 1, 1},
-          .uv = previewBuff_->uv, .numberUV = buffs_->numbers()[editingItemFakeCount_], .showNumber = editingItemFakeCount_ > 1
+        .posDims    = {0.5f, 0.5f, 1.f, 1.f},
+        .uv         = previewBuff_->uv,
+        .numberUV   = buffs_->GetNumber(editingItemFakeCount_),
+        .showNumber = previewBuff_->ShowNumber(editingItemFakeCount_)
     };
     ApplyStyle(selectedId_, editingItemFakeCount_, data);
 
@@ -143,7 +154,7 @@ void Styles::Draw(ComPtr<ID3D11DeviceContext>& ctx)
     ctx->ClearRenderTargetView(preview_.rtv.Get(), clear);
 
     previewRenderer_.Add(std::move(data));
-    previewRenderer_.Draw(ctx, true, &preview_);
+    previewRenderer_.Draw(ctx, true, &preview_, false);
 
     drewMenu_ = false;
 }
@@ -165,8 +176,7 @@ void Styles::Load()
             return def;
         if (cvt.index() == 0)
             return static_cast<D>(*it);
-        else
-            return std::get<1>(cvt)(*it);
+        return std::get<1>(cvt)(*it);
     };
 
     const auto& sets = cfg.json()["styles"];
@@ -178,6 +188,7 @@ void Styles::Load()
         for (const auto& tIn : sIn["thresholds"])
         {
             Threshold t;
+            t.threshold       = maybe_at(tIn, "threshold", 1);
             t.tint            = maybe_at(tIn, "tint", glm::vec4(1), { getvec4 });
             t.border          = maybe_at(tIn, "border", glm::vec4(0), { getvec4 });
             t.glow            = maybe_at(tIn, "glow", glm::vec4(0), { getvec4 });
@@ -225,12 +236,15 @@ void Styles::Save()
         for (const auto& t : s.thresholds)
         {
             json threshold;
+            threshold["threshold"]        = t.threshold;
             threshold["tint"]             = { t.tint.x, t.tint.y, t.tint.z, t.tint.w };
             threshold["border"]           = { t.border.x, t.border.y, t.border.z, t.border.w };
             threshold["glow"]             = { t.glow.x, t.glow.y, t.glow.z, t.glow.w };
             threshold["border_thickness"] = t.borderThickness;
             threshold["glow_size"]        = t.glowSize;
             threshold["glow_pulse"]       = { t.glowPulse.x, t.glowPulse.y };
+
+            styleThresholds.push_back(threshold);
         }
 
         styles.push_back(style);
@@ -250,14 +264,20 @@ void Styles::ApplyStyle(uint id, int count, GridInstanceData& out) const
     const auto& style = styles_.at(id);
     if (auto threshIt = ranges::find_if(style.thresholds, [=](const auto& t) { return count < t.threshold; }); threshIt != style.thresholds.end())
     {
-        auto& thresh        = *threshIt;
+        const auto& thresh = *threshIt;
 
-        out.glowSize        = thresh.glowSize;
+        if (thresh.glowPulse.x > 0.f)
+        {
+            auto  currentTime = TimeInMilliseconds();
+            float x           = sinf(static_cast<float>(currentTime) / 1000.f * 2.f * static_cast<float>(M_PI) / thresh.glowPulse.y) * 0.5f + 0.5f;
+            out.glowSize      = glm::mix(thresh.glowPulse.x, 1.f, x) * thresh.glowSize;
+        }
+        else
+            out.glowSize = thresh.glowSize;
         out.borderColor     = thresh.border;
         out.borderThickness = thresh.borderThickness;
         out.glowColor       = thresh.glow;
         out.tint            = thresh.tint;
     }
 }
-
 } // namespace GW2Clarity
