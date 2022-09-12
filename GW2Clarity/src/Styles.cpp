@@ -73,6 +73,17 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
             }
         }
         ImGui::EndListBox();
+
+        if (ImGui::Button("Add"))
+        {
+            std::string name    = "New Style";
+            int         nameIdx = 1;
+            while (ranges::any_of(styles_, [&](const auto& s) { return s.name == name; }))
+                name = std::format("New Style {}", ++nameIdx);
+
+            styles_.emplace_back(name);
+            selectedId_ = styles_.size() - 1;
+        }
     }
 
     if (selectedId_ < styles_.size())
@@ -150,7 +161,7 @@ void Styles::Draw(ComPtr<ID3D11DeviceContext>& ctx)
     };
     ApplyStyle(selectedId_, editingItemFakeCount_, data);
 
-    float clear[4] = { 0.f, 0.f, 0.f, 0.f };
+    float clear[4] = { 0.f, 0.f, 0.f, 1.f };
     ctx->ClearRenderTargetView(preview_.rtv.Get(), clear);
 
     previewRenderer_.Add(std::move(data));
@@ -277,7 +288,7 @@ void Styles::ApplyStyle(uint id, int count, GridInstanceData& out) const
             out.glowSize = glm::vec2(thresh.glowSize);
         out.borderColor     = thresh.border;
         out.borderThickness = thresh.borderThickness;
-        out.glowColor       = thresh.glow;
+        out.glowColor       = thresh.glowSize > 0.f ? thresh.glow : glm::vec4(0.f);
         out.tint            = thresh.tint;
     }
 }

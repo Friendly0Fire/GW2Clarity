@@ -574,7 +574,7 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind)
                 {
                     uint         sid = it.first;
                     const Style& s   = it.second;
-                    if (ImGui::Selectable(s.name.c_str(), sid == editItem.style))
+                    if (saveCheck(ImGui::Selectable(s.name.c_str(), sid == editItem.style)))
                         editItem.style = sid;
                 }
 

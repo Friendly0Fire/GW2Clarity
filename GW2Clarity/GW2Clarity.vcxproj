@@ -243,7 +243,9 @@ git describe --always --dirty --match "NOT A TAG" &gt;&gt; "$(ProjectDir)include
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="shaders\perlin.hlsli" />
+    <None Include="shaders\perlin.hlsli">
+      <FileType>Document</FileType>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

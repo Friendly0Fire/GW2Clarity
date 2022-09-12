@@ -107,6 +107,9 @@
     <None Include="shaders\Grids.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
+    <None Include="shaders\perlin.hlsli">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc">
@@ -128,10 +131,5 @@
     <Image Include="assets\numbers.dds">
       <Filter>Resource Files</Filter>
     </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="shaders\perlin.hlsli">
-      <Filter>Resource Files\Shaders</Filter>
-    </FxCompile>
   </ItemGroup>
 </Project>
