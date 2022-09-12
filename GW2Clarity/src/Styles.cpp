@@ -110,12 +110,12 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
             ImGui::Indent();
 
             saveCheck(ImGui::ColorEdit4(std::format("Tint Color##{}", i).c_str(), &th.tint.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
-            saveCheck(ImGui::DragFloat(std::format("Glow Size##{}", i).c_str(), &th.glowSize, 0.1f, 0.f, 512.f));
+            saveCheck(ImGui::DragFloat(std::format("Glow Size##{}", i).c_str(), &th.glowSize, 0.01f, 0.f, 10.f));
             if (th.glowSize > 0.f)
             {
                 saveCheck(ImGui::ColorEdit4(std::format("Glow Color##{}", i).c_str(), &th.glow.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
-                saveCheck(ImGui::DragFloat(std::format("Glow Pulse Intensity##{}", i).c_str(), &th.glowPulse.x, 0.1f, 0.f, 1.f));
-                saveCheck(ImGui::DragFloat(std::format("Glow Pulse Speed##{}", i).c_str(), &th.glowPulse.y, 0.1f, 0.f, 60.f));
+                saveCheck(ImGui::DragFloat(std::format("Glow Pulse Intensity##{}", i).c_str(), &th.glowPulse.x, 0.01f, 0.f, 1.f));
+                saveCheck(ImGui::DragFloat(std::format("Glow Pulse Speed##{}", i).c_str(), &th.glowPulse.y, 0.01f, 0.f, 5.f));
             }
             saveCheck(ImGui::DragFloat(std::format("Border Thickness##{}", i).c_str(), &th.borderThickness, 0.1f, 0.f, 512.f));
             if (th.borderThickness > 0.f)
@@ -269,11 +269,12 @@ void Styles::ApplyStyle(uint id, int count, GridInstanceData& out) const
         if (thresh.glowPulse.x > 0.f)
         {
             auto  currentTime = TimeInMilliseconds();
-            float x           = sinf(static_cast<float>(currentTime) / 1000.f * 2.f * static_cast<float>(M_PI) / thresh.glowPulse.y) * 0.5f + 0.5f;
-            out.glowSize      = glm::mix(thresh.glowPulse.x, 1.f, x) * thresh.glowSize;
+            float x           = sinf(static_cast<float>(currentTime) / 1000.f * 2.f * static_cast<float>(M_PI) * thresh.glowPulse.y) * 0.5f + 0.5f;
+            out.glowSize.x    = glm::mix(1.f - thresh.glowPulse.x, 1.f, x) * thresh.glowSize;
+            out.glowSize.y    = thresh.glowSize;
         }
         else
-            out.glowSize = thresh.glowSize;
+            out.glowSize = glm::vec2(thresh.glowSize);
         out.borderColor     = thresh.border;
         out.borderThickness = thresh.borderThickness;
         out.glowColor       = thresh.glow;

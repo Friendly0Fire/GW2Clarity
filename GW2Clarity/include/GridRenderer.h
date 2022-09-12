@@ -18,10 +18,9 @@ struct GridInstanceData
     glm::vec4 tint;
     glm::vec4 borderColor;
     glm::vec4 glowColor;
+    glm::vec2 glowSize;
     float     borderThickness;
-    float     glowSize;
     int       showNumber;
-    int       _;
 };
 
 class BaseGridRenderer
@@ -46,6 +45,7 @@ protected:
         glm::vec4 screenSize;
         glm::vec2 atlasUVSize;
         glm::vec2 numbersUVSize;
+        float     time;
     };
     ConstantBuffer<GridConstants>    gridCB_;
 

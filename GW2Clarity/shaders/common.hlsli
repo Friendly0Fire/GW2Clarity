@@ -154,3 +154,18 @@ float4 SampleTextureCatmullRom(in Texture2D<float4> tex, in SamplerState linearS
 
     return result;
 }
+
+#define M1 1597334677U     //1719413*929
+#define M2 3812015801U     //140473*2467*11
+float hash_Tong(uint2 q)
+{
+	q *= uint2(M1, M2);
+    uint n = q.x ^ q.y;
+    n = n * (n ^ (n >> 15));
+    return float(n) * (1.0/float(0xffffffffU));
+}
+
+float hash_FractSin(float2 p)
+{
+	return frac(sin(dot(p, float2(12.9898, 78.233))) * 43758.5453);   
+}

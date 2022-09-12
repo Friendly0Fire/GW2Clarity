@@ -1,10 +1,12 @@
 #include "common.hlsli"
+#include "perlin.hlsli"
 
 cbuffer Common : register(b0)
 {
     float4 screenSize;
     float2 atlasUVSize;
     float2 numbersUVSize;
+    float  time;
 };
 
 struct InstanceData
@@ -15,10 +17,9 @@ struct InstanceData
     float4 tint;
     float4 borderColor;
     float4 glowColor;
+    float2 glowSize;
     float borderThickness;
-    float glowSize;
     int   showNumber;
-    int _;
 };
 
 StructuredBuffer<InstanceData> Instances : register(t0);
@@ -34,7 +35,7 @@ struct VS_OUT
     nointerpolation float4 Tint        : TEXCOORD3;
     nointerpolation float4 BorderColor : TEXCOORD4;
     nointerpolation float4 GlowColor   : TEXCOORD5;
-    nointerpolation float3 BorderGlow  : TEXCOORD6;
+    nointerpolation float2 Border  : TEXCOORD6;
     nointerpolation float  ShowNumber  : TEXCOORD7;
 };
 
@@ -45,13 +46,22 @@ VS_OUT Base_VS(in uint instance, in uint id, in bool expand)
 
     float2 UV = float2(id & 1, id >> 1);
 
-	float2 expandedDims = data.posDims.zw + 2.f * data.glowSize * screenSize.zw;
+    float2 glowSize = data.glowSize * 50000.f * screenSize.z;
+
+	float2 expandedDims = data.posDims.zw + 2.f * glowSize.xx * screenSize.zw;
     float2 dimsRatio = expandedDims / data.posDims.zw;
     float2 dimsExpansion = dimsRatio - 1.f;
 
-    Out.UV.xy = UV * dimsRatio - 0.5f * dimsExpansion;
+    if(!expand)
+    {
+	    float2 maxExpandedDims = data.posDims.zw + 2.f * glowSize.yy * screenSize.zw;
+        float2 maxDimsRatio = maxExpandedDims / data.posDims.zw;
+        expandedDims /= maxDimsRatio;
+    }
+
+    Out.UV.xy = UV * dimsRatio.xy - 0.5f * dimsExpansion.xy;
     Out.UV.zw = UV;
-    Out.Position = float4((UV * 2 - 1) * (expand ? expandedDims : data.posDims.zw) + data.posDims.xy * 2 - 1, 0.5f, 1.f);
+    Out.Position = float4((UV * 2 - 1) * expandedDims.xy + data.posDims.xy * 2 - 1, 0.5f, 1.f);
 	Out.Position.y *= -1;
 
     Out.TexUVs = float4(data.uv, data.numberUV);
@@ -59,7 +69,7 @@ VS_OUT Base_VS(in uint instance, in uint id, in bool expand)
     Out.BorderColor = data.borderColor;
     Out.GlowColor = data.glowColor;
     Out.ShowNumber = data.showNumber ? 1.f : 0.f;
-    Out.BorderGlow = float3(2.f * data.borderThickness / (data.posDims.zw * screenSize.xy), data.posDims.z * screenSize.x / data.glowSize);
+    Out.Border = float2(2.f * data.borderThickness / (data.posDims.zw * screenSize.xy));
 
     return Out;
 }
@@ -86,6 +96,14 @@ float4 MaybeFiltered(in Texture2D<float4> tex, in float2 uv, in bool filtered)
         return tex.Sample(MainSampler, uv);
 }
 
+float glowShape(float2 d, float2 tuv)
+{
+    d *= 2.f;
+    float theta = atan2(d.y, d.x);
+    float rng = noise(float3(tuv * 1000.f + theta * 10.f, time * 1.f));
+    return dot(d, d) * saturate(0.1f * sin(theta * 12.f + 2 * time) * rng + 0.9f);
+}
+
 float4 Grids(in VS_OUT In, bool filtered)
 {
     float2 constrainedUV = saturate(In.UV.xy);
@@ -96,8 +114,8 @@ float4 Grids(in VS_OUT In, bool filtered)
     c.rgb *= In.Tint.rgb;
     
     float2 threshold = abs(In.UV - 0.5f) * 2;
-    c += In.BorderColor * (all(threshold <= 1.f) && any(threshold >= 1.f - In.BorderGlow.xy));
-    c += In.GlowColor * saturate((1.f - c.a) - 2.f * length(In.UV.zw - 0.5f));
+    c += In.BorderColor * (all(threshold <= 1.f) && any(threshold >= 1.f - In.Border));
+    c += In.GlowColor * saturate((1.f - c.a) - glowShape(In.UV.zw - 0.5f, In.TexUVs.xy));
 
     c *= In.Tint.a;
 

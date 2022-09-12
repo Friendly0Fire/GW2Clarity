@@ -87,6 +87,7 @@ void BaseGridRenderer::Draw(ComPtr<ID3D11DeviceContext>& ctx, std::span<Instance
         gridCB_->screenSize = glm::vec4(Core::i().screenDims(), 1.f / Core::i().screenDims());
     gridCB_->atlasUVSize   = buffs_->buffsAtlasUVSize();
     gridCB_->numbersUVSize = buffs_->numbersAtlasUVSize();
+    gridCB_->time          = fmod(TimeInMilliseconds() / 1000.f, 60.f);
     gridCB_.Update(ctx.Get());
     sm.SetConstantBuffers(ctx.Get(), gridCB_);
     sm.SetShaders(ctx.Get(), expandVS ? screenSpaceVS_ : screenSpaceNoExpandVS_, betterFiltering ? gridsFilteredPS_ : gridsPS_);
