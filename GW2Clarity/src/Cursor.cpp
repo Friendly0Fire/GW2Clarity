@@ -42,9 +42,6 @@ Cursor::Cursor(ComPtr<ID3D11Device>& dev)
     blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_SUBTRACT;
     GW2_CHECKED_HRESULT(dev->CreateBlendState(&blendDesc, invertBlend_.GetAddressOf()));
 
-    CD3D11_SAMPLER_DESC sampDesc(D3D11_DEFAULT);
-    GW2_CHECKED_HRESULT(dev->CreateSamplerState(&sampDesc, defaultSampler_.GetAddressOf()));
-
     SettingsMenu::i().AddImplementer(this);
 }
 

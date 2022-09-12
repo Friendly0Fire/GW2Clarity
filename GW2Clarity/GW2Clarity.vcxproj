@@ -107,7 +107,7 @@ cd "$(ProjectDir)shaders"
 echo | set /p dummyName="#define GIT_HASH " &gt; "$(ProjectDir)include\git.h"
 git describe --always --dirty --match "NOT A TAG" &gt;&gt; "$(ProjectDir)include\git.h"
 
-"$(SolutionDir)AtlasTool\bin\$(Configuration)\net6.0\AtlasTool.exe" --directory "$(SolutionDir)GW2Clarity\assets\atlas" --output "$(SolutionDir)GW2Clarity\assets\atlas.dds" --verbose --border 2</Command>
+"$(SolutionDir)AtlasTool\bin\$(Configuration)\net6.0\AtlasTool.exe" --directory "$(SolutionDir)GW2Clarity/assets/atlas" --output "$(SolutionDir)GW2Clarity/assets/atlas.dds" --verbose --border 2</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -159,24 +159,30 @@ cd "$(ProjectDir)shaders"
 echo | set /p dummyName="#define GIT_HASH " &gt; "$(ProjectDir)include\git.h"
 git describe --always --dirty --match "NOT A TAG" &gt;&gt; "$(ProjectDir)include\git.h"
 
-"$(SolutionDir)AtlasTool\bin\$(Configuration)\net6.0\AtlasTool.exe" --directory "$(SolutionDir)GW2Clarity\assets\atlas" --output "$(SolutionDir)GW2Clarity\assets\atlas.dds" --verbose --border 2</Command>
+"$(SolutionDir)AtlasTool\bin\$(Configuration)\net6.0\AtlasTool.exe" --directory "$(SolutionDir)GW2Clarity/assets/atlas" --output "$(SolutionDir)GW2Clarity/assets/atlas.dds" --verbose --border 2</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="common\imgui\misc\cpp\imgui_stdlib.cpp" />
+    <ClCompile Include="src\Buffs.cpp" />
     <ClCompile Include="src\Cursor.cpp" />
+    <ClCompile Include="src\GridRenderer.cpp" />
     <ClCompile Include="src\Grids.cpp" />
     <ClCompile Include="src\Core.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\Sets.cpp" />
+    <ClCompile Include="src\Styles.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Buffs.h" />
     <ClInclude Include="include\Cursor.h" />
+    <ClInclude Include="include\GridRenderer.h" />
     <ClInclude Include="include\Grids.h" />
     <ClInclude Include="include\Core.h" />
     <ClInclude Include="include\Main.h" />
     <ClInclude Include="include\Resource.h" />
     <ClInclude Include="include\Sets.h" />
+    <ClInclude Include="include\Styles.h" />
     <ClInclude Include="include\Tag.h" />
     <ClInclude Include="include\Version.h" />
   </ItemGroup>
@@ -195,7 +201,9 @@ git describe --always --dirty --match "NOT A TAG" &gt;&gt; "$(ProjectDir)include
     <None Include="Main.def" />
     <None Include="rt_rcdat.bin" />
     <None Include="shaders\common.hlsli" />
-    <None Include="src\BuffsList.inc" />
+    <ClInclude Include="src\BuffsList.inc">
+      <FileType>Document</FileType>
+    </ClInclude>
     <None Include="vcpkg.json" />
   </ItemGroup>
   <ItemGroup>
@@ -228,6 +236,16 @@ git describe --always --dirty --match "NOT A TAG" &gt;&gt; "$(ProjectDir)include
   <ItemGroup>
     <Image Include="assets\boons.dds" />
     <Image Include="assets\numbers.dds" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\Grids.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\perlin.hlsli">
+      <FileType>Document</FileType>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

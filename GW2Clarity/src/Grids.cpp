@@ -3,20 +3,18 @@
 #include <ImGuiExtensions.h>
 #include <SimpleIni.h>
 #include <algorithm>
-#include <cppcodec/base64_rfc4648.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
 #include <range/v3/all.hpp>
-#include <shellapi.h>
-#include <skyr/percent_encoding/percent_encode.hpp>
 #include <variant>
 
 namespace GW2Clarity
 {
-ImVec2 AdjustToArea(float w, float h, float availW)
+template<VectorLike<float, 2> T>
+T AdjustToArea(float w, float h, float availW)
 {
-    ImVec2 dims(w, h);
+    T dims(w, h);
     if (dims.x < dims.y)
         dims.x = dims.y * w / h;
     else if (dims.x > dims.y)
@@ -31,47 +29,12 @@ ImVec2 AdjustToArea(float w, float h, float availW)
     return dims;
 }
 
-std::vector<glm::vec4> GenerateNumbersMap()
+Grids::Grids(ComPtr<ID3D11Device>& dev, const Buffs* buffs, const Styles* styles)
+    : enableBetterFiltering_("Enable better texture filtering", "better_tex_filtering", "Grids", true)
+    , buffs_(buffs)
+    , styles_(styles)
+    , gridRenderer_(dev, buffs)
 {
-    return {
-        {0.f,            0.f,           0.f,         0.f        },
-        { 0.f,           0.f,           0.f,         0.f        },
-        { 0.0015337423f, 0.0015337423f, 0.19785276f, 0.19785276f},
-        { 0.20092024f,   0.0015337423f, 0.39723927f, 0.19785276f},
-        { 0.40030676f,   0.0015337423f, 0.59662575f, 0.19785276f},
-        { 0.59969324f,   0.0015337423f, 0.7960123f,  0.19785276f},
-        { 0.7990798f,    0.0015337423f, 0.99539876f, 0.19785276f},
-        { 0.0015337423f, 0.20092024f,   0.19785276f, 0.39723927f},
-        { 0.20092024f,   0.20092024f,   0.39723927f, 0.39723927f},
-        { 0.40030676f,   0.20092024f,   0.59662575f, 0.39723927f},
-        { 0.59969324f,   0.20092024f,   0.7960123f,  0.39723927f},
-        { 0.7990798f,    0.20092024f,   0.99539876f, 0.39723927f},
-        { 0.0015337423f, 0.40030676f,   0.19785276f, 0.59662575f},
-        { 0.20092024f,   0.40030676f,   0.39723927f, 0.59662575f},
-        { 0.40030676f,   0.40030676f,   0.59662575f, 0.59662575f},
-        { 0.59969324f,   0.40030676f,   0.7960123f,  0.59662575f},
-        { 0.7990798f,    0.40030676f,   0.99539876f, 0.59662575f},
-        { 0.0015337423f, 0.59969324f,   0.19785276f, 0.7960123f },
-        { 0.20092024f,   0.59969324f,   0.39723927f, 0.7960123f },
-        { 0.40030676f,   0.59969324f,   0.59662575f, 0.7960123f },
-        { 0.59969324f,   0.59969324f,   0.7960123f,  0.7960123f },
-        { 0.7990798f,    0.59969324f,   0.99539876f, 0.7960123f },
-        { 0.0015337423f, 0.7990798f,    0.19785276f, 0.99539876f},
-        { 0.20092024f,   0.7990798f,    0.39723927f, 0.99539876f},
-        { 0.40030676f,   0.7990798f,    0.59662575f, 0.99539876f},
-        { 0.59969324f,   0.7990798f,    0.7960123f,  0.99539876f},
-        { 0.7990798f,    0.7990798f,    0.99539876f, 0.99539876f},
-    };
-}
-
-Grids::Grids(ComPtr<ID3D11Device>& dev)
-    : buffs_(GenerateBuffsList())
-    , buffsMap_(GenerateBuffsMap(buffs_))
-    , numbersMap_(GenerateNumbersMap())
-{
-    buffsAtlas_   = CreateTextureFromResource(dev.Get(), Core::i().dllModule(), IDR_BUFFS);
-    numbersAtlas_ = CreateTextureFromResource(dev.Get(), Core::i().dllModule(), IDR_NUMBERS);
-
     Input::i().mouseButtonEvent().AddCallback(
         [&](EventKey ek, bool&)
         {
@@ -84,9 +47,6 @@ Grids::Grids(ComPtr<ID3D11Device>& dev)
         });
 
     Load();
-#ifdef _DEBUG
-    LoadNames();
-#endif
 
     SettingsMenu::i().AddImplementer(this);
 }
@@ -95,186 +55,6 @@ Grids::~Grids()
 {
     SettingsMenu::f([&](auto& i) { i.RemoveImplementer(this); });
 }
-
-#ifdef _DEBUG
-void Grids::LoadNames()
-{
-    buffNames_.clear();
-
-    wchar_t fn[MAX_PATH];
-    GetModuleFileName(GetBaseCore().dllModule(), fn, MAX_PATH);
-
-    std::filesystem::path namesPath = fn;
-    namesPath                       = namesPath.remove_filename() / "names.tsv";
-
-    std::ifstream namesFile(namesPath);
-    if (namesFile.good())
-    {
-        std::string              line;
-        std::vector<std::string> cols;
-        bool                     header = true;
-        while (std::getline(namesFile, line))
-        {
-            if (header)
-            {
-                header = false;
-                continue;
-            }
-
-            cols.clear();
-            SplitString(line.c_str(), "\t", std::back_inserter(cols));
-            GW2_ASSERT(cols.size() == 1 || cols.size() == 2);
-
-            buffNames_[std::atoi(cols[0].c_str())] = cols.size() == 2 ? cols[1] : "";
-        }
-    }
-}
-
-void Grids::SaveNames()
-{
-    wchar_t fn[MAX_PATH];
-    GetModuleFileName(GetBaseCore().dllModule(), fn, MAX_PATH);
-
-    std::filesystem::path namesPath = fn;
-    namesPath                       = namesPath.remove_filename() / "names.tsv";
-
-    std::ofstream namesFile(namesPath, std::ofstream::trunc | std::ofstream::out);
-    if (namesFile.good())
-    {
-        namesFile << "ID\tName" << std::endl;
-        for (auto& n : buffNames_)
-            namesFile << n.first << "\t" << n.second << std::endl;
-    }
-}
-
-void Grids::DrawBuffAnalyzer()
-{
-    ImGui::InputInt("Say in Guild", &guildLogId_, 1);
-    if (guildLogId_ < 0 || guildLogId_ > 5)
-        guildLogId_ = 1;
-
-    ImGui::Checkbox("Hide any inactive", &hideInactive_);
-    if (ImGui::Button("Hide currently inactive"))
-    {
-        for (auto& [id, buff] : activeBuffs_)
-            if (buff == 0)
-                hiddenBuffs_.insert(id);
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Hide currently active"))
-    {
-        for (auto& [id, buff] : activeBuffs_)
-            if (buff > 0)
-                hiddenBuffs_.insert(id);
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Unhide all"))
-        hiddenBuffs_.clear();
-
-    if (ImGui::BeginTable("Active Buffs", 5, ImGuiTableFlags_RowBg))
-    {
-        ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed, 60.f);
-        ImGui::TableSetupColumn("Count", ImGuiTableColumnFlags_WidthFixed, 40.f);
-        ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch, 5.f);
-        ImGui::TableSetupColumn("Chat Link", ImGuiTableColumnFlags_WidthStretch, 5.f);
-        ImGui::TableHeadersRow();
-        for (auto& [id, buff] : activeBuffs_)
-        {
-            if (buff == 0 && hideInactive_ || hiddenBuffs_.count(id) > 0)
-                continue;
-
-            ImGui::TableNextRow();
-            ImGui::TableSetColumnIndex(0);
-
-            ImGui::Text("%u", id);
-
-            ImGui::TableNextColumn();
-
-            ImGui::Text("%d", buff);
-
-            ImGui::TableNextColumn();
-
-            if (auto it = buffsMap_.find(id); it != buffsMap_.end())
-                ImGui::TextUnformatted(it->second->name.c_str());
-            else
-            {
-                auto& str = buffNames_[id];
-                if (ImGui::InputText(std::format("##Name{}", id).c_str(), &str))
-                    SaveNames();
-            }
-
-            ImGui::TableNextColumn();
-
-            byte chatCode[1 + 3 + 1];
-            chatCode[0]             = 0x06;
-            chatCode[1 + 3]         = 0x0;
-            chatCode[1]             = id & 0xFF;
-            chatCode[2]             = (id >> 8) & 0xFF;
-            chatCode[3]             = (id >> 16) & 0xFF;
-
-            using base64            = cppcodec::base64_rfc4648;
-
-            std::string chatCodeStr = std::format("[&{}]", base64::encode(chatCode));
-
-            ImGui::TextUnformatted(chatCodeStr.c_str());
-            ImGui::SameLine();
-            if (ImGui::Button(("Copy##" + chatCodeStr).c_str()))
-                ImGui::SetClipboardText(chatCodeStr.c_str());
-            ImGui::SameLine();
-            if (ImGui::Button(std::format("Say in G{}##{}", guildLogId_, chatCodeStr).c_str()))
-            {
-                ImGui::SetClipboardText(std::format("/g{} {}: {}", guildLogId_, id, chatCodeStr).c_str());
-
-                auto wait         = [](int i) { std::this_thread::sleep_for(std::chrono::milliseconds(i)); };
-                auto sendKeyEvent = [](uint vk, ScanCode sc, bool down)
-                {
-                    INPUT i;
-                    ZeroMemory(&i, sizeof(INPUT));
-                    i.type       = INPUT_KEYBOARD;
-                    i.ki.wVk     = vk;
-                    i.ki.wScan   = ScanCode_t(sc);
-                    i.ki.dwFlags = down ? 0 : KEYEVENTF_KEYUP;
-
-                    SendInput(1, &i, sizeof(INPUT));
-                };
-
-                std::thread(
-                    [=]
-                    {
-                        wait(100);
-
-                        sendKeyEvent(VK_RETURN, ScanCode::ENTER, true);
-                        wait(50);
-                        sendKeyEvent(VK_RETURN, ScanCode::ENTER, false);
-                        wait(100);
-
-                        sendKeyEvent(VK_CONTROL, ScanCode::CONTROLLEFT, true);
-                        wait(50);
-                        sendKeyEvent('V', ScanCode::V, true);
-                        wait(100);
-
-                        sendKeyEvent('V', ScanCode::V, false);
-                        wait(50);
-                        sendKeyEvent(VK_CONTROL, ScanCode::CONTROLLEFT, false);
-                        wait(100);
-
-                        sendKeyEvent(VK_RETURN, ScanCode::ENTER, true);
-                        wait(50);
-                        sendKeyEvent(VK_RETURN, ScanCode::ENTER, false);
-                    })
-                    .detach();
-            }
-            ImGui::SameLine();
-            if (ImGui::Button(("Wiki##" + chatCodeStr).c_str()))
-            {
-                ShellExecute(0, 0, std::format(L"https://wiki.guildwars2.com/index.php?title=Special:Search&search={}", utf8_decode(skyr::percent_encode(chatCodeStr))).c_str(), 0,
-                             0, SW_SHOW);
-            }
-        }
-        ImGui::EndTable();
-    }
-}
-#endif
 
 void Grids::DrawEditingGrid()
 {
@@ -357,9 +137,13 @@ void Grids::DrawGridList()
         ImGui::TableNextColumn();
         if (ImGui::BeginListBox("##GridsList", ImVec2(-FLT_MIN, 0.f)))
         {
-            for (auto&& [gid, g] : grids_ | ranges::views::enumerate)
+            for (auto it : grids_ | ranges::views::enumerate)
             {
-                auto u = Unselected(gid);
+                // Need explicit types to shut up IntelliSense, still present as of 17.2.6
+                short gid = short(it.first);
+                Grid& g   = it.second;
+
+                auto  u   = Unselected(gid);
                 if (ImGui::Selectable(std::format("{} ({}x{})##{}", g.name, g.spacing.x, g.spacing.y, gid).c_str(), selectedId_ == u || currentHovered_ == u,
                                       ImGuiSelectableFlags_AllowItemOverlap))
                 {
@@ -401,8 +185,12 @@ void Grids::DrawGridList()
             {
                 auto& g   = getG(selectedId_);
                 auto  gid = selectedId_.grid;
-                for (auto&& [iid, i] : g.items | ranges::views::enumerate)
+                for (auto it : g.items | ranges::views::enumerate)
                 {
+                    // Need explicit types to shut up IntelliSense, still present as of 17.2.6
+                    short       iid = it.first;
+                    Item&       i   = it.second;
+
                     Id          id{ gid, iid };
                     std::string name = std::format("{} ({}, {})##{}", i.buff->name.c_str(), i.pos.x, i.pos.y, iid);
                     if (ImGui::Selectable(name.c_str(), selectedId_ == id || currentHovered_ == id, ImGuiSelectableFlags_AllowItemOverlap))
@@ -458,7 +246,7 @@ void Grids::DrawGridList()
     }
 }
 
-void Grids::DrawItems(const Sets::Set* set, bool shouldIgnoreSet)
+void Grids::DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set, bool shouldIgnoreSet)
 {
     bool editMode = selectedId_.grid != UnselectedSubId;
 #ifdef _DEBUG
@@ -469,94 +257,90 @@ void Grids::DrawItems(const Sets::Set* set, bool shouldIgnoreSet)
 
     if (set || shouldIgnoreSet || editMode || showDebugGrid)
     {
+        auto  currentTime        = TimeInMilliseconds();
+        float editingBorderCycle = sin(float(currentTime) * 2.f * M_PI / 1000.f) * 0.5f + 0.5f;
+
         if (!MumbleLink::i().isInCompetitiveMode() && (editMode || shouldIgnoreSet || showDebugGrid || !set->combatOnly || MumbleLink::i().isInCombat()))
         {
-            glm::vec2 screen{ ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y };
-            glm::vec2 baseMouse{ ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y };
+            const glm::vec2 screen{ ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y };
+            const glm::vec2 mouse{ ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y };
 
-            ImGui::SetNextWindowPos(ImVec2(0, 0));
-            ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
-            if (ImGui::Begin("Display Area", nullptr, InvisibleWindowFlags))
+            auto            drawItem = [&](const glm::ivec2& spacing, const Item& i, const glm::vec2& gridOrigin, int count, bool editing)
             {
-                struct NumberDraw
+                glm::vec2        pos = gridOrigin + glm::vec2(i.pos * spacing);
+
+                auto             adj = AdjustToArea<glm::vec2>(128.f, 128.f, float(spacing.x));
+
+                GridInstanceData inst;
+                inst.posDims = glm::vec4(pos, adj) / glm::vec4(screen, screen);
+                inst.uv      = i.buff->uv;
+                if ((inst.showNumber = i.buff->ShowNumber(count)))
+                    inst.numberUV = buffs_->GetNumber(count);
+
+                styles_->ApplyStyle(i.style, count, inst);
+
+                if (editing)
                 {
-                    ImVec2 adj;
-                    ImVec2 pos;
-                    ImVec2 uv1;
-                    ImVec2 uv2;
-                };
-                std::vector<NumberDraw> delayedDraws;
+                    inst.borderColor     = glm::mix(inst.borderColor, glm::vec4(1, 0, 0, 1), editingBorderCycle);
+                    inst.borderThickness = std::max(inst.borderThickness, 1.f);
+                }
 
-                auto                    drawItem = [&](const glm::ivec2& spacing, const Item& i, const glm::vec2& gridOrigin, int count, bool editing)
+                gridRenderer_.Add(std::move(inst));
+            };
+
+            auto drawGrid = [&](const Grid& g, short gid)
+            {
+                glm::vec2 gridOrigin;
+                if (!g.attached || (editMode && !testMouseMode_))
+                    gridOrigin = screen * 0.5f + glm::vec2(g.offset);
+                else
                 {
-                    auto   thresh = ranges::find_if(i.thresholds, [=](const auto& t) { return count < t.threshold; });
-                    ImVec4 tint(1, 1, 1, 1);
-                    if (thresh != i.thresholds.end())
-                        tint = thresh->tint;
-
-                    glm::vec2 pos = gridOrigin + glm::vec2(i.pos * spacing);
-
-                    auto      adj = AdjustToArea(128.f, 128.f, float(spacing.x));
-
-                    if (editing)
-                        ImGui::GetWindowDrawList()->AddRect(ToImGui(pos), ToImGui(pos) + adj, 0xFF0000FF);
-
-                    ImGui::SetCursorPos(ToImGui(pos));
-                    ImGui::Image(buffsAtlas_.srv.Get(), adj, ToImGui(i.buff->uv.xy), ToImGui(i.buff->uv.zw), tint);
-                    if (count > 1 && i.buff->maxStacks > 1)
-                    {
-                        count = std::min({ count, i.buff->maxStacks, int(numbersMap_.size()) - 1 });
-                        delayedDraws.emplace_back(adj, ToImGui(pos), ToImGui(numbersMap_[count].xy), ToImGui(numbersMap_[count].zw));
-                    }
-                };
-
-                auto drawGrid = [&](const Grid& g, short gid)
-                {
-                    glm::vec2 gridOrigin;
-                    if (!g.attached || (editMode && !testMouseMode_))
-                        gridOrigin = screen * 0.5f + glm::vec2(g.offset);
+                    if (!g.trackMouseWhileHeld && holdingMouseButton_ != ScanCode::NONE)
+                        gridOrigin = glm::vec2{ heldMousePos_.x, heldMousePos_.y };
                     else
+                        gridOrigin = mouse;
+
+                    if (g.mouseClipMin.x != std::numeric_limits<int>::max())
                     {
-                        if (!g.trackMouseWhileHeld && holdingMouseButton_ != ScanCode::NONE)
-                            gridOrigin = glm::vec2{ heldMousePos_.x, heldMousePos_.y };
-                        else
-                            gridOrigin = baseMouse;
-
-                        if (g.mouseClipMin.x != std::numeric_limits<int>::max())
-                        {
-                            gridOrigin = glm::max(gridOrigin, glm::vec2(g.mouseClipMin));
-                            gridOrigin = glm::min(gridOrigin, glm::vec2(g.mouseClipMax));
-                        }
-
-                        if (g.centralWeight > 0.f)
-                            gridOrigin = glm::mix(gridOrigin, screen * 0.5f, g.centralWeight);
+                        gridOrigin = glm::max(gridOrigin, glm::vec2(g.mouseClipMin));
+                        gridOrigin = glm::min(gridOrigin, glm::vec2(g.mouseClipMax));
                     }
 
-                    for (const auto&& [iid, i] : g.items | ranges::views::enumerate)
-                    {
-                        bool editing = editMode && selectedId_ == Id{ gid, iid };
-                        int  count   = 0;
-                        if (editing)
-                            count = editingItemFakeCount_;
-                        else if (i.buff)
-                            count = std::accumulate(i.additionalBuffs.begin(), i.additionalBuffs.end(), i.buff->GetStacks(activeBuffs_),
-                                                    [&](int a, const Buff* b) { return a + b->GetStacks(activeBuffs_); });
+                    if (g.centralWeight > 0.f)
+                        gridOrigin = glm::mix(gridOrigin, screen * 0.5f, g.centralWeight);
+                }
 
-                        drawItem(g.spacing, i, gridOrigin, count, editing);
-                    }
-                    if (editMode && selectedId_ == New(gid))
-                        drawItem(g.spacing, creatingItem_, screen * 0.5f, editingItemFakeCount_, true);
-                };
+                for (auto it : g.items | ranges::views::enumerate)
+                {
+                    // Need explicit types to shut up IntelliSense, still present as of 17.2.6
+                    short       iid     = it.first;
+                    const Item& i       = it.second;
 
-                if (editMode)
-                    drawGrid(getG(selectedId_), selectedId_.grid);
-                else if (shouldIgnoreSet)
-                    for (const auto& g : grids_)
-                        drawGrid(g, UnselectedSubId);
-                else if (set)
-                    for (int gid : set->grids)
-                        drawGrid(grids_[gid], UnselectedSubId);
+                    bool        editing = editMode && selectedId_ == Id{ gid, iid };
+                    int         count   = 0;
+                    if (editing)
+                        count = editingItemFakeCount_;
+                    else if (i.buff)
+                        count = std::accumulate(i.additionalBuffs.begin(), i.additionalBuffs.end(), i.buff->GetStacks(buffs_->activeBuffs()),
+                                                [&](int a, const Buff* b) { return a + b->GetStacks(buffs_->activeBuffs()); });
 
+                    drawItem(g.spacing, i, gridOrigin, count, editing);
+                }
+                if (editMode && selectedId_ == New(gid))
+                    drawItem(g.spacing, creatingItem_, screen * 0.5f, editingItemFakeCount_, true);
+            };
+
+            if (editMode)
+                drawGrid(getG(selectedId_), selectedId_.grid);
+            else if (shouldIgnoreSet)
+                for (const auto& g : grids_)
+                    drawGrid(g, UnselectedSubId);
+            else if (set)
+                for (int gid : set->grids)
+                    drawGrid(grids_[gid], UnselectedSubId);
+
+            gridRenderer_.Draw(ctx, enableBetterFiltering_.value());
+#if 0
 #ifdef _DEBUG
                 const Buff* hoveredBuff = nullptr;
                 if (showDebugGrid)
@@ -608,8 +392,7 @@ void Grids::DrawItems(const Sets::Set* set, bool shouldIgnoreSet)
                 if (hoveredBuff)
                     ImGui::SetTooltip("%s", hoveredBuff->name.c_str());
 #endif
-            }
-            ImGui::End();
+#endif
         }
     }
 }
@@ -640,6 +423,9 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind)
 {
     DrawEditingGrid();
     PlaceItem();
+
+    ImGuiConfigurationWrapper(ImGui::Checkbox, enableBetterFiltering_);
+    ImGuiHelpTooltip("Enables higher quality texture filtering, improving the icons' appearance at a cost to performance.");
 
     auto saveCheck = [this](bool changed)
     {
@@ -749,45 +535,16 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind)
             else
                 ImGuiTitle(std::format("New Item in '{}'", getG(selectedId_).name).c_str(), 0.75f);
 
-            auto buffCombo = [&](auto& buff, int id, const char* name)
-            {
-                if (ImGui::BeginCombo(std::format("{}##{}", name, id).c_str(), buff->name.c_str()))
-                {
-                    ImGui::InputText("Search...", buffSearch_, sizeof(buffSearch_));
-                    std::string_view bs = buffSearch_;
-
-                    for (auto& b : buffs_)
-                    {
-                        auto caseInsensitive = [](char l, char r) { return std::tolower(l) == std::tolower(r); };
-                        bool filtered        = !bs.empty() && ranges::search(b.name, bs, caseInsensitive).empty() && ranges::search(b.category, bs, caseInsensitive).empty();
-
-                        if (filtered)
-                            continue;
-
-                        if (b.id == 0xFFFFFFFF)
-                        {
-                            ImGui::PushFont(Core::i().fontBold());
-                            ImGui::Text(b.name.c_str());
-                            ImGui::PopFont();
-                            ImGui::Separator();
-                            continue;
-                        }
-
-                        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 20.f);
-
-                        ImGui::Image(buffsAtlas_.srv.Get(), ImVec2(32, 32), ToImGui(b.uv.xy), ToImGui(b.uv.zw));
-                        ImGui::SameLine();
-                        if (saveCheck(ImGui::Selectable(b.name.c_str(), false)))
-                            buff = &b;
-                    }
-                    ImGui::EndCombo();
-                }
-            };
+            auto buffCombo = [&](auto& buff, int id, const char* name) { saveCheck(buffs_->DrawBuffCombo(std::format("{}##{}", name, id).c_str(), buff, buffSearch_)); };
 
             buffCombo(editItem.buff, -1, "Main buff");
             int removeId = -1;
-            for (auto&& [n, extraBuff] : editItem.additionalBuffs | ranges::views::enumerate)
+            for (auto it : editItem.additionalBuffs | ranges::views::enumerate)
             {
+                // Need explicit types to shut up IntelliSense, still present as of 17.2.6
+                short        n         = short(it.first);
+                const Buff*& extraBuff = it.second;
+
                 buffCombo(extraBuff, int(n), "Secondary buff");
                 ImGui::SameLine();
                 if (ImGuiClose(std::format("RemoveExtraBuff{}", n).c_str()))
@@ -797,7 +554,7 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind)
                 editItem.additionalBuffs.erase(editItem.additionalBuffs.begin() + removeId);
 
             if (ImGui::Button("Add secondary buff"))
-                editItem.additionalBuffs.push_back(&UnknownBuff);
+                editItem.additionalBuffs.push_back(&Buffs::UnknownBuff);
             ImGuiHelpTooltip(
                 "Secondary buffs will activate the buff on screen, but without changing the icon. Useful to combine multiple related effects (e.g. Fixated) in one icon.");
 
@@ -811,37 +568,18 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind)
             ImGui::SameLine();
             saveCheck(ImGui::DragInt2("Location", glm::value_ptr(editItem.pos), 0.1f));
 
-            ImGui::NewLine();
-
-            ImGui::PushFont(Core::i().fontBold());
-            ImGui::TextUnformatted("Thresholds");
-            ImGui::PopFont();
-            ImGui::Indent();
-
-            ImGui::TextUnformatted("Simulate thresholds using ");
-            ImGui::SameLine();
-            ImGui::SetNextItemWidth(100.f);
-            ImGui::DragInt("stacks##Simulatedstacks", &editingItemFakeCount_, 0.1f, 0, editItem.buff ? editItem.buff->maxStacks : std::numeric_limits<int>::max());
-            ImGuiHelpTooltip("Helper feature to tune threshold effects. Will simulate what the buff icon would look like with the given number of stacks.");
-            for (size_t i = 0; i < editItem.thresholds.size(); i++)
+            if (ImGui::BeginCombo("Style", styles_->style(editItem.style).name.c_str()))
             {
-                auto& th = editItem.thresholds[i];
-                ImGui::TextUnformatted("When less than ");
-                ImGui::SameLine();
-                ImGui::SetNextItemWidth(100.f);
-                saveCheck(ImGui::DragInt(std::format("##Threshold{}", i).c_str(), &th.threshold, 0.1f, 0, 25));
-                ImGui::SameLine();
-                ImGui::TextUnformatted("stacks, apply tint ");
-                ImGui::SameLine();
-                saveCheck(ImGui::ColorEdit4(std::format("##ThresholdColor{}", i).c_str(), &th.tint.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
-                ImGui::Spacing();
+                for (auto it : styles_->styles() | ranges::views::enumerate)
+                {
+                    uint         sid = it.first;
+                    const Style& s   = it.second;
+                    if (saveCheck(ImGui::Selectable(s.name.c_str(), sid == editItem.style)))
+                        editItem.style = sid;
+                }
+
+                ImGui::EndCombo();
             }
-            if (saveCheck(ImGui::Button("Add threshold")))
-                editItem.thresholds.emplace_back();
-
-            ranges::sort(editItem.thresholds, [](auto& a, auto& b) { return a.threshold < b.threshold; });
-
-            ImGui::Unindent();
 
             ImGui::Separator();
 
@@ -860,14 +598,6 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind)
     mstime currentTime = TimeInMilliseconds();
     if (needsSaving_ && lastSaveTime_ + SaveDelay <= currentTime)
         Save();
-
-#ifdef _DEBUG
-    ImGui::Separator();
-    ImGui::InputText("Debug Grid Filter", &debugGridFilter_);
-    if (ImGui::Button("Open Buff Analyzer"))
-        showAnalyzer_ = true;
-
-#endif
 }
 
 void Grids::Draw(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set, bool shouldIgnoreSet)
@@ -878,68 +608,9 @@ void Grids::Draw(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set, bool sh
         testMouseMode_ = false;
     }
 
-    DrawItems(set, shouldIgnoreSet);
-
-#ifdef _DEBUG
-    if (firstDraw_ || showAnalyzer_)
-    {
-        if (ImGui::Begin("Buffs Analyzer", &showAnalyzer_))
-            DrawBuffAnalyzer();
-        ImGui::End();
-    }
-#endif
+    DrawItems(ctx, set, shouldIgnoreSet);
 
     firstDraw_ = false;
-}
-
-void Grids::UpdateBuffsTable(StackedBuff* buffs)
-{
-#ifdef _DEBUG
-    for (auto& b : activeBuffs_)
-        b.second = 0;
-#else
-    activeBuffs_.clear();
-#endif
-
-    if (buffs[0].id == 0)
-    {
-        int e              = lastGetBuffsError_;
-        lastGetBuffsError_ = buffs[0].count;
-        if (lastGetBuffsError_ != e)
-        {
-            switch (lastGetBuffsError_)
-            {
-                case -1:
-                    Core::i().DisplayErrorPopup("Character context not found.");
-                    break;
-                case -2:
-                    LogInfo("Addon is inactive in competitive modes.");
-                    break;
-                case -3:
-                    LogInfo("Current character not set.");
-                    break;
-                case -4:
-                    Core::i().DisplayErrorPopup("Fatal error while iterating through buff table.");
-                    break;
-                case -11:
-                    Core::i().DisplayErrorPopup("Could not take threads snapshot.");
-                    break;
-                case -12:
-                    Core::i().DisplayErrorPopup("Could not load ntdll.dll.");
-                    break;
-                case -13:
-                    Core::i().DisplayErrorPopup("Could not find NtQueryInformationThread.");
-                    break;
-                case -14:
-                    Core::i().DisplayErrorPopup("No matching thread found.");
-                    break;
-            }
-        }
-        return;
-    }
-
-    for (size_t i = 0; buffs[i].id; i++)
-        activeBuffs_[buffs[i].id] = buffs[i].count;
 }
 
 void Grids::Load()
@@ -965,11 +636,12 @@ void Grids::Load()
     auto getivec2  = [](const json& j) { return glm::ivec2(j[0].get<int>(), j[1].get<int>()); };
     auto getivec4  = [](const json& j) { return glm::ivec4(j[0].get<int>(), j[1].get<int>(), j[2].get<int>(), j[3].get<int>()); };
     auto getImVec4 = [](const json& j) { return ImVec4(j[0].get<float>(), j[1].get<float>(), j[2].get<float>(), j[3].get<float>()); };
+    auto getvec4   = [](const json& j) { return glm::vec4(j[0].get<float>(), j[1].get<float>(), j[2].get<float>(), j[3].get<float>()); };
     auto getBuff   = [this](const json& j) -> const Buff*
     {
         int  id = j;
-        auto it = buffsMap_.find(id);
-        if (it != buffsMap_.end())
+        auto it = buffs_->buffsMap().find(id);
+        if (it != buffs_->buffsMap().end())
             return it->second;
         else
             return nullptr;
@@ -992,9 +664,9 @@ void Grids::Load()
         for (const auto& iIn : gIn["items"])
         {
             Item i;
-            i.pos  = getivec2(iIn["pos"]);
-            i.buff = getBuff(iIn["buff_id"]);
-            i.thresholds.clear();
+            i.pos   = getivec2(iIn["pos"]);
+            i.buff  = getBuff(iIn["buff_id"]);
+            i.style = styles_->FindStyle(maybeAt(iIn, "style", std::string{}));
 
             if (iIn.contains("additional_buff_ids"))
                 for (auto& bIn : iIn["additional_buff_ids"])
@@ -1003,7 +675,7 @@ void Grids::Load()
 
             if (!i.buff)
             {
-                i.buff = &UnknownBuff;
+                i.buff = &Buffs::UnknownBuff;
                 LogWarn("Configuration has unknown buff: Grid '{}', location ({}, {}), buff ID '{}'.", g.name, i.pos.x, i.pos.y, static_cast<std::string>(iIn["buff_id"]));
             }
 
@@ -1012,10 +684,6 @@ void Grids::Load()
                 i.buff = i.additionalBuffs.back();
                 i.additionalBuffs.pop_back();
             }
-
-            if (iIn.contains("thresholds"))
-                for (auto& tIn : iIn["thresholds"])
-                    i.thresholds.emplace_back(tIn["threshold"], getImVec4(tIn["tint"]));
 
             g.items.push_back(i);
         }
@@ -1050,17 +718,7 @@ void Grids::Save()
             json item;
             item["pos"]     = { i.pos.x, i.pos.y };
             item["buff_id"] = i.buff->id;
-
-            if (!i.thresholds.empty())
-            {
-                json thresholds = json::array();
-                for (auto& t : i.thresholds)
-                    thresholds.push_back({
-                        {"threshold", t.threshold                               },
-                        { "tint",     { t.tint.x, t.tint.y, t.tint.z, t.tint.w }}
-                    });
-                item["thresholds"] = thresholds;
-            }
+            item["style"]   = styles_->style(i.style).name;
 
             if (!i.additionalBuffs.empty())
             {
@@ -1080,55 +738,6 @@ void Grids::Save()
 
     needsSaving_  = false;
     lastSaveTime_ = TimeInMilliseconds();
-}
-
-#include "BuffsList.inc"
-
-std::vector<Buff> Grids::GenerateBuffsList()
-{
-    const std::map<std::string, glm::vec4> atlasElements{
-#include <assets/atlas.inc>
-    };
-
-    std::vector<Buff> buffs;
-    buffs.assign(g_Buffs.begin(), g_Buffs.end());
-
-#ifdef _DEBUG
-    std::set<std::string> buffNames;
-    for (auto& b : buffs)
-    {
-        auto r = buffNames.insert(b.name);
-        if (!r.second)
-            LogWarn("Duplicate buff name: {}", b.name);
-    }
-#endif
-
-    std::string cat;
-    for (auto& b : buffs)
-    {
-        if (b.id == 0xFFFFFFFF)
-            cat = b.name;
-        else
-            b.category = cat;
-
-        auto it = atlasElements.find(b.atlasEntry);
-        b.uv    = it != atlasElements.end() ? it->second : glm::vec4{ 0.f, 0.f, 0.f, 0.f };
-
-        if (b.id != 0xFFFFFFFF && it == atlasElements.end())
-            LogWarn("Buff {} ({}) has no atlas icon.", b.name, b.id);
-    }
-
-    return buffs;
-}
-
-std::map<int, const Buff*> Grids::GenerateBuffsMap(const std::vector<Buff>& lst)
-{
-    std::map<int, const Buff*> m;
-    for (auto& b : lst)
-    {
-        m[b.id] = &b;
-    }
-    return m;
 }
 
 } // namespace GW2Clarity
