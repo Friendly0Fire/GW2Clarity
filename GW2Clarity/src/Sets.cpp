@@ -20,9 +20,14 @@ namespace GW2Clarity
 
 Sets::Sets(ComPtr<ID3D11Device>& dev, Grids* grids)
     : changeGridSetKey_("change_grid_set", "Change Grid Set", "General")
+    , rememberSet_("Remember Set on launch", "remember_set", "General", false)
+    , rememberedSetId_("Remembered set", "remembered_set", "General", UnselectedSubId)
     , gridsInstance_(grids)
 {
     Load(gridsInstance_->grids().size());
+
+    if (rememberSet_.value())
+        currentSetId_ = rememberedSetId_.value();
 
     changeGridSetKey_.callback(
         [&](Activated a)
@@ -167,6 +172,9 @@ void Sets::DrawMenu(Keybind** currentEditedKeybind)
 
     ImGuiKeybindInput(changeGridSetKey_, currentEditedKeybind, "Displays the Quick Set menu to change what buffs are displayed.");
 
+    ImGuiConfigurationWrapper(&ImGui::Checkbox, rememberSet_);
+    ImGuiHelpTooltip("If checked, the currently selected set will be saved on exit and restored on launch.");
+
     mstime currentTime = TimeInMilliseconds();
     if (needsSaving_ && lastSaveTime_ + SaveDelay <= currentTime)
         Save();
@@ -193,14 +201,16 @@ void Sets::Draw(ComPtr<ID3D11DeviceContext>& ctx)
             {
                 if (ImGui::Selectable(s.name.c_str(), currentSetId_ == i))
                 {
-                    currentSetId_    = short(i);
+                    currentSetId_ = short(i);
+                    rememberedSetId_.value(currentSetId_);
                     showSetSelector_ = false;
                 }
             }
 
             if (ImGui::Selectable("None", currentSetId_ == UnselectedSubId))
             {
-                currentSetId_    = UnselectedSubId;
+                currentSetId_ = UnselectedSubId;
+                rememberedSetId_.value(currentSetId_);
                 showSetSelector_ = false;
             }
 

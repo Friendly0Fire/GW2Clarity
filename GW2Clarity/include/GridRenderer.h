@@ -47,14 +47,14 @@ protected:
         glm::vec2 numbersUVSize;
         float     time;
     };
-    ConstantBuffer<GridConstants>    gridCB_;
+    ConstantBufferSPtr<GridConstants> gridCB_;
 
-    ComPtr<ID3D11Buffer>             instanceBuffer_;
-    ComPtr<ID3D11ShaderResourceView> instanceBufferView_;
-    ComPtr<ID3D11BlendState>         defaultBlend_;
-    ComPtr<ID3D11SamplerState>       defaultSampler_;
+    ComPtr<ID3D11Buffer>              instanceBuffer_;
+    ComPtr<ID3D11ShaderResourceView>  instanceBufferView_;
+    ComPtr<ID3D11BlendState>          defaultBlend_;
+    ComPtr<ID3D11SamplerState>        defaultSampler_;
 
-    size_t                           bufferSize_;
+    size_t                            bufferSize_;
 };
 
 template<size_t N>

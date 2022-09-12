@@ -64,7 +64,7 @@ protected:
         glm::vec4 color1;
         glm::vec4 color2;
     };
-    ConstantBuffer<CursorData>                      cursorCB_;
+    ConstantBufferSPtr<CursorData>                  cursorCB_;
     ShaderId                                        screenSpaceVS_;
     std::array<ShaderId, size_t(CursorType::COUNT)> cursorPS_;
 

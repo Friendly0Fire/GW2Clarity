@@ -419,6 +419,20 @@ void Grids::Delete(Id id)
     }
 }
 
+void Grids::StyleDeleted(uint id)
+{
+    for (auto& g : grids_)
+    {
+        for (auto& i : g.items)
+        {
+            if (i.style == id)
+                i.style = 0;
+        }
+    }
+
+    needsSaving_ = true;
+}
+
 void Grids::DrawMenu(Keybind** currentEditedKeybind)
 {
     DrawEditingGrid();
