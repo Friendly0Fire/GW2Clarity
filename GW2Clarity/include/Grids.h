@@ -39,6 +39,7 @@ public:
     }
 
     void Delete(Id id);
+    void StyleDeleted(uint id);
 
 protected:
     void                               Load();

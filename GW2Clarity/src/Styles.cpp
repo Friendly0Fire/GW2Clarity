@@ -33,6 +33,7 @@ Styles::~Styles()
 void Styles::Delete(uint id)
 {
     styles_.erase(styles_.begin() + id);
+    selectedId_  = UnselectedId;
     needsSaving_ = true;
 }
 
@@ -79,10 +80,28 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
             std::string name    = "New Style";
             int         nameIdx = 1;
             while (ranges::any_of(styles_, [&](const auto& s) { return s.name == name; }))
-                name = std::format("New Style {}", ++nameIdx);
+                name = std::format("New Style ({})", ++nameIdx);
 
             styles_.emplace_back(name);
-            selectedId_ = styles_.size() - 1;
+            selectedId_ = uint(styles_.size()) - 1;
+        }
+
+        {
+            ImGuiDisabler d(selectedId_ == UnselectedId);
+            ImGui::SameLine();
+            if (ImGui::Button(std::format("Duplicate{}", d.disabled() ? "" : std::format(" '{}'", styles_[selectedId_].name)).c_str()))
+            {
+                const auto& baseName = styles_[selectedId_].name;
+                std::string name;
+                int         nameIdx = 1;
+                do
+                    name = std::format("{} ({})", baseName, ++nameIdx);
+                while (ranges::any_of(styles_, [&](const auto& s) { return s.name == name; }));
+
+                styles_.push_back(styles_[selectedId_]);
+                styles_.back().name = name;
+                selectedId_         = uint(styles_.size()) - 1;
+            }
         }
     }
 
@@ -150,7 +169,7 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
 
 void Styles::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 {
-    if (selectedId_ == UnselectedSubId || !drewMenu_ || !previewBuff_)
+    if (selectedId_ == UnselectedId || !drewMenu_ || !previewBuff_)
         return;
 
     GridInstanceData data{

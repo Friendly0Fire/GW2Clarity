@@ -83,5 +83,7 @@ protected:
     bool                           firstDraw_       = true;
 
     ActivationKeybind              changeGridSetKey_;
+    ConfigurationOption<bool>      rememberSet_;
+    ConfigurationOption<short>     rememberedSetId_;
 };
 } // namespace GW2Clarity

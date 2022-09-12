@@ -55,6 +55,8 @@ void Cursor::Draw(ComPtr<ID3D11DeviceContext>& ctx)
     if (!visible_ && selectedLayerId_ == UnselectedSubId)
         return;
 
+    auto&       cb = *cursorCB_;
+
     const auto& io = ImGui::GetIO();
     auto        mp = FromImGui(io.MousePos) / Core::i().screenDims();
     for (auto& l : layers_)
@@ -67,14 +69,14 @@ void Cursor::Draw(ComPtr<ID3D11DeviceContext>& ctx)
         if (l.fullscreen)
             l.dims = glm::vec2(float(std::max(Core::i().screenWidth(), Core::i().screenHeight())) * 2.f);
 
-        cursorCB_->color1     = l.color1;
-        cursorCB_->color2     = l.color2;
-        float div             = std::min(l.dims.x, l.dims.y);
-        cursorCB_->parameters = glm::vec4(l.edgeThickness / div, l.secondaryThickness / div, l.angle / 180.f * M_PI, 0.f);
-        cursorCB_->dimensions = glm::vec4(mp, l.dims / Core::i().screenDims());
-        cursorCB_.Update(ctx.Get());
+        cb->color1     = l.color1;
+        cb->color2     = l.color2;
+        float div      = std::min(l.dims.x, l.dims.y);
+        cb->parameters = glm::vec4(l.edgeThickness / div, l.secondaryThickness / div, l.angle / 180.f * M_PI, 0.f);
+        cb->dimensions = glm::vec4(mp, l.dims / Core::i().screenDims());
+        cb.Update(ctx.Get());
 
-        ShaderManager::i().SetConstantBuffers(ctx.Get(), cursorCB_);
+        ShaderManager::i().SetConstantBuffers(ctx.Get(), cb);
         ShaderManager::i().SetShaders(ctx.Get(), screenSpaceVS_, cursorPS_[int(l.type)]);
 
         DrawScreenQuad(ctx.Get());

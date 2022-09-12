@@ -133,8 +133,12 @@ void Core::InnerDraw()
                     break;
                 }
                 case 3:
-                    styles_->Delete(std::get<uint>(confirmDeletionInfo_.id));
+                {
+                    auto id = std::get<uint>(confirmDeletionInfo_.id);
+                    grids_->StyleDeleted(id);
+                    styles_->Delete(id);
                     break;
+                }
             }
 
             confirmDeletionInfo_ = {};

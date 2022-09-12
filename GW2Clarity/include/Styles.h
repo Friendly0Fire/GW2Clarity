@@ -79,9 +79,10 @@ public:
     void ApplyStyle(uint id, int count, GridInstanceData& out) const;
 
 protected:
+    static constexpr uint          UnselectedId = std::numeric_limits<uint>::max();
     const Buffs*                   buffs_;
     std::vector<Style>             styles_;
-    short                          selectedId_           = UnselectedSubId;
+    uint                           selectedId_           = UnselectedId;
     int                            editingItemFakeCount_ = 1;
     const Buff*                    previewBuff_          = nullptr;
     char                           buffSearch_[512];
