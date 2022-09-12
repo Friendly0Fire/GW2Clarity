@@ -59,7 +59,7 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
             if (ImGui::Selectable(s.name.c_str(), selectedId_ == sid, ImGuiSelectableFlags_AllowItemOverlap))
                 selectedId_ = sid;
 
-            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) || ImGui::IsItemActive())
+            if (sid != 0 && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) || ImGui::IsItemActive())
             {
                 auto& style = ImGui::GetStyle();
                 auto  orig  = style.Colors[ImGuiCol_Button];
@@ -109,11 +109,18 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
     {
         auto& s = styles_.at(selectedId_);
 
-        ImGui::InputText("Name", &s.name);
+        {
+            ImGuiDisabler disable(selectedId_ == 0);
+            ImGui::InputText("Name", &s.name);
+        }
+        if (selectedId_ == 0)
+        {
+            ImGui::TextUnformatted("(cannot rename default style)");
+        }
 
         ImGui::NewLine();
 
-        ImGui::TextUnformatted("Visualize style with ");
+        ImGui::TextUnformatted("Preview style with ");
         ImGui::SameLine();
         ImGui::SetNextItemWidth(100.f);
         ImGui::DragInt("stacks##SimulatedStacks", &editingItemFakeCount_, 0.1f, 0, 100, "%d", ImGuiSliderFlags_AlwaysClamp);
