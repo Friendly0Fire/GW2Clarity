@@ -204,6 +204,7 @@ void Sets::Draw(ComPtr<ID3D11DeviceContext>& ctx)
                     currentSetId_ = short(i);
                     rememberedSetId_.value(currentSetId_);
                     showSetSelector_ = false;
+                    needsSaving_ = true;
                 }
             }
 
@@ -212,10 +213,15 @@ void Sets::Draw(ComPtr<ID3D11DeviceContext>& ctx)
                 currentSetId_ = UnselectedSubId;
                 rememberedSetId_.value(currentSetId_);
                 showSetSelector_ = false;
+                needsSaving_ = true;
             }
 
             if (ImGui::IsKeyPressed(ImGuiKey_Escape))
                 showSetSelector_ = false;
+
+            mstime currentTime = TimeInMilliseconds();
+            if (needsSaving_ && lastSaveTime_ + SaveDelay <= currentTime)
+                Save();
         }
         ImGui::End();
     }
@@ -262,6 +268,10 @@ void Sets::Load(size_t gridCount)
 
         sets_.push_back(s);
     }
+
+    short currentSet = maybe_at(cfg.json(), "current_set", UnselectedSubId);
+    currentSetId_ = currentSet;
+    rememberedSetId_.value(currentSet);
 }
 
 void Sets::Save()
@@ -285,6 +295,8 @@ void Sets::Save()
 
         sets.push_back(set);
     }
+
+    cfg.json()["current_set"] = currentSetId_;
 
     cfg.Save();
 
