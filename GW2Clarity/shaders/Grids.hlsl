@@ -112,12 +112,11 @@ float4 Grids(in VS_OUT In, bool filtered)
 
     float4 c = float4(lerp(tex.rgb, num.rgb, num.a), tex.a);
     c.rgb *= In.Tint.rgb;
+    c *= In.Tint.a;
     
     float2 threshold = abs(In.UV - 0.5f) * 2;
     c += In.BorderColor * (all(threshold <= 1.f) && any(threshold >= 1.f - In.Border));
     c += In.GlowColor * saturate((1.f - c.a) - glowShape(In.UV.zw - 0.5f, In.TexUVs.xy));
-
-    c *= In.Tint.a;
 
     return c;
 }
