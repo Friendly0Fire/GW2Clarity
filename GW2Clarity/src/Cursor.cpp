@@ -29,7 +29,7 @@ Cursor::Cursor(ComPtr<ID3D11Device>& dev)
     cursorCB_      = sm.MakeConstantBuffer<CursorData>();
     screenSpaceVS_ = sm.GetShader(L"ScreenQuad.hlsl", D3D11_SHVER_VERTEX_SHADER, "ScreenQuad");
     auto makePS    = [&](const char* ep) { return sm.GetShader(L"Cursor.hlsl", D3D11_SHVER_PIXEL_SHADER, ep); };
-    cursorPS_      = { makePS("Circle"), makePS("Square"), makePS("Cross") };
+    cursorPS_      = { makePS("Circle"), makePS("Square"), makePS("Cross"), makePS("Smooth") };
 
     CD3D11_BLEND_DESC blendDesc(D3D11_DEFAULT);
     blendDesc.RenderTarget[0].BlendEnable    = true;
@@ -59,6 +59,10 @@ void Cursor::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 
     const auto& io = ImGui::GetIO();
     auto        mp = FromImGui(io.MousePos) / Core::i().screenDims();
+
+    if (glm::any(glm::lessThan(mp, glm::vec2(0.f))) || glm::any(glm::greaterThan(mp, glm::vec2(1.f))))
+        return;
+
     for (auto& l : layers_)
     {
         if (l.invert)
@@ -72,7 +76,7 @@ void Cursor::Draw(ComPtr<ID3D11DeviceContext>& ctx)
         cb->color1     = l.color1;
         cb->color2     = l.color2;
         float div      = std::min(l.dims.x, l.dims.y);
-        cb->parameters = glm::vec4(l.edgeThickness / div, l.secondaryThickness / div, l.angle / 180.f * M_PI, 0.f);
+        cb->parameters = glm::vec4(l.edgeThickness * (l.type == CursorType::SMOOTH ? 1.f : 1.f / div), l.secondaryThickness / div, l.angle / 180.f * M_PI, 0.f);
         cb->dimensions = glm::vec4(mp, l.dims / Core::i().screenDims());
         cb.Update(ctx.Get());
 
@@ -136,13 +140,18 @@ void Cursor::DrawMenu(Keybind** currentEditedKeybind)
             ImGuiTitle("New Cursor Layer", 0.75f);
 
         saveCheck(ImGui::InputText("Name##NewLayer", &editLayer.name));
-        saveCheck(ImGui::Combo("Type", (int*)&editLayer.type, "Circle\0Square\0Cross"));
+        saveCheck(ImGui::Combo("Type", (int*)&editLayer.type, "Circle\0Square\0Cross\0Gaussian"));
 
-        saveCheck(ImGui::ColorEdit4("Border Color", glm::value_ptr(editLayer.color1), ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
+        if (editLayer.type != CursorType::SMOOTH)
+            saveCheck(ImGui::ColorEdit4("Border Color", glm::value_ptr(editLayer.color1), ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
+
         saveCheck(ImGui::ColorEdit4("Fill Color", glm::value_ptr(editLayer.color2), ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
         saveCheck(ImGui::Checkbox("Invert Colors", &editLayer.invert));
 
-        saveCheck(ImGui::DragFloat("Border Thickness", &editLayer.edgeThickness, 0.05f, 0.f, 100.f));
+        if (editLayer.type != CursorType::SMOOTH)
+            saveCheck(ImGui::DragFloat("Border Thickness", &editLayer.edgeThickness, 0.05f, 0.f, 100.f));
+        else
+            saveCheck(ImGui::DragFloat("Falloff", &editLayer.edgeThickness, 0.01f, 0.f, 1.f));
 
         switch (editLayer.type)
         {

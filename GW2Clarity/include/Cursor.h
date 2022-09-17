@@ -37,6 +37,7 @@ public:
         CIRCLE = 0,
         SQUARE = 1,
         CROSS  = 2,
+        SMOOTH = 3,
 
         COUNT
     };

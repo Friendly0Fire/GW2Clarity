@@ -16,6 +16,12 @@ float4 Circle(PS_INPUT In) : SV_Target
 	return ColorFromDist(l, 1.f);
 }
 
+float4 Smooth(PS_INPUT In) : SV_Target
+{
+	float l = length(In.UV - 0.5f) * 2.f;
+	return color1 * (1.f - smoothstep(saturate(parameters.x), 1.f, l));
+}
+
 float4 Square(PS_INPUT In) : SV_Target
 {
 	float l = max(abs(In.UV.x - 0.5f), abs(In.UV.y - 0.5f)) * 2.f;
