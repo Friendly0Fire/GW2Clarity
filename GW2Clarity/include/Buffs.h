@@ -17,15 +17,23 @@ namespace GW2Clarity
 {
 struct Buff
 {
-    uint           id;
-    int            maxStacks;
-    std::string    name;
-    std::string    atlasEntry;
-    glm::vec2      uv{};
-    std::set<uint> extraIds;
-    std::string    category;
+    uint               id;
+    int                maxStacks;
+    std::string        name;
+    std::string        atlasEntry;
+    glm::vec2          uv{};
+    std::set<uint>     extraIds;
+    std::string        category;
 
-    implicit       Buff(std::string&& name)
+    static std::string NameToAtlas(const std::string& name)
+    {
+        return ReplaceChars(ToLower(name), {
+                                               {' ',   '_'},
+                                               { '\"', '_'}
+        });
+    }
+
+    implicit Buff(std::string&& name)
         : Buff(0xFFFFFFFF, std::move(name))
     {}
 
@@ -34,10 +42,7 @@ struct Buff
         , maxStacks(maxStacks)
         , name(std::move(name))
     {
-        atlasEntry = ReplaceChars(ToLower(this->name), {
-                                                           {' ',   '_'},
-                                                           { '\"', '_'}
-        });
+        atlasEntry = NameToAtlas(this->name);
     }
 
     Buff(uint id, std::string&& name, std::string&& atlas, int maxStacks = std::numeric_limits<int>::max())
@@ -59,7 +64,7 @@ struct Buff
         , maxStacks(maxStacks)
         , name(std::move(name))
     {
-        atlasEntry = ReplaceChar(ToLower(this->name), ' ', '_');
+        atlasEntry = NameToAtlas(this->name);
         extraIds.insert(ids.begin() + 1, ids.end());
     }
 
