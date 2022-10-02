@@ -190,6 +190,8 @@ void Cursor::Delete(char id)
         selectedLayerId_--;
 
     layers_.erase(layers_.begin() + id);
+
+    needsSaving_ = true;
 }
 
 void Cursor::Load()
