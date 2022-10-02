@@ -55,6 +55,14 @@ public:
     {
         std::string            name;
         std::vector<Threshold> thresholds;
+
+        std::pair<int, int>    thresholdExtents(int i) const
+        {
+            int a = i == 0 ? -1 : int(thresholds[i - 1].threshold);
+            int b = i == thresholds.size() - 1 ? std::numeric_limits<int>::max() : int(thresholds[i].threshold);
+
+            return { a, b };
+        }
     };
 
     [[nodiscard]] const auto& styles() const

@@ -130,43 +130,72 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
         buffs_->DrawBuffCombo("##PreviewBuff", previewBuff_, buffSearch_);
         ImGui::Separator();
 
-        ImGui::Image(preview_.srv.Get(), ImVec2(PreviewSize, PreviewSize));
+        ImGui::SetCursorPosX((ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x) * 0.5f - PreviewSize * 0.25f);
+        ImGui::Image(preview_.srv.Get(), ImVec2(PreviewSize, PreviewSize) * 0.5f, ImVec2(0.f, 0.f), ImVec2(1.f, 1.f), ImVec4(1.f, 1.f, 1.f, 1.f), ImVec4(1.f, 1.f, 1.f, 1.f));
 
         ImGui::Separator();
 
-        for (size_t i = 0; i < s.thresholds.size(); i++)
+        int selectedId = -1;
+
+        if (ImGuiBeginTimeline("Thresholds", 100))
         {
-            auto& th = s.thresholds[i];
-            ImGui::TextUnformatted("When less than ");
-            ImGui::SameLine();
-            ImGui::SetNextItemWidth(100.f);
-            saveCheck(ImGui::DragInt(std::format("##Threshold{}", i).c_str(), (int*)&th.threshold, 0.1f, 0, 100, "%d", ImGuiSliderFlags_AlwaysClamp));
-            ImGui::SameLine();
-            ImGui::TextUnformatted("stacks:");
+            for (size_t i = 0; i < s.thresholds.size(); i++)
+            {
+                auto&           th       = s.thresholds[i];
+                ImTimelineRange r        = s.thresholdExtents(i);
+                bool            selected = false;
+                if (ImGuiTimelineEvent(std::format("{}", i + 1).c_str(), r, &selected))
+                {
+                    if (i < s.thresholds.size() - 1)
+                        th.threshold = r[1];
+                    if (i > 0)
+                        s.thresholds[i - 1].threshold = r[0];
 
-            ImGui::Indent();
+                    needsSaving_ = true;
+                }
 
-            saveCheck(ImGui::ColorEdit4(std::format("Tint Color##{}", i).c_str(), &th.tint.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
-            saveCheck(ImGui::DragFloat(std::format("Glow Size##{}", i).c_str(), &th.glowSize, 0.01f, 0.f, 10.f));
+                if (selected)
+                    selectedId = int(i);
+            }
+
+            s.thresholds.back().threshold = std::numeric_limits<int>::max();
+        }
+        int lines[] = { 0, 1, 25, 99 };
+        ImGuiEndTimeline(4, lines);
+
+        if (saveCheck(ImGui::Button("Add threshold")))
+        {
+            s.thresholds.back().threshold = s.thresholds.size() > 1 ? s.thresholds[s.thresholds.size() - 2].threshold + 1 : 1;
+            s.thresholds.emplace_back();
+        }
+
+        if (selectedId >= 0)
+        {
+            auto extents = s.thresholdExtents(selectedId);
+            if (extents.second < std::numeric_limits<int>::max())
+                ImGui::TextUnformatted(std::format("Between {} and {} stacks:", std::max(0, extents.first), extents.second).c_str());
+            else
+                ImGui::TextUnformatted(std::format("With {} stacks and above:", extents.first).c_str());
+
+            auto& th = s.thresholds[selectedId];
+
+            saveCheck(ImGui::ColorEdit4("Tint Color", &th.tint.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
+            saveCheck(ImGui::DragFloat("Glow Size", &th.glowSize, 0.01f, 0.f, 10.f));
             if (th.glowSize > 0.f)
             {
-                saveCheck(ImGui::ColorEdit4(std::format("Glow Color##{}", i).c_str(), &th.glow.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
-                saveCheck(ImGui::DragFloat(std::format("Glow Pulse Intensity##{}", i).c_str(), &th.glowPulse.x, 0.01f, 0.f, 1.f));
-                saveCheck(ImGui::DragFloat(std::format("Glow Pulse Speed##{}", i).c_str(), &th.glowPulse.y, 0.01f, 0.f, 5.f));
+                saveCheck(ImGui::ColorEdit4("Glow Color", &th.glow.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
+                saveCheck(ImGui::DragFloat("Glow Pulse Intensity", &th.glowPulse.x, 0.01f, 0.f, 1.f));
+                saveCheck(ImGui::DragFloat("Glow Pulse Speed", &th.glowPulse.y, 0.01f, 0.f, 5.f));
             }
-            saveCheck(ImGui::DragFloat(std::format("Border Thickness##{}", i).c_str(), &th.borderThickness, 0.1f, 0.f, 512.f));
+            saveCheck(ImGui::DragFloat("Border Thickness", &th.borderThickness, 0.1f, 0.f, 512.f));
             if (th.borderThickness > 0.f)
-                saveCheck(ImGui::ColorEdit4(std::format("Border Color##{}", i).c_str(), &th.border.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
+                saveCheck(ImGui::ColorEdit4("Border Color", &th.border.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
 
-            ImGui::Unindent();
-
-            ImGui::Separator();
+            if (ImGui::Button("Delete selected"))
+            {
+                s.thresholds.erase(s.thresholds.begin() + selectedId);
+            }
         }
-        if (saveCheck(ImGui::Button("Add threshold")))
-            s.thresholds.emplace_back();
-
-        if (!ImGui::IsMouseDragging(ImGuiMouseButton_Left))
-            ranges::sort(s.thresholds, [](auto& a, auto& b) { return a.threshold < b.threshold; });
     }
 
     mstime currentTime = TimeInMilliseconds();
