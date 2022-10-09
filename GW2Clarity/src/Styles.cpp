@@ -137,59 +137,67 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
 
         int selectedId = -1;
 
-        if (ImGuiBeginTimeline("Thresholds", 100))
+        if (ImGuiBeginTimeline("Range", 100))
         {
             for (size_t i = 0; i < s.thresholds.size(); i++)
             {
-                auto&           th       = s.thresholds[i];
-                ImTimelineRange r        = s.thresholdExtents(i);
+                auto&           th = s.thresholds[i];
+                ImTimelineRange r{ int(th.thresholdMin), int(th.thresholdMax) };
                 bool            selected = false;
                 if (ImGuiTimelineEvent(std::format("{}", i + 1).c_str(), r, &selected))
                 {
-                    if (i < s.thresholds.size() - 1)
-                        th.threshold = r[1];
-                    if (i > 0)
-                        s.thresholds[i - 1].threshold = r[0];
-
-                    needsSaving_ = true;
+                    th.thresholdMin = r[0];
+                    th.thresholdMax = r[1];
+                    needsSaving_    = true;
                 }
 
                 if (selected)
                     selectedId = int(i);
             }
-
-            s.thresholds.back().threshold = std::numeric_limits<int>::max();
         }
         int lines[] = { 0, 1, 25, 99 };
         ImGuiEndTimeline(4, lines);
 
-        if (saveCheck(ImGui::Button("Add threshold")))
+        if (saveCheck(ImGui::Button("Add range")))
         {
-            s.thresholds.back().threshold = s.thresholds.size() > 1 ? s.thresholds[s.thresholds.size() - 2].threshold + 1 : 1;
             s.thresholds.emplace_back();
         }
 
         if (selectedId >= 0)
         {
-            auto extents = s.thresholdExtents(selectedId);
-            if (extents.second < std::numeric_limits<int>::max())
-                ImGui::TextUnformatted(std::format("Between {} and {} stacks:", std::max(0, extents.first), extents.second).c_str());
-            else
-                ImGui::TextUnformatted(std::format("With {} stacks and above:", extents.first).c_str());
-
             auto& th = s.thresholds[selectedId];
+            ImGui::TextUnformatted(std::format("Between {} and {} stacks:", th.thresholdMin, th.thresholdMax).c_str());
+            auto& app = th.appearance;
 
-            saveCheck(ImGui::ColorEdit4("Tint Color", &th.tint.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
-            saveCheck(ImGui::DragFloat("Glow Size", &th.glowSize, 0.01f, 0.f, 10.f));
-            if (th.glowSize > 0.f)
+            ImGui::TextUnformatted("Priority control:");
+            ImGui::SameLine();
+            if (selectedId > 0)
             {
-                saveCheck(ImGui::ColorEdit4("Glow Color", &th.glow.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
-                saveCheck(ImGui::DragFloat("Glow Pulse Intensity", &th.glowPulse.x, 0.01f, 0.f, 1.f));
-                saveCheck(ImGui::DragFloat("Glow Pulse Speed", &th.glowPulse.y, 0.01f, 0.f, 5.f));
+                if (ImGui::Button("Move up"))
+                    std::swap(s.thresholds[selectedId], s.thresholds[selectedId - 1]);
+
+                ImGui::SameLine();
             }
-            saveCheck(ImGui::DragFloat("Border Thickness", &th.borderThickness, 0.1f, 0.f, 512.f));
-            if (th.borderThickness > 0.f)
-                saveCheck(ImGui::ColorEdit4("Border Color", &th.border.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
+
+            if (selectedId < s.thresholds.size() - 1)
+            {
+                if (ImGui::Button("Move down"))
+                    std::swap(s.thresholds[selectedId], s.thresholds[selectedId + 1]);
+            }
+
+            ImGuiHelpTooltip("If more than one range is defined for the same stack count, the highest priority range (first in the list) will be used.");
+
+            saveCheck(ImGui::ColorEdit4("Tint Color", &app.tint.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
+            saveCheck(ImGui::DragFloat("Glow Size", &app.glowSize, 0.01f, 0.f, 10.f));
+            if (app.glowSize > 0.f)
+            {
+                saveCheck(ImGui::ColorEdit4("Glow Color", &app.glow.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
+                saveCheck(ImGui::DragFloat("Glow Pulse Intensity", &app.glowPulse.x, 0.01f, 0.f, 1.f));
+                saveCheck(ImGui::DragFloat("Glow Pulse Speed", &app.glowPulse.y, 0.01f, 0.f, 5.f));
+            }
+            saveCheck(ImGui::DragFloat("Border Thickness", &app.borderThickness, 0.1f, 0.f, 512.f));
+            if (app.borderThickness > 0.f)
+                saveCheck(ImGui::ColorEdit4("Border Color", &app.border.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
 
             if (ImGui::Button("Delete selected"))
             {
@@ -254,13 +262,15 @@ void Styles::Load()
         for (const auto& tIn : sIn["thresholds"])
         {
             Threshold t;
-            t.threshold       = maybe_at(tIn, "threshold", 1);
-            t.tint            = maybe_at(tIn, "tint", glm::vec4(1), { getvec4 });
-            t.border          = maybe_at(tIn, "border", glm::vec4(0), { getvec4 });
-            t.glow            = maybe_at(tIn, "glow", glm::vec4(0), { getvec4 });
-            t.borderThickness = maybe_at(tIn, "border_thickness", 0.f);
-            t.glowSize        = maybe_at(tIn, "glow_size", 0.f);
-            t.glowPulse       = maybe_at(tIn, "glow_pulse", glm::vec2(0), { getvec2 });
+            t.thresholdMin      = maybe_at(tIn, "threshold_min", 0);
+            t.thresholdMax      = maybe_at(tIn, "threshold_max", 1);
+            auto& app           = t.appearance;
+            app.tint            = maybe_at(tIn, "tint", glm::vec4(1), { getvec4 });
+            app.border          = maybe_at(tIn, "border", glm::vec4(0), { getvec4 });
+            app.glow            = maybe_at(tIn, "glow", glm::vec4(0), { getvec4 });
+            app.borderThickness = maybe_at(tIn, "border_thickness", 0.f);
+            app.glowSize        = maybe_at(tIn, "glow_size", 0.f);
+            app.glowPulse       = maybe_at(tIn, "glow_pulse", glm::vec2(0), { getvec2 });
             s.thresholds.push_back(t);
         }
 
@@ -283,6 +293,8 @@ void Styles::Load()
 
         styles_.insert(styles_.begin(), s);
     }
+
+    BuildCache();
 }
 
 void Styles::Save()
@@ -302,13 +314,15 @@ void Styles::Save()
         for (const auto& t : s.thresholds)
         {
             json threshold;
-            threshold["threshold"]        = t.threshold;
-            threshold["tint"]             = { t.tint.x, t.tint.y, t.tint.z, t.tint.w };
-            threshold["border"]           = { t.border.x, t.border.y, t.border.z, t.border.w };
-            threshold["glow"]             = { t.glow.x, t.glow.y, t.glow.z, t.glow.w };
-            threshold["border_thickness"] = t.borderThickness;
-            threshold["glow_size"]        = t.glowSize;
-            threshold["glow_pulse"]       = { t.glowPulse.x, t.glowPulse.y };
+            threshold["threshold_min"]    = t.thresholdMin;
+            threshold["threshold_max"]    = t.thresholdMax;
+            auto& app                     = t.appearance;
+            threshold["tint"]             = { app.tint.x, app.tint.y, app.tint.z, app.tint.w };
+            threshold["border"]           = { app.border.x, app.border.y, app.border.z, app.border.w };
+            threshold["glow"]             = { app.glow.x, app.glow.y, app.glow.z, app.glow.w };
+            threshold["border_thickness"] = app.borderThickness;
+            threshold["glow_size"]        = app.glowSize;
+            threshold["glow_pulse"]       = { app.glowPulse.x, app.glowPulse.y };
 
             styleThresholds.push_back(threshold);
         }
@@ -320,31 +334,50 @@ void Styles::Save()
 
     needsSaving_  = false;
     lastSaveTime_ = TimeInMilliseconds();
+
+    BuildCache();
+}
+
+void Styles::BuildCache()
+{
+    for (auto& s : styles_)
+    {
+        ranges::fill(s.appearanceCache, Appearance{});
+        s.appearanceCacheHigh.clear();
+
+        // Reverse iteration order so low priority appearance is set first and overwritten by high priority ones
+        for (const auto& th : s.thresholds | ranges::views::reverse)
+            ranges::fill(s.appearanceCache.begin() + th.thresholdMin, s.appearanceCache.begin() + std::min(th.thresholdMax, uint(s.appearanceCache.size())), th.appearance);
+
+        // Insert high priority high appearances first so they're found first
+        for (const auto& th : s.thresholds)
+            if (th.thresholdMax >= s.appearanceCache.size())
+                s.appearanceCacheHigh.push_back(th);
+    }
 }
 
 void Styles::ApplyStyle(uint id, int count, GridInstanceData& out) const
 {
-    if (id >= styles_.size())
-        return ApplyStyle(0, count, out);
+    if (id >= styles_.size() || count < 0)
+        return;
 
     const auto& style = styles_.at(id);
-    if (auto threshIt = ranges::find_if(style.thresholds, [=](const auto& t) { return count < t.threshold; }); threshIt != style.thresholds.end())
+    if (auto appPair = style[count]; appPair.first)
     {
-        const auto& thresh = *threshIt;
-
-        if (thresh.glowPulse.x > 0.f)
+        const auto& app = appPair.second;
+        if (app.glowPulse.x > 0.f)
         {
             auto  currentTime = TimeInMilliseconds();
-            float x           = sinf(static_cast<float>(currentTime) / 1000.f * 2.f * static_cast<float>(M_PI) * thresh.glowPulse.y) * 0.5f + 0.5f;
-            out.glowSize.x    = glm::mix(1.f - thresh.glowPulse.x, 1.f, x) * thresh.glowSize;
-            out.glowSize.y    = thresh.glowSize;
+            float x           = sinf(static_cast<float>(currentTime) / 1000.f * 2.f * static_cast<float>(M_PI) * app.glowPulse.y) * 0.5f + 0.5f;
+            out.glowSize.x    = glm::mix(1.f - app.glowPulse.x, 1.f, x) * app.glowSize;
+            out.glowSize.y    = app.glowSize;
         }
         else
-            out.glowSize = glm::vec2(thresh.glowSize);
-        out.borderColor     = thresh.border;
-        out.borderThickness = thresh.borderThickness;
-        out.glowColor       = thresh.glowSize > 0.f ? thresh.glow : glm::vec4(0.f);
-        out.tint            = thresh.tint;
+            out.glowSize = glm::vec2(app.glowSize);
+        out.borderColor     = app.border;
+        out.borderThickness = app.borderThickness;
+        out.glowColor       = app.glowSize > 0.f ? app.glow : glm::vec4(0.f);
+        out.tint            = app.tint;
     }
 }
 } // namespace GW2Clarity

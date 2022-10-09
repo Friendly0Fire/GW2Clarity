@@ -37,12 +37,11 @@ public:
 protected:
     void Load();
     void Save();
+    void BuildCache();
 
 public:
-    struct Threshold
+    struct Appearance
     {
-        uint      threshold = 1;
-
         glm::vec4 tint{ 1, 1, 1, 1 };
         glm::vec4 border{ 0 };
         glm::vec4 glow{ 0 };
@@ -51,17 +50,37 @@ public:
         glm::vec2 glowPulse{ 0 };
     };
 
+    struct Threshold
+    {
+        uint       thresholdMin = 0;
+        uint       thresholdMax = 1;
+
+        Appearance appearance{};
+    };
+
     struct Style
     {
-        std::string            name;
-        std::vector<Threshold> thresholds;
+        std::string                        name;
+        std::vector<Threshold>             thresholds;
 
-        std::pair<int, int>    thresholdExtents(int i) const
+        std::array<Appearance, 100>        appearanceCache;
+        std::vector<Threshold>             appearanceCacheHigh;
+
+        inline static constexpr Appearance DefaultAppearance{};
+
+        std::pair<bool, const Appearance&> operator[](int count) const
         {
-            int a = i == 0 ? -1 : int(thresholds[i - 1].threshold);
-            int b = i == thresholds.size() - 1 ? std::numeric_limits<int>::max() : int(thresholds[i].threshold);
+            if (count < 0)
+                return { false, DefaultAppearance };
 
-            return { a, b };
+            if (count < appearanceCache.size())
+                return { true, appearanceCache[count] };
+
+            auto it = ranges::find_if(appearanceCacheHigh, [count](const Threshold& th) { return th.thresholdMin <= count && th.thresholdMax >= count; });
+            if (it != appearanceCacheHigh.end())
+                return { true, it->appearance };
+
+            return { false, DefaultAppearance };
         }
     };
 
