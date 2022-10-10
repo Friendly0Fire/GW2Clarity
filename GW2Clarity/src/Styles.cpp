@@ -135,16 +135,15 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
 
         ImGui::Separator();
 
-        int selectedId = -1;
-
-        if (ImGuiBeginTimeline("Range", 100))
+        if (ImGuiBeginTimeline("Range", 26, ImGui::CalcTextSize("99-99").x))
         {
             for (size_t i = 0; i < s.thresholds.size(); i++)
             {
                 auto&           th = s.thresholds[i];
                 ImTimelineRange r{ int(th.thresholdMin), int(th.thresholdMax) };
-                bool            selected = false;
-                if (ImGuiTimelineEvent(std::format("{}", i + 1).c_str(), r, &selected))
+                auto [changed, selected] =
+                    ImGuiTimelineEvent(std::format("{}", i).c_str(), std::format("{}-{}", th.thresholdMin, th.thresholdMax).c_str(), r, selectedThresholdId_ == i);
+                if (changed)
                 {
                     th.thresholdMin = r[0];
                     th.thresholdMax = r[1];
@@ -152,37 +151,43 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
                 }
 
                 if (selected)
-                    selectedId = int(i);
+                    selectedThresholdId_ = int(i);
             }
         }
-        int lines[] = { 0, 1, 25, 99 };
-        ImGuiEndTimeline(4, lines);
+        int lines[] = { 0, 1, 5, 10, 15, 20, 25 };
+        ImGuiEndTimeline(std::size(lines), lines);
 
         if (saveCheck(ImGui::Button("Add range")))
         {
             s.thresholds.emplace_back();
         }
 
-        if (selectedId >= 0)
+        if (selectedThresholdId_ != UnselectedId)
         {
-            auto& th = s.thresholds[selectedId];
+            auto& th = s.thresholds[selectedThresholdId_];
             ImGui::TextUnformatted(std::format("Between {} and {} stacks:", th.thresholdMin, th.thresholdMax).c_str());
             auto& app = th.appearance;
 
             ImGui::TextUnformatted("Priority control:");
             ImGui::SameLine();
-            if (selectedId > 0)
+            if (selectedThresholdId_ > 0)
             {
                 if (ImGui::Button("Move up"))
-                    std::swap(s.thresholds[selectedId], s.thresholds[selectedId - 1]);
+                {
+                    std::swap(s.thresholds[selectedThresholdId_], s.thresholds[selectedThresholdId_ - 1]);
+                    selectedThresholdId_--;
+                }
 
                 ImGui::SameLine();
             }
 
-            if (selectedId < s.thresholds.size() - 1)
+            if (selectedThresholdId_ < s.thresholds.size() - 1)
             {
                 if (ImGui::Button("Move down"))
-                    std::swap(s.thresholds[selectedId], s.thresholds[selectedId + 1]);
+                {
+                    std::swap(s.thresholds[selectedThresholdId_], s.thresholds[selectedThresholdId_ + 1]);
+                    selectedThresholdId_++;
+                }
             }
 
             ImGuiHelpTooltip("If more than one range is defined for the same stack count, the highest priority range (first in the list) will be used.");
@@ -201,7 +206,8 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
 
             if (ImGui::Button("Delete selected"))
             {
-                s.thresholds.erase(s.thresholds.begin() + selectedId);
+                s.thresholds.erase(s.thresholds.begin() + selectedThresholdId_);
+                selectedThresholdId_ = UnselectedId;
             }
         }
     }
@@ -343,16 +349,18 @@ void Styles::BuildCache()
     for (auto& s : styles_)
     {
         ranges::fill(s.appearanceCache, Appearance{});
-        s.appearanceCacheHigh.clear();
 
         // Reverse iteration order so low priority appearance is set first and overwritten by high priority ones
         for (const auto& th : s.thresholds | ranges::views::reverse)
             ranges::fill(s.appearanceCache.begin() + th.thresholdMin, s.appearanceCache.begin() + std::min(th.thresholdMax, uint(s.appearanceCache.size())), th.appearance);
 
-        // Insert high priority high appearances first so they're found first
+        // Normal iteration order to find first threshold at 100, if any
         for (const auto& th : s.thresholds)
-            if (th.thresholdMax >= s.appearanceCache.size())
-                s.appearanceCacheHigh.push_back(th);
+            if (th.thresholdMax >= 100)
+            {
+                s.appearanceAbove = th.appearance;
+                break;
+            }
     }
 }
 
