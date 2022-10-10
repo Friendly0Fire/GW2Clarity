@@ -170,6 +170,11 @@ const auto g_Buffs = std::to_array<Buff>({
     { "Thief/Specter" },
     { 63207, "Shrouded Ally" },    // https://wiki.guildwars2.com/wiki/Shrouded_Ally
     { 63168, "Rot Wallow Venom" }, // https://wiki.guildwars2.com/wiki/Rot_Wallow_Venom
+    
+    //// Warrior
+    { "Warrior/Bladesworn" }
+    { 68095, "Overcharged Cartridges", 5}, // https://wiki.guildwars2.com/wiki/Overcharged_Cartridges
+    
 
     //// Special
     { "Special Status" },
