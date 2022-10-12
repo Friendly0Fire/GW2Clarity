@@ -64,7 +64,7 @@ public:
         std::vector<Threshold>             thresholds;
 
         std::array<Appearance, 100>        appearanceCache;
-        std::vector<Threshold>             appearanceCacheHigh;
+        Appearance                         appearanceAbove;
 
         inline static constexpr Appearance DefaultAppearance{};
 
@@ -76,11 +76,7 @@ public:
             if (count < appearanceCache.size())
                 return { true, appearanceCache[count] };
 
-            auto it = ranges::find_if(appearanceCacheHigh, [count](const Threshold& th) { return th.thresholdMin <= count && th.thresholdMax >= count; });
-            if (it != appearanceCacheHigh.end())
-                return { true, it->appearance };
-
-            return { false, DefaultAppearance };
+            return { true, appearanceAbove };
         }
     };
 
@@ -110,6 +106,7 @@ protected:
     const Buffs*                   buffs_;
     std::vector<Style>             styles_;
     uint                           selectedId_           = UnselectedId;
+    int                            selectedThresholdId_  = UnselectedId;
     int                            editingItemFakeCount_ = 1;
     const Buff*                    previewBuff_          = nullptr;
     char                           buffSearch_[512];
