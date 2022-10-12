@@ -181,6 +181,7 @@ const auto g_Buffs = std::to_array<Buff>({
     { 63433, "Fierce as Fire", 10}, // https://wiki.guildwars2.com/wiki/Fierce_as_Fire
     { 62836, "Positive Flow" } // https://wiki.guildwars2.com/wiki/Positive_Flow
     { 68126, "Tactical Reload" } // https://wiki.guildwars2.com/wiki/Tactical_Reload
+    { 62846, "Stim State", "combat_stimulant"} // https://wiki.guildwars2.com/wiki/Combat_Stimulant
     
     //// Special
     { "Special Status" },
