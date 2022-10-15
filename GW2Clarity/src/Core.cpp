@@ -81,6 +81,11 @@ void Core::InnerInternalInit()
             getBuffs_ = (decltype(getBuffs_))GetProcAddress(buffLib_, "GetCurrentPlayerStackedBuffs");
         else
             getBuffs_ = nullptr;
+
+        if (!buffLib_)
+            LogError("Could not find getbuffs.dll!");
+        if (!getBuffs_)
+            LogError("Could not find get buffs callback!");
     }
 }
 
