@@ -170,7 +170,19 @@ const auto g_Buffs = std::to_array<Buff>({
     { "Thief/Specter" },
     { 63207, "Shrouded Ally" },    // https://wiki.guildwars2.com/wiki/Shrouded_Ally
     { 63168, "Rot Wallow Venom" }, // https://wiki.guildwars2.com/wiki/Rot_Wallow_Venom
-
+    
+    //// Warrior
+    {"Warrior"},
+    { 42539, "Beserker's Power", 4}, // https://wiki.guildwars2.com/wiki/Berserker%27s_Power
+    
+    { "Warrior/Bladesworn" },
+    { 68095, "Overcharged Cartridges", 5}, // https://wiki.guildwars2.com/wiki/Overcharged_Cartridges
+    { 62743, "Guns and Glory" }, // https://wiki.guildwars2.com/wiki/Guns_and_Glory
+    { 63433, "Fierce as Fire", 10}, // https://wiki.guildwars2.com/wiki/Fierce_as_Fire
+    { 62836, "Positive Flow" }, // https://wiki.guildwars2.com/wiki/Positive_Flow
+    { 68126, "Tactical Reload" }, // https://wiki.guildwars2.com/wiki/Tactical_Reload
+    { 62846, "Stim State", "combat_stimulant"}, // https://wiki.guildwars2.com/wiki/Combat_Stimulant
+    
     //// Special
     { "Special Status" },
     //{ 46668, "Diminished" }, // https://wiki.guildwars2.com/images/7/71/Diminished.png
