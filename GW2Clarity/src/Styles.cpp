@@ -141,8 +141,8 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
             {
                 auto&           th = s.thresholds[i];
                 ImTimelineRange r{ int(th.thresholdMin), int(th.thresholdMax) };
-                auto [changed, selected] =
-                    ImGuiTimelineEvent(std::format("{}", i).c_str(), std::format("{}-{}", th.thresholdMin, th.thresholdMax).c_str(), r, selectedThresholdId_ == i);
+                const auto      name     = th.thresholdMin == th.thresholdMax ? std::format("{}", th.thresholdMin) : std::format("{}-{}", th.thresholdMin, th.thresholdMax);
+                auto [changed, selected] = ImGuiTimelineEvent(std::format("{}", i).c_str(), name.c_str(), r, selectedThresholdId_ == i);
                 if (changed)
                 {
                     th.thresholdMin = r[0];
@@ -165,7 +165,10 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
         if (selectedThresholdId_ != UnselectedId)
         {
             auto& th = s.thresholds[selectedThresholdId_];
-            ImGui::TextUnformatted(std::format("Between {} and {} stacks:", th.thresholdMin, th.thresholdMax).c_str());
+            if (th.thresholdMin == th.thresholdMax)
+                ImGui::TextUnformatted(std::format("At {} stacks:", th.thresholdMin).c_str());
+            else
+                ImGui::TextUnformatted(std::format("Between {} and {} stacks:", th.thresholdMin, th.thresholdMax).c_str());
             auto& app = th.appearance;
 
             ImGui::TextUnformatted("Priority control:");
@@ -352,7 +355,7 @@ void Styles::BuildCache()
 
         // Reverse iteration order so low priority appearance is set first and overwritten by high priority ones
         for (const auto& th : s.thresholds | ranges::views::reverse)
-            ranges::fill(s.appearanceCache.begin() + th.thresholdMin, s.appearanceCache.begin() + std::min(th.thresholdMax, uint(s.appearanceCache.size())), th.appearance);
+            ranges::fill(s.appearanceCache.begin() + th.thresholdMin, s.appearanceCache.begin() + std::min(th.thresholdMax + 1, uint(s.appearanceCache.size())), th.appearance);
 
         // Normal iteration order to find first threshold at 100, if any
         for (const auto& th : s.thresholds)
