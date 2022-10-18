@@ -182,7 +182,48 @@ const auto g_Buffs = std::to_array<Buff>({
     { 62836, "Positive Flow" }, // https://wiki.guildwars2.com/wiki/Positive_Flow
     { 68126, "Tactical Reload" }, // https://wiki.guildwars2.com/wiki/Tactical_Reload
     { 62846, "Stim State", "combat_stimulant"}, // https://wiki.guildwars2.com/wiki/Combat_Stimulant
-    
+
+    //// Mesmer
+    {"Mesmer"},
+    //// Signets
+    { 21751, "Signet of the Ether"}, // https://wiki.guildwars2.com/wiki/Signet_of_the_Ether_(effect)
+    { 10231, "Signet of Domination"}, // https://wiki.guildwars2.com/wiki/Signet_of_Domination_(effect)
+    { 10246, "Signet of Illusions"}, // https://wiki.guildwars2.com/wiki/Signet_of_Illusions_(effect)
+    { 10235, "Signet of Inspiration"}, // https://wiki.guildwars2.com/wiki/Signet_of_Inspiration_(effect)
+    { 10233, "Signet of Midnight"}, // https://wiki.guildwars2.com/wiki/Signet_of_Midnight_(effect)
+    { 30739, "Signet of Humility"}, // https://wiki.guildwars2.com/wiki/Signet_of_Humility_(effect)
+    //// Skills
+    { 10243, "Distortion"}, // https://wiki.guildwars2.com/wiki/Distortion_(effect)
+    { 10335, "Blur", "distortion"}, // https://wiki.guildwars2.com/wiki/Blur
+    { 10357, "Mirror"}, // https://wiki.guildwars2.com/wiki/Mirror_(effect)
+    { 29664, "Echo"}, // https://wiki.guildwars2.com/wiki/Echo_(effect)
+    { 10278, "Illusionary Counter"}, // https://wiki.guildwars2.com/wiki/Illusionary_Counter
+    { 10279, "Illusionary Riposte"}, // https://wiki.guildwars2.com/wiki/Riposte_(mesmer_effect)
+    { 10353, "Illusionary Leap"}, // https://wiki.guildwars2.com/wiki/Illusionary_Leap_(effect)
+    { 10198, "Portal Weaving","portal_entre"}, // https://wiki.guildwars2.com/wiki/Portal_Weaving
+    { 10346, "Illusion of Life"}, // https://wiki.guildwars2.com/wiki/Illusion_of_Life_(effect)
+    //// Traits
+    { 30426, "Fencer's Finesse", 10}, // https://wiki.guildwars2.com/wiki/Fencer%27s_Finesse_(effect)
+    { 49099, "Illusionary Defense", 5}, // https://wiki.guildwars2.com/wiki/Illusionary_Defense_(effect)
+    { 49058, "Compounding Power", 5}, // https://wiki.guildwars2.com/wiki/Compounding_Power_(effect)
+    // Unconfirmed in UI { 44691, "Phantasmal Force"}, // https://wiki.guildwars2.com/wiki/Phantasmal_Force_(effect)
+    { {10225, 24014}, "Reflection", "arcane_shield"}, // https://wiki.guildwars2.com/wiki/Reflection
+    //// Chronomancer
+    { "Mesmer/Chronomancer" },
+    //// Skills
+    { 29582, "Time Echo", "deja_vu"}, // https://wiki.guildwars2.com/wiki/Time_Echo
+    { 30136, "Time Anchored", "continuum_split"}, // https://wiki.guildwars2.com/wiki/Time_Anchored
+    //// Mirage
+    { "Mesmer/Mirage" },
+    //// Skills
+    { 40408, "Mirage Cloak", "mirage_cloak_(effect)"}, // https://wiki.guildwars2.com/wiki/Mirage_Cloak_(effect)
+    { 40802, "False Oasis"}, // https://wiki.guildwars2.com/wiki/False_Oasis_(effect)
+    //// Virtuoso
+    { "Mesmer/Virtuoso" },
+    //// Traits
+    { 63409, "Deadly Blades"}, // https://wiki.guildwars2.com/wiki/Deadly_Blades_(effect)
+    // Unconfirmed in UI { -25, "Virtuoso Blade"}, // https://wiki.guildwars2.com/wiki/Blade
+
     //// Special
     { "Special Status" },
     //{ 46668, "Diminished" }, // https://wiki.guildwars2.com/images/7/71/Diminished.png
