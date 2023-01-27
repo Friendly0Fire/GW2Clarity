@@ -77,7 +77,7 @@ const auto g_Buffs = std::to_array<Buff>({
     { 44871, "Eternal Oasis" },
     { 43194, "Unbroken Lines" },
     { 41957, "Ashes of the Just" },
-    { 42431, "Quickfire" },
+    { 45123, "Quickfire" }, // https://wiki.guildwars2.com/wiki/Quickfire_(effect)
     { 68601, "Swift Scholar" }, // https://wiki.guildwars2.com/wiki/Swift_Scholar_(effect)
 
     { "Guardian/Willbender" },
