@@ -217,6 +217,40 @@ const auto g_Buffs = std::to_array<Buff>({
 	{ "Revevant/Renegade" }, 
 	{ 42883, "Kalla's Fervor", 5 }, 						// https://wiki.guildwars2.com/wiki/Kalla%27s_Fervor
     
+    //// Mesmer
+    {"Mesmer" },
+    { 21751, "Signet of the Ether" },		 				// https://wiki.guildwars2.com/wiki/Signet_of_the_Ether_(effect)
+    { 10231, "Signet of Domination" },						// https://wiki.guildwars2.com/wiki/Signet_of_Domination_(effect)
+    { 10246, "Signet of Illusions" }, 						// https://wiki.guildwars2.com/wiki/Signet_of_Illusions_(effect)
+    { 10235, "Signet of Inspiration" },						// https://wiki.guildwars2.com/wiki/Signet_of_Inspiration_(effect)
+    { 10233, "Signet of Midnight" }, 						// https://wiki.guildwars2.com/wiki/Signet_of_Midnight_(effect)
+    { 30739, "Signet of Humility" }, 						// https://wiki.guildwars2.com/wiki/Signet_of_Humility_(effect)
+    { 10243, "Distortion" }, 								// https://wiki.guildwars2.com/wiki/Distortion_(effect)
+    { 10335, "Blur", "Distortion" }, 						// https://wiki.guildwars2.com/wiki/Blur
+    { 10357, "Mirror" }, 									// https://wiki.guildwars2.com/wiki/Mirror_(effect)
+    { 29664, "Echo" }, 										// https://wiki.guildwars2.com/wiki/Echo_(effect)
+	{ 10279, "Riposte" }, 									// https://wiki.guildwars2.com/wiki/Riposte_(mesmer_effect)
+    { 10353, "Illusionary Leap" }, 							// https://wiki.guildwars2.com/wiki/Illusionary_Leap_(effect)
+    { 10198, "Portal Weaving","portal_entre" }, 			// https://wiki.guildwars2.com/wiki/Portal_Weaving
+	{ 16553, "Portal Uses", "Portal_Exeun", 20 },			// https://wiki.guildwars2.com/wiki/Portal_Uses
+    { 10346, "Illusion of Life" }, 							// https://wiki.guildwars2.com/wiki/Illusion_of_Life_(effect)
+    { 30426, "Fencer's Finesse", 10 }, 						// https://wiki.guildwars2.com/wiki/Fencer%27s_Finesse_(effect)
+    { 49099, "Illusionary Defense", 5 }, 					// https://wiki.guildwars2.com/wiki/Illusionary_Defense_(effect)
+    { 49058, "Compounding Power", 5 }, 						// https://wiki.guildwars2.com/wiki/Compounding_Power_(effect)
+    { 44691, "Phantasmal Force", "Mistrust", 25 },			// https://wiki.guildwars2.com/wiki/Phantasmal_Force_(effect)
+    { 11688, "Reflection", "Arcane_Shield" }, 				// https://wiki.guildwars2.com/wiki/Reflection_(effect)
+
+    { "Mesmer/Chronomancer" },
+    { 29582, "Time Echo", "Deja_Vu" }, 						// https://wiki.guildwars2.com/wiki/Time_Echo
+    { 30136, "Time Anchored", "Continuum_Split" }, 			// https://wiki.guildwars2.com/wiki/Time_Anchored
+ 
+    { "Mesmer/Mirage" },
+    { 40408, "Mirage Cloak", "Mirage_Cloak" },				// https://wiki.guildwars2.com/wiki/Mirage_Cloak_(effect)
+    { 40802, "False Oasis" },								// https://wiki.guildwars2.com/wiki/False_Oasis_(effect)
+ 
+    { "Mesmer/Virtuoso" },
+    { 63409, "Deadly Blades" },								// https://wiki.guildwars2.com/wiki/Deadly_Blades_(effect)
+    
     //// Special
     { "Special Status" },
     //{ 46668, "Diminished" }, // https://wiki.guildwars2.com/images/7/71/Diminished.png
