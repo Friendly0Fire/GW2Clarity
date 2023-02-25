@@ -183,6 +183,40 @@ const auto g_Buffs = std::to_array<Buff>({
     { 68126, "Tactical Reload" }, // https://wiki.guildwars2.com/wiki/Tactical_Reload
     { 62846, "Stim State", "combat_stimulant"}, // https://wiki.guildwars2.com/wiki/Combat_Stimulant
     
+    //// Revenant
+	{"Revenant" },		
+	{ 27273, "Vengeful Hammers" },							// https://wiki.guildwars2.com/wiki/Vengeful_Hammers_(effect)
+	{ 27581, "Impossible Odds" }, 							// https://wiki.guildwars2.com/wiki/Impossible_Odds_(effect)
+	{ 28001, "Embrace the Darkness" }, 						// https://wiki.guildwars2.com/wiki/Embrace_the_Darkness_(effect)
+	{ 68065, "Tranquil", "Project_Tranquility" },			// https://wiki.guildwars2.com/wiki/Tranquil
+	{ 48894, "Expose Defenses", "Mutilate_Defenses" },	 	// https://wiki.guildwars2.com/wiki/Expose_Defenses_(effect)
+	{ 26646, "Battle Scars", "Battle_Scarred", 5 },			// https://wiki.guildwars2.com/wiki/Battle_Scars
+	{ 29025, "Invoking Harmony" }, 							// https://wiki.guildwars2.com/wiki/Invoking_Harmony_(effect)
+	{ 55044, "Unyielding Spirit", "Unyielding_Devotion" }, 	// https://wiki.guildwars2.com/wiki/Unyielding_Spirit
+	{ 51683, "Rising Momentum", 10 }, 						// https://wiki.guildwars2.com/wiki/Rising_Momentum_(effect)
+	{ 28557, "Enchanted Daggers", 6 },						// https://wiki.guildwars2.com/wiki/Enchanted_Daggers_(effect)
+	
+	{ "Revenant/Herald" },
+	{ {27983, 51685}, "Facet of Chaos" }, 					// https://wiki.guildwars2.com/wiki/Facet_of_Chaos_(effect)
+	{ {28036, 51695}, "Facet of Darkness" },				// https://wiki.guildwars2.com/wiki/Facet_of_Darkness_(effect)
+	{ {28243, 51706}, "Facet of Elements" }, 				// https://wiki.guildwars2.com/wiki/Facet_of_Elements_(effect)
+	{ {27336, 51690}, "Facet of Light" },					// https://wiki.guildwars2.com/wiki/Facet_of_Light_(effect)
+	{ {27376, 51700}, "Facet of Strength" },				// https://wiki.guildwars2.com/wiki/Facet_of_Strength_(effect)
+	{ {29275, 51681}, "Facet of Nature" }, 					// https://wiki.guildwars2.com/wiki/Facet_of_Nature_(effect)
+	{ 27737, "Infuse Light" }, 								// https://wiki.guildwars2.com/wiki/Infuse_Light_(effect)
+	{ 51692, "Facet of Nature-Assassin" }, 					// https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Assassin
+	{ 51699, "Facet Of Nature-Centaur" }, 					// https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Centaur
+	{ 51704, "Facet of Nature-Demon" }, 					// https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Demon
+	{ 51674, "Facet of Nature-Dragon" }, 					// https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Dragon
+	{ 51677, "Facet of Nature-Dwarf" }, 					// https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Dwarf
+	
+	{ "Revenant/Vindicator" },
+	{ 62811, "Forerunner of Death" }, 						// https://wiki.guildwars2.com/wiki/Forerunner_of_Death_(effect)
+	{ 62944, "Saint of zu Heltzer" }, 						// https://wiki.guildwars2.com/wiki/Saint_of_zu_Heltzer_(effect)
+	
+	{ "Revevant/Renegade" }, 
+	{ 42883, "Kalla's Fervor", 5 }, 						// https://wiki.guildwars2.com/wiki/Kalla%27s_Fervor
+    
     //// Special
     { "Special Status" },
     //{ 46668, "Diminished" }, // https://wiki.guildwars2.com/images/7/71/Diminished.png
