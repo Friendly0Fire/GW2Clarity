@@ -147,8 +147,8 @@ git describe --always --dirty --match "NOT A TAG" &gt;&gt; "$(ProjectDir)include
     </FxCompile>
     <PreBuildEvent>
       <Command>if defined GW2BUFFS_SOLUTION_DIR (
-copy /Y "$(ProjectDir)src\BuffsList.inc" "%GW2BUFFS_SOLUTION_DIR%\BuffsList.inc"
 msbuild "%GW2BUFFS_SOLUTION_DIR%\GW2Buffs.sln" /property:Configuration=Release /property:Platform=x64 -t:GW2Buffs:Rebuild
+xcopy /F /Y "%GW2BUFFS_SOLUTION_DIR%\x64\Release\getbuffs.dll" "$(SolutionDir)getbuffs.dll"
 )
 
 mkdir "$(ProjectDir)int"

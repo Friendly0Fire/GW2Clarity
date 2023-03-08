@@ -41,6 +41,8 @@ Buffs::Buffs(ComPtr<ID3D11Device>& dev)
     numbersAtlas_ = CreateTextureFromResource(dev.Get(), Core::i().dllModule(), IDR_NUMBERS);
 
 #ifdef _DEBUG
+    SettingsMenu::i().AddImplementer(this);
+
     LoadNames();
 #endif
 }
