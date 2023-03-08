@@ -69,12 +69,16 @@ const auto g_Buffs = std::to_array<Buff>({
 
     { "Guardian/Firebrand" },
     { 46298, "Tome of Resolve" },
+    { 68640, "Dormant Resolve" }, // https://wiki.guildwars2.com/wiki/Dormant_Resolve
     { 40530, "Tome of Justice" },
+    { 68607, "Dormant Justice" }, // https://wiki.guildwars2.com/wiki/Dormant_Justice
     { 43508, "Tome of Courage" },
+    { 68585, "Dormant Courage" }, // https://wiki.guildwars2.com/wiki/Dormant_Courage
     { 44871, "Eternal Oasis" },
     { 43194, "Unbroken Lines" },
     { 41957, "Ashes of the Just" },
-    { 42431, "Quickfire" },
+    { 45123, "Quickfire" }, // https://wiki.guildwars2.com/wiki/Quickfire_(effect)
+    { 68601, "Swift Scholar" }, // https://wiki.guildwars2.com/wiki/Swift_Scholar_(effect)
 
     { "Guardian/Willbender" },
     { 62529, "Justice (Willbender)" },
