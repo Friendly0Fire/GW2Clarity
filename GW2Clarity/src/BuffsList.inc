@@ -94,7 +94,7 @@ const auto g_Buffs = std::to_array<Buff>({
     { 12524, "Blocking" }, // https://wiki.guildwars2.com/wiki/Blocking_(effect)
     { 58085, "Counter Ready" }, // https://wiki.guildwars2.com/wiki/Counterattack_Kick
     { 12623, "Serpent's Preparation" }, // https://wiki.guildwars2.com/wiki/Serpent%27s_Preparation
-    { 12650, "\"Sic 'Em!\"" }, // https://wiki.guildwars2.com/wiki/%22Sic_%27Em!%22_(effect)
+    { 33902, "\"Sic 'Em!\"" }, // https://wiki.guildwars2.com/wiki/%22Sic_%27Em!%22_(effect)
     { 12538, "Signet of Renewal" }, // https://wiki.guildwars2.com/wiki/Signet_of_Renewal_(effect)
     { 12543, "Signet of Stone (passive)", "signet_of_stone" }, // https://wiki.guildwars2.com/wiki/Signet_of_Stone_(passive_effect)
     { 883, "Signet of Stone (active)", "signet_of_stone" }, // https://wiki.guildwars2.com/wiki/Signet_of_Stone_(active_effect)
@@ -177,7 +177,7 @@ const auto g_Buffs = std::to_array<Buff>({
     
     //// Warrior
     {"Warrior"},
-    { 42539, "Beserker's Power", 4}, // https://wiki.guildwars2.com/wiki/Berserker%27s_Power
+    { 42539, "Berserker's Power", 4}, // https://wiki.guildwars2.com/wiki/Berserker%27s_Power
     
     { "Warrior/Bladesworn" },
     { 68095, "Overcharged Cartridges", 5}, // https://wiki.guildwars2.com/wiki/Overcharged_Cartridges
