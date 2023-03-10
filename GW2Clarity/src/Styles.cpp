@@ -164,53 +164,60 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
 
         if (selectedThresholdId_ != UnselectedId)
         {
-            auto& th = s.thresholds[selectedThresholdId_];
-            if (th.thresholdMin == th.thresholdMax)
-                ImGui::TextUnformatted(std::format("At {} stacks:", th.thresholdMin).c_str());
-            else
-                ImGui::TextUnformatted(std::format("Between {} and {} stacks:", th.thresholdMin, th.thresholdMax).c_str());
-            auto& app = th.appearance;
-
-            ImGui::TextUnformatted("Priority control:");
-            ImGui::SameLine();
-            if (selectedThresholdId_ > 0)
+            if (selectedThresholdId_ >= s.thresholds.size())
             {
-                if (ImGui::Button("Move up"))
-                {
-                    std::swap(s.thresholds[selectedThresholdId_], s.thresholds[selectedThresholdId_ - 1]);
-                    selectedThresholdId_--;
-                }
-
-                ImGui::SameLine();
-            }
-
-            if (selectedThresholdId_ < s.thresholds.size() - 1)
-            {
-                if (ImGui::Button("Move down"))
-                {
-                    std::swap(s.thresholds[selectedThresholdId_], s.thresholds[selectedThresholdId_ + 1]);
-                    selectedThresholdId_++;
-                }
-            }
-
-            ImGuiHelpTooltip("If more than one range is defined for the same stack count, the highest priority range (first in the list) will be used.");
-
-            saveCheck(ImGui::ColorEdit4("Tint Color", &app.tint.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
-            saveCheck(ImGui::DragFloat("Glow Size", &app.glowSize, 0.01f, 0.f, 10.f));
-            if (app.glowSize > 0.f)
-            {
-                saveCheck(ImGui::ColorEdit4("Glow Color", &app.glow.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
-                saveCheck(ImGui::DragFloat("Glow Pulse Intensity", &app.glowPulse.x, 0.01f, 0.f, 1.f));
-                saveCheck(ImGui::DragFloat("Glow Pulse Speed", &app.glowPulse.y, 0.01f, 0.f, 5.f));
-            }
-            saveCheck(ImGui::DragFloat("Border Thickness", &app.borderThickness, 0.1f, 0.f, 512.f));
-            if (app.borderThickness > 0.f)
-                saveCheck(ImGui::ColorEdit4("Border Color", &app.border.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
-
-            if (ImGui::Button("Delete selected"))
-            {
-                s.thresholds.erase(s.thresholds.begin() + selectedThresholdId_);
                 selectedThresholdId_ = UnselectedId;
+            }
+            else
+            {
+                auto& th = s.thresholds[selectedThresholdId_];
+                if (th.thresholdMin == th.thresholdMax)
+                    ImGui::TextUnformatted(std::format("At {} stacks:", th.thresholdMin).c_str());
+                else
+                    ImGui::TextUnformatted(std::format("Between {} and {} stacks:", th.thresholdMin, th.thresholdMax).c_str());
+                auto& app = th.appearance;
+
+                ImGui::TextUnformatted("Priority control:");
+                ImGui::SameLine();
+                if (selectedThresholdId_ > 0)
+                {
+                    if (ImGui::Button("Move up"))
+                    {
+                        std::swap(s.thresholds[selectedThresholdId_], s.thresholds[selectedThresholdId_ - 1]);
+                        selectedThresholdId_--;
+                    }
+
+                    ImGui::SameLine();
+                }
+
+                if (selectedThresholdId_ < s.thresholds.size() - 1)
+                {
+                    if (ImGui::Button("Move down"))
+                    {
+                        std::swap(s.thresholds[selectedThresholdId_], s.thresholds[selectedThresholdId_ + 1]);
+                        selectedThresholdId_++;
+                    }
+                }
+
+                ImGuiHelpTooltip("If more than one range is defined for the same stack count, the highest priority range (first in the list) will be used.");
+
+                saveCheck(ImGui::ColorEdit4("Tint Color", &app.tint.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
+                saveCheck(ImGui::DragFloat("Glow Size", &app.glowSize, 0.01f, 0.f, 10.f));
+                if (app.glowSize > 0.f)
+                {
+                    saveCheck(ImGui::ColorEdit4("Glow Color", &app.glow.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
+                    saveCheck(ImGui::DragFloat("Glow Pulse Intensity", &app.glowPulse.x, 0.01f, 0.f, 1.f));
+                    saveCheck(ImGui::DragFloat("Glow Pulse Speed", &app.glowPulse.y, 0.01f, 0.f, 5.f));
+                }
+                saveCheck(ImGui::DragFloat("Border Thickness", &app.borderThickness, 0.1f, 0.f, 512.f));
+                if (app.borderThickness > 0.f)
+                    saveCheck(ImGui::ColorEdit4("Border Color", &app.border.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
+
+                if (ImGui::Button("Delete selected"))
+                {
+                    s.thresholds.erase(s.thresholds.begin() + selectedThresholdId_);
+                    selectedThresholdId_ = UnselectedId;
+                }
             }
         }
     }
