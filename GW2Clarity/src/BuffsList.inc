@@ -167,6 +167,40 @@ const auto g_Buffs = std::to_array<Buff>({
     { 62638, "Repose" },
     { 62509, "Lethal Tempo" },
 
+    { "Mesmer" },
+    { 10243, "Distortion" },                          // https://wiki.guildwars2.com/wiki/Distortion_(effect)
+    { 10335, "Blur", "distortion" },                  // https://wiki.guildwars2.com/wiki/Blur
+    { 10353, "Illusionary Leap" },                    // https://wiki.guildwars2.com/wiki/Illusionary_Leap_(effect)
+    { 10279, "Riposte" },                             // https://wiki.guildwars2.com/wiki/Riposte_(mesmer_effect)
+    { 21751, "Signet of the Ether" },                 // https://wiki.guildwars2.com/wiki/Signet_of_the_Ether_(effect)
+    { 10231, "Signet of Domination" },                // https://wiki.guildwars2.com/wiki/Signet_of_Domination_(effect)
+    { 10246, "Signet of Illusions" },                 // https://wiki.guildwars2.com/wiki/Signet_of_Illusions_(effect)
+    { 10235, "Signet of Inspiration" },               // https://wiki.guildwars2.com/wiki/Signet_of_Inspiration_(effect)
+    { 10233, "Signet of Midnight" },                  // https://wiki.guildwars2.com/wiki/Signet_of_Midnight_(effect)
+    { 30739, "Signet of Humility" },                  // https://wiki.guildwars2.com/wiki/Signet_of_Humility_(effect)
+    { 10357, "Mirror" },                              // https://wiki.guildwars2.com/wiki/Mirror_(effect)
+    { 29664, "Echo" },                                // https://wiki.guildwars2.com/wiki/Echo_(effect)
+    { 10198, "Portal Weaving" },                      // https://wiki.guildwars2.com/wiki/Portal_Weaving
+    { 16553, "Portal Uses", 20 },                     // https://wiki.guildwars2.com/wiki/Portal_Uses
+    { 10346, "Illusion of Life" },                    // https://wiki.guildwars2.com/wiki/Illusion_of_Life_(effect)
+    { 30426, "Fencer's Finesse", 10 },                // https://wiki.guildwars2.com/wiki/Fencer%27s_Finesse_(effect)
+    { 49099, "Illusionary Defense", 5 },              // https://wiki.guildwars2.com/wiki/Illusionary_Defense_(effect)
+    { 49058, "Compounding Power", 5 },                // https://wiki.guildwars2.com/wiki/Compounding_Power_(effect)
+    { 10225, "Reflection", "arcane_shield", 5 },      // https://wiki.guildwars2.com/wiki/Reflection
+
+    { "Mesmer/Chronomancer" },
+    { 29582, "Time Echo" },                           // https://wiki.guildwars2.com/wiki/Time_Echo
+    { 30136, "Time Anchored" },                       // https://wiki.guildwars2.com/wiki/Time_Anchored
+
+    { "Mesmer/Mirage" },
+    { 40408, "Mirage Cloak" },                        // https://wiki.guildwars2.com/wiki/Mirage_Cloak_(effect)
+    { 40802, "False Oasis" },                         // https://wiki.guildwars2.com/wiki/False_Oasis_(effect)
+    { 46237, "Mirage Advance" },                      // https://wiki.guildwars2.com/wiki/Mirage_Advance
+    { 41851, "Riddle of Sand" },                      // https://wiki.guildwars2.com/wiki/Riddle_of_Sand_(effect)
+
+    { "Mesmer/Virtuoso" },
+    { 63409, "Deadly Blades" },                       // https://wiki.guildwars2.com/wiki/Deadly_Blades_(effect)
+
     //// Ranger
     { "Ranger" },
     { 12574, "Attack of Opportunity" }, // https://wiki.guildwars2.com/wiki/Attack_of_Opportunity_(effect)
@@ -220,6 +254,44 @@ const auto g_Buffs = std::to_array<Buff>({
     { 63240, "Forest's Fortification" }, // https://wiki.guildwars2.com/wiki/Forest%27s_Fortification_(effect)
     { 63191, "Ferocious Symbiosis" }, // https://wiki.guildwars2.com/wiki/Ferocious_Symbiosis_(effect)
 
+    //// Revenant
+    { "Revenant" },
+    { 28557, "Enchanted Daggers", 6 },              // https://wiki.guildwars2.com/wiki/Enchanted_Daggers_(effect)
+    { 27581, "Impossible Odds" },                   // https://wiki.guildwars2.com/wiki/Impossible_Odds_(effect)
+    { 28001, "Embrace the Darkness" },              // https://wiki.guildwars2.com/wiki/Embrace_the_Darkness_(effect)
+    { 68065, "Tranquil" },                          // https://wiki.guildwars2.com/wiki/Tranquil
+    { 27273, "Vengeful Hammers" },                  // https://wiki.guildwars2.com/wiki/Vengeful_Hammers_(effect)
+    { 48894, "Expose Defenses" },                   // https://wiki.guildwars2.com/wiki/Expose_Defenses_(effect)
+    { 26646, "Battle Scars", 25 },                  // https://wiki.guildwars2.com/wiki/Battle_Scars
+    { 29356, "Invoking Harmony" },                  // https://wiki.guildwars2.com/wiki/Invoking_Harmony_(effect)
+    { 55044, "Unyielding Spirit" },                 // https://wiki.guildwars2.com/wiki/Unyielding_Spirit
+    { 51683, "Rising Momentum", 10 },               // https://wiki.guildwars2.com/wiki/Rising_Momentum_(effect)
+
+    { "Revenant/Herald" },
+    { 27737, "Infuse Light" },                      // https://wiki.guildwars2.com/wiki/Infuse_Light_(effect)
+    { {27336, 51690}, "Facet of Light" },           // https://wiki.guildwars2.com/wiki/Facet_of_Light_(effect)
+    { {28036, 51695}, "Facet of Darkness" },        // https://wiki.guildwars2.com/wiki/Facet_of_Darkness_(effect)
+    { {28243, 51706}, "Facet of Elements" },        // https://wiki.guildwars2.com/wiki/Facet_of_Elements_(effect)
+    { {27376, 51700}, "Facet of Strength" },        // https://wiki.guildwars2.com/wiki/Facet_of_Strength_(effect)
+    { {27983, 51685}, "Facet of Chaos" },           // https://wiki.guildwars2.com/wiki/Facet_of_Chaos_(effect)
+    { {29275, 51681}, "Facet of Nature" },          // https://wiki.guildwars2.com/wiki/Facet_of_Nature_(effect)
+    { 51692, "Facet of Nature-Assassin" },          // https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Assassin
+    { 51699, "Facet Of Nature-Centaur" },           // https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Centaur
+    { 51704, "Facet of Nature-Demon" },             // https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Demon
+    { 51677, "Facet of Nature-Dwarf" },             // https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Dwarf
+    { 51674, "Facet of Nature-Dragon" },            // https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Dragon
+
+    { "Revevant/Renegade" },
+    { { 42883, 45614 }, "Kalla's Fervor", 5 },      // https://wiki.guildwars2.com/wiki/Kalla%27s_Fervor
+    { 44682, "Breakrazor's Bastion" },              // https://wiki.guildwars2.com/wiki/Breakrazor%27s_Bastion_(effect)
+    { 41016, "Razorclaw's_Rage" },                  // https://wiki.guildwars2.com/wiki/Razorclaw%27s_Rage_(effect)
+    { 45026, "Soulcleave's Summit" },               // https://wiki.guildwars2.com/wiki/Soulcleave%27s_Summit_(effect)
+
+    { "Revenant/Vindicator" },
+    { 62864, "Urn of Saint Viktor" },               // https://wiki.guildwars2.com/wiki/Urn_of_Saint_Viktor_(effect)
+    { 62811, "Forerunner of Death" },               // https://wiki.guildwars2.com/wiki/Forerunner_of_Death_(effect)
+    { 62994, "Saint of zu Heltzer" },               // https://wiki.guildwars2.com/wiki/Saint_of_zu_Heltzer_(effect)
+
     //// Thief
     { "Thief" },
     { 13036, "Spider Venom" },           // https://wiki.guildwars2.com/wiki/Spider_Venom
@@ -265,75 +337,7 @@ const auto g_Buffs = std::to_array<Buff>({
     { 62836, "Positive Flow" }, // https://wiki.guildwars2.com/wiki/Positive_Flow
     { 68126, "Tactical Reload" }, // https://wiki.guildwars2.com/wiki/Tactical_Reload
     { 62846, "Stim State", "combat_stimulant"}, // https://wiki.guildwars2.com/wiki/Combat_Stimulant
-    
-   	//// Revenant
-	{"Revenant" },		
-	{ 27273, "Vengeful Hammers" },							// https://wiki.guildwars2.com/wiki/Vengeful_Hammers_(effect)
-	{ 27581, "Impossible Odds" }, 							// https://wiki.guildwars2.com/wiki/Impossible_Odds_(effect)
-	{ 28001, "Embrace the Darkness" }, 						// https://wiki.guildwars2.com/wiki/Embrace_the_Darkness_(effect)
-	{ 68065, "Tranquil", "Project_Tranquility" },			// https://wiki.guildwars2.com/wiki/Tranquil
-	{ 48894, "Expose Defenses", "Mutilate_Defenses" },	 	// https://wiki.guildwars2.com/wiki/Expose_Defenses_(effect)
-	{ 26646, "Battle Scars", "Battle_Scarred", 5 },			// https://wiki.guildwars2.com/wiki/Battle_Scars
-	{ 29025, "Invoking Harmony" }, 							// https://wiki.guildwars2.com/wiki/Invoking_Harmony_(effect)
-	{ 55044, "Unyielding Spirit", "Unyielding_Devotion" }, 	// https://wiki.guildwars2.com/wiki/Unyielding_Spirit
-	{ 51683, "Rising Momentum", 10 }, 						// https://wiki.guildwars2.com/wiki/Rising_Momentum_(effect)
-	{ 28557, "Enchanted Daggers", 6 },						// https://wiki.guildwars2.com/wiki/Enchanted_Daggers_(effect)
-	
-	{ "Revenant/Herald" },
-	{ {27983, 51685}, "Facet of Chaos" }, 					// https://wiki.guildwars2.com/wiki/Facet_of_Chaos_(effect)
-	{ {28036, 51695}, "Facet of Darkness" },				// https://wiki.guildwars2.com/wiki/Facet_of_Darkness_(effect)
-	{ {28243, 51706}, "Facet of Elements" }, 				// https://wiki.guildwars2.com/wiki/Facet_of_Elements_(effect)
-	{ {27336, 51690}, "Facet of Light" },					// https://wiki.guildwars2.com/wiki/Facet_of_Light_(effect)
-	{ {27376, 51700}, "Facet of Strength" },				// https://wiki.guildwars2.com/wiki/Facet_of_Strength_(effect)
-	{ {29275, 51681}, "Facet of Nature" }, 					// https://wiki.guildwars2.com/wiki/Facet_of_Nature_(effect)
-	{ 27737, "Infuse Light" }, 								// https://wiki.guildwars2.com/wiki/Infuse_Light_(effect)
-	{ 51692, "Facet of Nature-Assassin" }, 					// https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Assassin
-	{ 51699, "Facet Of Nature-Centaur" }, 					// https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Centaur
-	{ 51704, "Facet of Nature-Demon" }, 					// https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Demon
-	{ 51674, "Facet of Nature-Dragon" }, 					// https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Dragon
-	{ 51677, "Facet of Nature-Dwarf" }, 					// https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Dwarf
-	
-	{ "Revenant/Vindicator" },
-	{ 62811, "Forerunner of Death" }, 						// https://wiki.guildwars2.com/wiki/Forerunner_of_Death_(effect)
-	{ 62944, "Saint of zu Heltzer" }, 						// https://wiki.guildwars2.com/wiki/Saint_of_zu_Heltzer_(effect)
-	
-	{ "Revevant/Renegade" }, 
-	{ 42883, "Kalla's Fervor", 5 }, 						// https://wiki.guildwars2.com/wiki/Kalla%27s_Fervor
-    
-    //// Mesmer
-    {"Mesmer" },
-    { 21751, "Signet of the Ether" },		 				// https://wiki.guildwars2.com/wiki/Signet_of_the_Ether_(effect)
-    { 10231, "Signet of Domination" },						// https://wiki.guildwars2.com/wiki/Signet_of_Domination_(effect)
-    { 10246, "Signet of Illusions" }, 						// https://wiki.guildwars2.com/wiki/Signet_of_Illusions_(effect)
-    { 10235, "Signet of Inspiration" },						// https://wiki.guildwars2.com/wiki/Signet_of_Inspiration_(effect)
-    { 10233, "Signet of Midnight" }, 						// https://wiki.guildwars2.com/wiki/Signet_of_Midnight_(effect)
-    { 30739, "Signet of Humility" }, 						// https://wiki.guildwars2.com/wiki/Signet_of_Humility_(effect)
-    { 10243, "Distortion" }, 								// https://wiki.guildwars2.com/wiki/Distortion_(effect)
-    { 10335, "Blur", "Distortion" }, 						// https://wiki.guildwars2.com/wiki/Blur
-    { 10357, "Mirror" }, 									// https://wiki.guildwars2.com/wiki/Mirror_(effect)
-    { 29664, "Echo" }, 										// https://wiki.guildwars2.com/wiki/Echo_(effect)
-	{ 10279, "Riposte" }, 									// https://wiki.guildwars2.com/wiki/Riposte_(mesmer_effect)
-    { 10353, "Illusionary Leap" }, 							// https://wiki.guildwars2.com/wiki/Illusionary_Leap_(effect)
-    { 10198, "Portal Weaving","portal_entre" }, 			// https://wiki.guildwars2.com/wiki/Portal_Weaving
-	{ 16553, "Portal Uses", "Portal_Exeun", 20 },			// https://wiki.guildwars2.com/wiki/Portal_Uses
-    { 10346, "Illusion of Life" }, 							// https://wiki.guildwars2.com/wiki/Illusion_of_Life_(effect)
-    { 30426, "Fencer's Finesse", 10 }, 						// https://wiki.guildwars2.com/wiki/Fencer%27s_Finesse_(effect)
-    { 49099, "Illusionary Defense", 5 }, 					// https://wiki.guildwars2.com/wiki/Illusionary_Defense_(effect)
-    { 49058, "Compounding Power", 5 }, 						// https://wiki.guildwars2.com/wiki/Compounding_Power_(effect)
-    { 44691, "Phantasmal Force", "Mistrust", 25 },			// https://wiki.guildwars2.com/wiki/Phantasmal_Force_(effect)
-    { 11688, "Reflection", "Arcane_Shield" }, 				// https://wiki.guildwars2.com/wiki/Reflection_(effect)
 
-    { "Mesmer/Chronomancer" },
-    { 29582, "Time Echo", "Deja_Vu" }, 						// https://wiki.guildwars2.com/wiki/Time_Echo
-    { 30136, "Time Anchored", "Continuum_Split" }, 			// https://wiki.guildwars2.com/wiki/Time_Anchored
- 
-    { "Mesmer/Mirage" },
-    { 40408, "Mirage Cloak", "Mirage_Cloak" },				// https://wiki.guildwars2.com/wiki/Mirage_Cloak_(effect)
-    { 40802, "False Oasis" },								// https://wiki.guildwars2.com/wiki/False_Oasis_(effect)
- 
-    { "Mesmer/Virtuoso" },
-    { 63409, "Deadly Blades" },								// https://wiki.guildwars2.com/wiki/Deadly_Blades_(effect)
-    
     //// Special
     { "Special Status" },
     //{ 46668, "Diminished" }, // https://wiki.guildwars2.com/images/7/71/Diminished.png
