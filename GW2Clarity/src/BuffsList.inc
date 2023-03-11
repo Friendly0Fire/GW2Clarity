@@ -220,6 +220,44 @@ const auto g_Buffs = std::to_array<Buff>({
     { 63240, "Forest's Fortification" }, // https://wiki.guildwars2.com/wiki/Forest%27s_Fortification_(effect)
     { 63191, "Ferocious Symbiosis" }, // https://wiki.guildwars2.com/wiki/Ferocious_Symbiosis_(effect)
 
+    //// Revenant
+    { "Revenant" },
+    { 28557, "Enchanted Daggers", 6 },              // https://wiki.guildwars2.com/wiki/Enchanted_Daggers_(effect)
+    { 27581, "Impossible Odds" },                   // https://wiki.guildwars2.com/wiki/Impossible_Odds_(effect)
+    { 28001, "Embrace the Darkness" },              // https://wiki.guildwars2.com/wiki/Embrace_the_Darkness_(effect)
+    { 68065, "Tranquil" },                          // https://wiki.guildwars2.com/wiki/Tranquil
+    { 27273, "Vengeful Hammers" },                  // https://wiki.guildwars2.com/wiki/Vengeful_Hammers_(effect)
+    { 48894, "Expose Defenses" },                   // https://wiki.guildwars2.com/wiki/Expose_Defenses_(effect)
+    { 26646, "Battle Scars", 25 },                  // https://wiki.guildwars2.com/wiki/Battle_Scars
+    { 29356, "Invoking Harmony" },                  // https://wiki.guildwars2.com/wiki/Invoking_Harmony_(effect)
+    { 55044, "Unyielding Spirit" },                 // https://wiki.guildwars2.com/wiki/Unyielding_Spirit
+    { 51683, "Rising Momentum", 10 },               // https://wiki.guildwars2.com/wiki/Rising_Momentum_(effect)
+
+    { "Revenant/Herald" },
+    { 27737, "Infuse Light" },                      // https://wiki.guildwars2.com/wiki/Infuse_Light_(effect)
+    { {27336, 51690}, "Facet of Light" },           // https://wiki.guildwars2.com/wiki/Facet_of_Light_(effect)
+    { {28036, 51695}, "Facet of Darkness" },        // https://wiki.guildwars2.com/wiki/Facet_of_Darkness_(effect)
+    { {28243, 51706}, "Facet of Elements" },        // https://wiki.guildwars2.com/wiki/Facet_of_Elements_(effect)
+    { {27376, 51700}, "Facet of Strength" },        // https://wiki.guildwars2.com/wiki/Facet_of_Strength_(effect)
+    { {27983, 51685}, "Facet of Chaos" },           // https://wiki.guildwars2.com/wiki/Facet_of_Chaos_(effect)
+    { {29275, 51681}, "Facet of Nature" },          // https://wiki.guildwars2.com/wiki/Facet_of_Nature_(effect)
+    { 51692, "Facet of Nature-Assassin" },          // https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Assassin
+    { 51699, "Facet of Nature-Centaur" },           // https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Centaur
+    { 51704, "Facet of Nature-Demon" },             // https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Demon
+    { 51677, "Facet of Nature-Dwarf" },             // https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Dwarf
+    { 51674, "Facet of Nature-Dragon" },            // https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Dragon
+
+    { "Revenant/Renegade" },
+    { { 42883, 45614 }, "Kalla's Fervor", 5 },      // https://wiki.guildwars2.com/wiki/Kalla%27s_Fervor
+    { 44682, "Breakrazor's Bastion" },              // https://wiki.guildwars2.com/wiki/Breakrazor%27s_Bastion_(effect)
+    { 41016, "Razorclaw's Rage" },                  // https://wiki.guildwars2.com/wiki/Razorclaw%27s_Rage_(effect)
+    { 45026, "Soulcleave's Summit" },               // https://wiki.guildwars2.com/wiki/Soulcleave%27s_Summit_(effect)
+
+    { "Revenant/Vindicator" },
+    { 62864, "Urn of Saint Viktor" },               // https://wiki.guildwars2.com/wiki/Urn_of_Saint_Viktor_(effect)
+    { 62811, "Forerunner of Death" },               // https://wiki.guildwars2.com/wiki/Forerunner_of_Death_(effect)
+    { 62994, "Saint of zu Heltzer" },               // https://wiki.guildwars2.com/wiki/Saint_of_zu_Heltzer_(effect)
+
     //// Thief
     { "Thief" },
     { 13036, "Spider Venom" },           // https://wiki.guildwars2.com/wiki/Spider_Venom
