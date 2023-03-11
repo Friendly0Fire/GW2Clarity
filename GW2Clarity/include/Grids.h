@@ -4,8 +4,8 @@
 #include <Buffs.h>
 #include <ConfigurationFile.h>
 #include <Graphics.h>
+#include <Layouts.h>
 #include <Main.h>
-#include <Sets.h>
 #include <SettingsMenu.h>
 #include <glm/glm.hpp>
 #include <imgui.h>
@@ -30,7 +30,7 @@ public:
     Grids& operator=(Grids&&)      = delete;
     virtual ~Grids();
 
-    void                      Draw(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set, bool shouldIgnoreSet);
+    void                      Draw(ComPtr<ID3D11DeviceContext>& ctx, const Layouts::Layout* layout, bool shouldIgnoreLayout);
     void                      DrawMenu(Keybind** currentEditedKeybind) override;
 
     [[nodiscard]] const char* GetTabName() const override
@@ -48,7 +48,7 @@ protected:
     void                               DrawEditingGrid();
     void                               PlaceItem();
     void                               DrawGridList();
-    void                               DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set, bool shouldIgnoreSet);
+    void                               DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Layouts::Layout* layout, bool shouldIgnoreLayout);
 
     static inline constexpr glm::ivec2 GridDefaultSpacing{ 64, 64 };
 

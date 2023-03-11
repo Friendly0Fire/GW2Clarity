@@ -28,7 +28,7 @@
     <ClCompile Include="common\imgui\misc\cpp\imgui_stdlib.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Sets.cpp">
+    <ClCompile Include="src\Layouts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Cursor.cpp">
@@ -63,7 +63,7 @@
     <ClInclude Include="include\Grids.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\Sets.h">
+    <ClInclude Include="include\Layouts.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="include\Cursor.h">

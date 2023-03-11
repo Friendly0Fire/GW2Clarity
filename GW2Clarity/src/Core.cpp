@@ -56,7 +56,7 @@ void Core::InnerInitPostImGui()
     buffs_             = std::make_unique<Buffs>(device_);
     styles_            = std::make_unique<Styles>(device_, buffs_.get());
     grids_             = std::make_unique<Grids>(device_, buffs_.get(), styles_.get());
-    sets_              = std::make_unique<Sets>(device_, grids_.get());
+    layouts_           = std::make_unique<Layouts>(device_, grids_.get());
     cursor_            = std::make_unique<Cursor>(device_);
 }
 
@@ -128,12 +128,12 @@ void Core::InnerDraw()
                     cursor_->Delete(std::get<char>(confirmDeletionInfo_.id));
                     break;
                 case 1:
-                    sets_->Delete(std::get<short>(confirmDeletionInfo_.id));
+                    layouts_->Delete(std::get<short>(confirmDeletionInfo_.id));
                     break;
                 case 2:
                 {
                     auto id = std::get<Id>(confirmDeletionInfo_.id);
-                    sets_->GridDeleted(id);
+                    layouts_->GridDeleted(id);
                     grids_->Delete(id);
                     break;
                 }
@@ -176,8 +176,8 @@ void Core::InnerDraw()
                 },
                 [&]() { firstMessageShown_->value(true); });
 
-    grids_->Draw(context_, sets_->currentSet(), sets_->enableDefaultSet());
-    sets_->Draw(context_);
+    grids_->Draw(context_, layouts_->currentLayout(), layouts_->enableDefaultLayout());
+    layouts_->Draw(context_);
     cursor_->Draw(context_);
     styles_->Draw(context_);
 }
