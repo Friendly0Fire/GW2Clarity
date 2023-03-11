@@ -281,7 +281,7 @@ const auto g_Buffs = std::to_array<Buff>({
     { 51677, "Facet of Nature-Dwarf" },             // https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Dwarf
     { 51674, "Facet of Nature-Dragon" },            // https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Dragon
 
-    { "Revevant/Renegade" },
+    { "Revenant/Renegade" },
     { { 42883, 45614 }, "Kalla's Fervor", 5 },      // https://wiki.guildwars2.com/wiki/Kalla%27s_Fervor
     { 44682, "Breakrazor's Bastion" },              // https://wiki.guildwars2.com/wiki/Breakrazor%27s_Bastion_(effect)
     { 41016, "Razorclaw's_Rage" },                  // https://wiki.guildwars2.com/wiki/Razorclaw%27s_Rage_(effect)
