@@ -5,8 +5,8 @@
 #include <Defs.h>
 #include <Direct3D11Loader.h>
 #include <Grids.h>
+#include <Layouts.h>
 #include <Main.h>
-#include <Sets.h>
 #include <Singleton.h>
 #include <d3d11_1.h>
 #include <dxgi.h>
@@ -71,7 +71,7 @@ protected:
     std::unique_ptr<Styles>                    styles_;
     std::unique_ptr<Buffs>                     buffs_;
     std::unique_ptr<Grids>                     grids_;
-    std::unique_ptr<Sets>                      sets_;
+    std::unique_ptr<Layouts>                   layouts_;
     std::unique_ptr<Cursor>                    cursor_;
     HMODULE                                    buffLib_                 = nullptr;
     GetBuffsCallback                           getBuffs_                = nullptr;

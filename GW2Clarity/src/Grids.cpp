@@ -246,7 +246,7 @@ void Grids::DrawGridList()
     }
 }
 
-void Grids::DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set, bool shouldIgnoreSet)
+void Grids::DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Layouts::Layout* layout, bool shouldIgnoreLayout)
 {
     bool editMode = selectedId_.grid != UnselectedSubId;
 #ifdef _DEBUG
@@ -255,12 +255,12 @@ void Grids::DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set, bo
     bool showDebugGrid = false;
 #endif
 
-    if (set || shouldIgnoreSet || editMode || showDebugGrid)
+    if (layout || shouldIgnoreLayout || editMode || showDebugGrid)
     {
         auto  currentTime        = TimeInMilliseconds();
         float editingBorderCycle = sin(float(currentTime) * 2.f * M_PI / 1000.f) * 0.5f + 0.5f;
 
-        if (!MumbleLink::i().isInCompetitiveMode() && (editMode || shouldIgnoreSet || showDebugGrid || !set->combatOnly || MumbleLink::i().isInCombat()))
+        if (!MumbleLink::i().isInCompetitiveMode() && (editMode || shouldIgnoreLayout || showDebugGrid || !layout->combatOnly || MumbleLink::i().isInCombat()))
         {
             const glm::vec2 screen{ ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y };
             const glm::vec2 mouse{ ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y };
@@ -332,11 +332,11 @@ void Grids::DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set, bo
 
             if (editMode)
                 drawGrid(getG(selectedId_), selectedId_.grid);
-            else if (shouldIgnoreSet)
+            else if (shouldIgnoreLayout)
                 for (const auto& g : grids_)
                     drawGrid(g, UnselectedSubId);
-            else if (set)
-                for (int gid : set->grids)
+            else if (layout)
+                for (int gid : layout->grids)
                     drawGrid(grids_[gid], UnselectedSubId);
 
             gridRenderer_.Draw(ctx, enableBetterFiltering_.value());
@@ -614,7 +614,7 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind)
         Save();
 }
 
-void Grids::Draw(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set, bool shouldIgnoreSet)
+void Grids::Draw(ComPtr<ID3D11DeviceContext>& ctx, const Layouts::Layout* layout, bool shouldIgnoreLayout)
 {
     if (!SettingsMenu::i().isVisible())
     {
@@ -622,7 +622,7 @@ void Grids::Draw(ComPtr<ID3D11DeviceContext>& ctx, const Sets::Set* set, bool sh
         testMouseMode_ = false;
     }
 
-    DrawItems(ctx, set, shouldIgnoreSet);
+    DrawItems(ctx, layout, shouldIgnoreLayout);
 
     firstDraw_ = false;
 }
