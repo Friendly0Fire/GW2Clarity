@@ -327,19 +327,50 @@ const auto g_Buffs = std::to_array<Buff>({
     { "Thief/Specter" },
     { 63207, "Shrouded Ally" },    // https://wiki.guildwars2.com/wiki/Shrouded_Ally
     { 63168, "Rot Wallow Venom" }, // https://wiki.guildwars2.com/wiki/Rot_Wallow_Venom
-    
+
     //// Warrior
-    {"Warrior"},
-    { 42539, "Berserker's Power", 4}, // https://wiki.guildwars2.com/wiki/Berserker%27s_Power
-    
+    { "Warrior" },
+    { 786, "Healing Signet" }, // https://wiki.guildwars2.com/wiki/Healing_Signet_(effect)
+    { 14444, "Signet of Might" }, // https://wiki.guildwars2.com/wiki/Signet_of_Might_(effect)
+    { 14459, "Signet of Fury" }, // https://wiki.guildwars2.com/wiki/Signet_of_Fury_(effect)
+    { 51664, "Signet of Fury (active)", "signet_of_fury" }, // https://wiki.guildwars2.com/wiki/Signet_of_Fury_(effect)
+    { 14478, "Signet of Stamina" }, // https://wiki.guildwars2.com/wiki/Signet_of_Stamina_(effect)
+    { 14458, "Dolyak Signet" }, // https://wiki.guildwars2.com/wiki/Dolyak_Signet_(effect)
+    { 14496, "Signet of Rage" }, // https://wiki.guildwars2.com/wiki/Signet_of_Rage_(effect)
+    { 14484, "Rampage" }, // https://wiki.guildwars2.com/wiki/Rampage_(effect)
+    { 21816, "Defiant Stance" }, // https://wiki.guildwars2.com/wiki/Defiant_Stance_(effect)
+    { 14453, "Berserker's Stance" }, // https://wiki.guildwars2.com/wiki/Berserker's_Stance
+    { 787, "Enduring Pain" }, // https://wiki.guildwars2.com/wiki/Enduring_Pain
+    { 34778, "Balanced Stance" }, // https://wiki.guildwars2.com/wiki/Balanced_Stance_(effect)
+    { 46853, "Peak Performance" }, // https://wiki.guildwars2.com/wiki/Peak_Performance_(effect)
+    { 42539, "Berserker's Power", 4}, // https://wiki.guildwars2.com/wiki/Berserker%27s_Power_(effect)
+    { 41922, "Signet of Ferocity", 5 }, // https://wiki.guildwars2.com/wiki/Signet_of_Ferocity
+    { 30204, "Furious Surge", 25 }, // https://wiki.guildwars2.com/wiki/Furious_Surge
+    { 34766, "Adrenal Health", 4 }, // https://wiki.guildwars2.com/wiki/Adrenal_Health_(effect)
+    { 58102, "Soldier's Focus" }, // https://wiki.guildwars2.com/wiki/Soldier%27s_Focus
+
+    { "Warrior/Berserker" },
+    { 29502, "Berserk" }, // https://wiki.guildwars2.com/wiki/Berserk
+    { 31708, "Flames of War" }, // https://wiki.guildwars2.com/wiki/Flames_of_War_(effect)
+    { 29466, "Blood Reckoning" }, // https://wiki.guildwars2.com/wiki/Blood_Reckoning_(effect)
+    { 34256, "Rock Guard" }, // https://wiki.guildwars2.com/wiki/Rock_Guard
+    { 55030, "Feel No Pain" }, // https://wiki.guildwars2.com/wiki/Feel_No_Pain_(effect)
+
+    { "Warrior/Spellbreaker" },
+    { 43949, "Full Counter"}, // https://wiki.guildwars2.com/wiki/Full_Counter
+    { 40616, "Sight beyond Sight" }, // https://wiki.guildwars2.com/wiki/Sight_beyond_Sight_(effect)
+    { 41963, "Attacker's Insight", 5 }, // https://wiki.guildwars2.com/wiki/Attacker%27s_Insight_(effect)
+
     { "Warrior/Bladesworn" },
-    { 68095, "Overcharged Cartridges", 5}, // https://wiki.guildwars2.com/wiki/Overcharged_Cartridges
-    { 62743, "Guns and Glory" }, // https://wiki.guildwars2.com/wiki/Guns_and_Glory
-    { 63433, "Fierce as Fire", 10}, // https://wiki.guildwars2.com/wiki/Fierce_as_Fire
+    { 62769, "Gunsaber Mode" }, // https://wiki.guildwars2.com/wiki/Gunsaber_Mode
+    { 62823, "Dragon Trigger" }, // https://wiki.guildwars2.com/wiki/Dragon_Trigger
     { 62836, "Positive Flow" }, // https://wiki.guildwars2.com/wiki/Positive_Flow
-    { 68126, "Tactical Reload" }, // https://wiki.guildwars2.com/wiki/Tactical_Reload
-    { 62846, "Stim State", "combat_stimulant"}, // https://wiki.guildwars2.com/wiki/Combat_Stimulant
-    
+    { 62846, "Stim State" }, // https://wiki.guildwars2.com/wiki/Stim_State
+    { 68095, "Overcharged Cartridges", 5}, // https://wiki.guildwars2.com/wiki/Overcharged_Cartridges_(effect)
+    { 62743, "Guns and Glory" }, // https://wiki.guildwars2.com/wiki/Guns_and_Glory_(effect)
+    { 63433, "Fierce as Fire", 10}, // https://wiki.guildwars2.com/wiki/Fierce_as_Fire_(effect)
+    { 68126, "Tactical Reload" }, // https://wiki.guildwars2.com/wiki/Tactical_Reload_(effect)
+
     //// Special
     { "Special Status" },
     //{ 46668, "Diminished" }, // https://wiki.guildwars2.com/images/7/71/Diminished.png
