@@ -122,6 +122,16 @@ const auto g_Buffs = std::to_array<Buff>({
     { 62939, "Empowering Auras", 5 },
     { 62986, "Hardened Auras", 5 },
 
+    //// Engineer
+    { "Engineer/Mechanist" },
+    { 68612, "Mechanical Genius" }, // https://wiki.guildwars2.com/wiki/Mechanical_Genius_(effect)
+    { 63305, "Rectifier Signet" }, // https://wiki.guildwars2.com/wiki/Rectifier_Signet_(effect)
+    { { 63064, 63228 }, "Barrier Signet" }, // https://wiki.guildwars2.com/wiki/Barrier_Signet_(effect)
+    { 63068, "Shift Signet" }, // https://wiki.guildwars2.com/wiki/Shift_Signet_(effect)
+    { 63243, "Force Signet" }, // https://wiki.guildwars2.com/wiki/Force_Signet_(effect)
+    { 63322, "Superconducting Signet" }, // https://wiki.guildwars2.com/wiki/Superconducting_Signet_(effect)
+    { { 63059, 63378 }, "Overclock Signet" }, // https://wiki.guildwars2.com/wiki/Overclock_Signet_(effect)
+
     //// Guardian
     { "Guardian" },
     { 9113, "Virtue of Courage" },
