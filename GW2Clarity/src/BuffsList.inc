@@ -123,6 +123,15 @@ const auto g_Buffs = std::to_array<Buff>({
     { 62986, "Hardened Auras", 5 },
 
     //// Engineer
+    { "Engineer/Holosmith" },
+    { 43708, "Photon Forge" }, // https://wiki.guildwars2.com/wiki/Photon_Forge_(effect)
+    { 41037, "Overheat" }, // https://wiki.guildwars2.com/wiki/Overheat_(effect)
+    { 46444, "Cooling Vapor" }, // https://wiki.guildwars2.com/wiki/Cooling_Vapor
+    { 46094, "Photon Wall Deployed" }, // https://wiki.guildwars2.com/wiki/Photon_Wall
+    { 43066, "Spectrum Shield" }, // https://wiki.guildwars2.com/wiki/Spectrum_Shield_(effect)
+    { 42210, "Afterburner" }, // https://wiki.guildwars2.com/wiki/Afterburner
+    { 40694, "Heat Therapy", 10 }, // https://wiki.guildwars2.com/wiki/Heat_Therapy_(effect)
+
     { "Engineer/Mechanist" },
     { 68612, "Mechanical Genius" }, // https://wiki.guildwars2.com/wiki/Mechanical_Genius_(effect)
     { 63305, "Rectifier Signet" }, // https://wiki.guildwars2.com/wiki/Rectifier_Signet_(effect)
