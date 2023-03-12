@@ -123,6 +123,21 @@ const auto g_Buffs = std::to_array<Buff>({
     { 62986, "Hardened Auras", 5 },
 
     //// Engineer
+    { "Engineer" },
+    { 6056, "Absorb" }, // https://wiki.guildwars2.com/wiki/Absorb_(shield_effect)
+    { 6055, "Static Shield" }, // https://wiki.guildwars2.com/wiki/Static_Shield_(effect)
+    { 21660, "A.E.D." }, // https://wiki.guildwars2.com/wiki/A.E.D._(effect)
+    { 5833, "Slick Shoes" }, // https://wiki.guildwars2.com/wiki/Slick_Shoes_(Tybalt)
+    { 5997, "Gear Shield" }, // https://wiki.guildwars2.com/wiki/Gear_Shield_(effect)
+    { 5976, "Incendiary Ammo" }, // https://wiki.guildwars2.com/wiki/Incendiary_Ammo_(effect)
+    { 5863, "Elixir S" }, // https://wiki.guildwars2.com/wiki/Elixir_S_(effect)
+    { 59579, "Explosive Entrance" }, // https://wiki.guildwars2.com/wiki/Explosive_Entrance_(effect)
+    { 59528, "Explosive Temper" }, // https://wiki.guildwars2.com/wiki/Explosive_Temper_(effect)
+    { 59601, "Big Boomer" }, // https://wiki.guildwars2.com/wiki/Big_Boomer_(effect)
+    { 51389, "Thermal Vision" }, // https://wiki.guildwars2.com/wiki/Thermal_Vision_(effect)
+    { 49065, "Iron Blooded" }, // https://wiki.guildwars2.com/wiki/Iron_Blooded_(effect)
+    { 45781, "Kinetic Charge" }, // https://wiki.guildwars2.com/wiki/Kinetic_Charge
+
     { "Engineer/Holosmith" },
     { 43708, "Photon Forge" }, // https://wiki.guildwars2.com/wiki/Photon_Forge_(effect)
     { 41037, "Overheat" }, // https://wiki.guildwars2.com/wiki/Overheat_(effect)
