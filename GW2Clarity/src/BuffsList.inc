@@ -824,6 +824,8 @@ const auto g_Buffs = std::to_array<Buff>({
     { 64377, "Target Order 3" },
     { 64999, "Target Order 4" },
     { 65717, "Target Order 5" },
+    { 67047, "Equalization Matrix", 20 }, // https://wiki.guildwars2.com/wiki/Equalization_Matrix#/media/File:Equalization_Matrix.png
+    { 66894, "Vitality Equalizer" }, // https://wiki.guildwars2.com/wiki/Vitality_Equalizer#/media/File:Synchronized_Vitality.png
     { 65662, "Extreme Vulnerability" }, // https://wiki.guildwars2.com/wiki/Extreme_Vulnerability#/media/File:Extreme_Vulnerability.png
     { { 65900, 67831 }, "Shared Destruction", "monster" }, // https://wiki.guildwars2.com/wiki/Shared_Destruction#/media/File:Monster_Skill.png
     //// Strike's EoD
