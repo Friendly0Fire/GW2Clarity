@@ -237,6 +237,11 @@ const auto g_Buffs = std::to_array<Buff>({
     { "Mesmer/Virtuoso" },
     { 63409, "Deadly Blades" },                       // https://wiki.guildwars2.com/wiki/Deadly_Blades_(effect)
 
+    //// Necromancer
+    { "Necromancer/Harbinger" },
+    { 59964, "Harbinger Shroud" }, // https://wiki.guildwars2.com/wiki/Harbinger_Shroud_(effect)
+    { 62653, "Blight", 25 }, // https://wiki.guildwars2.com/wiki/Blight
+
     //// Ranger
     { "Ranger" },
     { 12574, "Attack of Opportunity" }, // https://wiki.guildwars2.com/wiki/Attack_of_Opportunity_(effect)
