@@ -113,6 +113,7 @@ const auto g_Buffs = std::to_array<Buff>({
     { 62707, "Crescent Wind" },
     { 62768, "Rocky Loop" },
     { 62844, "Immutable Stone" },
+    { 62894, "Soothing Water" },
     { 62805, "Relentless Fire" },
     { 62724, "Shattering Ice" },
     { 62905, "Invigorating Air" },
