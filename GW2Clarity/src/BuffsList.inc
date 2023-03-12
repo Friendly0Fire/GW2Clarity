@@ -808,7 +808,6 @@ const auto g_Buffs = std::to_array<Buff>({
     //{ 53510, "Icy Barrier" }, // https://wiki.guildwars2.com/images/3/38/Shield_of_Ice.png
     //// Mai Trin
     { "Mai Trin" },
-    { { 65900, 67831 }, "Shared Destruction", "monster" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
     { 67872, "Photon Saturation" },
     //{ 64843, "Immune to damage and conditions." }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
     //{ 65238, "Mai Trin ?????" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
@@ -819,11 +818,16 @@ const auto g_Buffs = std::to_array<Buff>({
     //{ 64179, "Hallucinations" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
     //{ 63621, "Energy Transfer" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
     //// Minister Li
+    { "Minister Li" },
     { 65869, "Target Order 1" },
     { 65088, "Target Order 2" },
     { 64377, "Target Order 3" },
     { 64999, "Target Order 4" },
     { 65717, "Target Order 5" },
+    { 65662, "Extreme Vulnerability" }, // https://wiki.guildwars2.com/wiki/Extreme_Vulnerability#/media/File:Extreme_Vulnerability.png
+    { { 65900, 67831 }, "Shared Destruction", "monster" }, // https://wiki.guildwars2.com/wiki/Shared_Destruction#/media/File:Monster_Skill.png
+    //// Strike's EoD
+    { "Eod Strike's Effects" },
     { 67965, "Infirmity" },
     { 67972, "Debilitated" },
     //{ 64465, "Stronger Together" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
