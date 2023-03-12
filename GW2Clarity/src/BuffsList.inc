@@ -167,6 +167,41 @@ const auto g_Buffs = std::to_array<Buff>({
     { 62638, "Repose" },
     { 62509, "Lethal Tempo" },
 
+    { "Mesmer" },
+    { 10243, "Distortion" },                          // https://wiki.guildwars2.com/wiki/Distortion_(effect)
+    { 10335, "Blur", "distortion" },                  // https://wiki.guildwars2.com/wiki/Blur
+    { 10353, "Illusionary Leap" },                    // https://wiki.guildwars2.com/wiki/Illusionary_Leap_(effect)
+    { 10279, "Riposte" },                             // https://wiki.guildwars2.com/wiki/Riposte_(mesmer_effect)
+    { 21751, "Signet of the Ether" },                 // https://wiki.guildwars2.com/wiki/Signet_of_the_Ether_(effect)
+    { 10235, "Signet of Inspiration" },               // https://wiki.guildwars2.com/wiki/Signet_of_Inspiration_(effect)
+    { 10231, "Signet of Domination" },                // https://wiki.guildwars2.com/wiki/Signet_of_Domination_(effect)
+    { 10233, "Signet of Midnight" },                  // https://wiki.guildwars2.com/wiki/Signet_of_Midnight_(effect)
+    { 10246, "Signet of Illusions" },                 // https://wiki.guildwars2.com/wiki/Signet_of_Illusions_(effect)
+    { 30739, "Signet of Humility" },                  // https://wiki.guildwars2.com/wiki/Signet_of_Humility_(effect)
+    { 10357, "Mirror" },                              // https://wiki.guildwars2.com/wiki/Mirror_(effect)
+    { 29664, "Echo" },                                // https://wiki.guildwars2.com/wiki/Echo_(effect)
+    { 10346, "Illusion of Life" },                    // https://wiki.guildwars2.com/wiki/Illusion_of_Life_(effect)
+    { 10198, "Portal Weaving" },                      // https://wiki.guildwars2.com/wiki/Portal_Weaving
+    { 16553, "Portal Uses", 20 },                     // https://wiki.guildwars2.com/wiki/Portal_Uses
+    { 30426, "Fencer's Finesse", 10 },                // https://wiki.guildwars2.com/wiki/Fencer%27s_Finesse_(effect)
+    { 49099, "Illusionary Defense", 5 },              // https://wiki.guildwars2.com/wiki/Illusionary_Defense_(effect)
+    { 49058, "Compounding Power", 5 },                // https://wiki.guildwars2.com/wiki/Compounding_Power_(effect)
+    { 10225, "Reflection", "arcane_shield", 5 },      // https://wiki.guildwars2.com/wiki/Reflection
+
+    { "Mesmer/Chronomancer" },
+    { 30136, "Time Anchored" },                       // https://wiki.guildwars2.com/wiki/Time_Anchored
+    { 30134, "Time Block" },                          // https://wiki.guildwars2.com/wiki/Echo_of_Memory
+    { 29582, "Time Echo" },                           // https://wiki.guildwars2.com/wiki/Time_Echo
+
+    { "Mesmer/Mirage" },
+    { 40408, "Mirage Cloak" },                        // https://wiki.guildwars2.com/wiki/Mirage_Cloak_(effect)
+    { 40802, "False Oasis" },                         // https://wiki.guildwars2.com/wiki/False_Oasis_(effect)
+    { 46237, "Mirage Advance" },                      // https://wiki.guildwars2.com/wiki/Mirage_Advance
+    { 41851, "Riddle of Sand" },                      // https://wiki.guildwars2.com/wiki/Riddle_of_Sand_(effect)
+
+    { "Mesmer/Virtuoso" },
+    { 63409, "Deadly Blades" },                       // https://wiki.guildwars2.com/wiki/Deadly_Blades_(effect)
+
     //// Ranger
     { "Ranger" },
     { 12574, "Attack of Opportunity" }, // https://wiki.guildwars2.com/wiki/Attack_of_Opportunity_(effect)
