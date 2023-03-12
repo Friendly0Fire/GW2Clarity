@@ -825,7 +825,6 @@ const auto g_Buffs = std::to_array<Buff>({
     { 64377, "Target Order 3" },
     { 64999, "Target Order 4" },
     { 65717, "Target Order 5" },
-    { 65662, "Extreme Vulnerability" }, // https://wiki.guildwars2.com/wiki/Extreme_Vulnerability#/media/File:Extreme_Vulnerability.png
     { { 65900, 67831 }, "Shared Destruction", "monster" }, // https://wiki.guildwars2.com/wiki/Shared_Destruction#/media/File:Monster_Skill.png
     //// Strike's EoD
     { "Eod Strike's Effects" },
