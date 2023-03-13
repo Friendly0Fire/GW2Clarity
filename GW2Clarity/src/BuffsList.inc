@@ -238,6 +238,20 @@ const auto g_Buffs = std::to_array<Buff>({
     { 63409, "Deadly Blades" },                       // https://wiki.guildwars2.com/wiki/Deadly_Blades_(effect)
 
     //// Necromancer
+    { "Necromancer" },
+    { 790, "Death Shroud" }, // https://wiki.guildwars2.com/wiki/Death_Shroud_(effect)
+    { 10567, "Locust Swarm" }, // https://wiki.guildwars2.com/wiki/Locust_Swarm_(effect)
+    { 10582, "Spectral Armor" }, // https://wiki.guildwars2.com/wiki/Spectral_Armor_(effect)
+    { 53476, "Spectral Walk" }, // https://wiki.guildwars2.com/wiki/Spectral_Walk_(effect)
+    { 10631, "Lich Form" }, // https://wiki.guildwars2.com/wiki/Lich_Form_(effect)
+    { { 21761, 43885 }, "Signet of Vampirism" }, // https://wiki.guildwars2.com/wiki/Signet_of_Vampirism
+    { { 10621, 43772 }, "Signet of Spite" }, // https://wiki.guildwars2.com/wiki/Signet_of_Spite_(effect)
+    { { 10614, 40283 }, "Signet of the Locust" }, // https://wiki.guildwars2.com/wiki/Signet_of_the_Locust_(effect)
+    { { 10630, 44164 }, "Plague Signet" }, // https://wiki.guildwars2.com/wiki/Plague_Signet
+    { { 10610, 40583 }, "Signet of Undeath" }, // https://wiki.guildwars2.com/wiki/Signet_of_Undeath
+    { 30845, "Death's Carapace" }, // https://wiki.guildwars2.com/wiki/Death's_Carapace
+    { 30285, "Vampiric Aura" }, // https://wiki.guildwars2.com/wiki/Vampiric_Aura
+
     { "Necromancer/Reaper" },
     { 29446, "Reaper's Shroud" }, // https://wiki.guildwars2.com/wiki/Reaper%27s_Shroud
     { 30129, "Infusing Terror" }, // https://wiki.guildwars2.com/wiki/Infusing_Terror_(effect)
