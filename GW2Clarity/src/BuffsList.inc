@@ -238,6 +238,11 @@ const auto g_Buffs = std::to_array<Buff>({
     { 63409, "Deadly Blades" },                       // https://wiki.guildwars2.com/wiki/Deadly_Blades_(effect)
 
     //// Necromancer
+    { "Necromancer/Reaper" },
+    { 29446, "Reaper's Shroud" }, // https://wiki.guildwars2.com/wiki/Reaper%27s_Shroud
+    { 30129, "Infusing Terror" }, // https://wiki.guildwars2.com/wiki/Infusing_Terror_(effect)
+    { 31247, "Dark Bond" }, // https://wiki.guildwars2.com/wiki/Dark_Bond
+
     { "Necromancer/Scourge "},
     { 43410, "Path Uses", 20 }, // https://wiki.guildwars2.com/wiki/Path_Uses
     { 43626, "Sadistic Searing" }, // https://wiki.guildwars2.com/wiki/Sadistic_Searing_(effect)
