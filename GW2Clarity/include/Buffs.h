@@ -15,6 +15,7 @@
 
 namespace GW2Clarity
 {
+
 struct Buff
 {
     uint               id;
@@ -183,4 +184,35 @@ protected:
     void                        LoadNames();
 #endif
 };
+
+class BuffComboBox
+{
+public:
+    BuffComboBox(const Buffs* buffs, std::string_view name)
+        : buffs_(buffs)
+        , name_(name)
+    {}
+
+    const auto& name() const
+    {
+        return name_;
+    }
+
+    bool Draw(const char* display = nullptr)
+    {
+        return buffs_->DrawBuffCombo(display ? display : name_.c_str(), selectedBuff_, buffer_);
+    }
+
+    const auto* selectedBuff() const
+    {
+        return selectedBuff_;
+    }
+
+protected:
+    const Buffs*          buffs_;
+    std::string           name_;
+    const Buff*           selectedBuff_ = nullptr;
+    std::array<char, 512> buffer_{ '\0' };
+};
+
 } // namespace GW2Clarity

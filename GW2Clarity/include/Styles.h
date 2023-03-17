@@ -53,14 +53,144 @@ public:
     struct Threshold
     {
         uint       thresholdMin = 0;
-        uint       thresholdMax = 1;
+        uint       thresholdMax = 0;
 
         Appearance appearance{};
     };
 
+    struct ThresholdBuilder
+    {
+        using S = ThresholdBuilder&;
+
+        Threshold t{};
+
+                  operator Threshold() const
+        {
+            return t;
+        }
+
+        S min(uint min)
+        {
+            t.thresholdMin = min;
+            return *this;
+        }
+
+        S max(uint max)
+        {
+            t.thresholdMax = max;
+            return *this;
+        }
+
+        S tint(float rgb, float a)
+        {
+            t.appearance.tint = glm::vec4(rgb, rgb, rgb, a);
+            return *this;
+        }
+
+        S tint(float r, float g, float b, float a)
+        {
+            t.appearance.tint = glm::vec4(r, g, b, a);
+            return *this;
+        }
+
+        S border(float rgb, float a)
+        {
+            t.appearance.border = glm::vec4(rgb, rgb, rgb, a);
+            return *this;
+        }
+
+        S border(float r, float g, float b, float a)
+        {
+            t.appearance.border = glm::vec4(r, g, b, a);
+            return *this;
+        }
+
+        S glow(float rgb, float a)
+        {
+            t.appearance.glow = glm::vec4(rgb, rgb, rgb, a);
+            return *this;
+        }
+
+        S glow(float r, float g, float b, float a)
+        {
+            t.appearance.glow = glm::vec4(r, g, b, a);
+            return *this;
+        }
+
+        S borderThickness(float borderThickness)
+        {
+            t.appearance.borderThickness = borderThickness;
+            return *this;
+        }
+
+        S glowSize(float glowSize)
+        {
+            t.appearance.glowSize = glowSize;
+            return *this;
+        }
+
+        S glowPulse(const glm::vec2& glowPulse)
+        {
+            t.appearance.glowPulse = glowPulse;
+            return *this;
+        }
+
+        auto build() const
+        {
+            return t;
+        }
+    };
+
     struct Style
     {
+        inline static const std::string BuiltInPrefix = "[Default] ";
+
+        Style()                                       = default;
+        Style(Style&&)                                = default;
+
+        Style(const Style& s)
+            : builtIn(false)
+            , thresholds(s.thresholds)
+        {
+            if (s.name.starts_with(BuiltInPrefix))
+                name = s.name.substr(BuiltInPrefix.size());
+            else
+                name = s.name;
+        }
+
+        Style(std::string_view name, auto&&... thresholds)
+            : name(BuiltInPrefix + std::string(name))
+            , thresholds(std::initializer_list<Threshold>{ thresholds... })
+            , builtIn(true)
+        {}
+
+        Style& operator=(const Style& s)
+        {
+            GW2_ASSERT(!builtIn);
+
+            if (s.name.starts_with(BuiltInPrefix))
+                name = s.name.substr(BuiltInPrefix.size());
+            else
+                name = s.name;
+
+            thresholds = s.thresholds;
+
+            return *this;
+        }
+
+        Style& operator=(Style&& s)
+        {
+            GW2_ASSERT(builtIn == s.builtIn);
+
+            std::swap(name, s.name);
+            std::swap(thresholds, s.thresholds);
+
+            return *this;
+        }
+
         std::string                        name;
+        const bool                         builtIn = false;
+
         std::vector<Threshold>             thresholds;
 
         std::array<Appearance, 100>        appearanceCache;
@@ -108,8 +238,7 @@ protected:
     uint                           selectedId_           = UnselectedId;
     int                            selectedThresholdId_  = UnselectedId;
     int                            editingItemFakeCount_ = 1;
-    const Buff*                    previewBuff_          = nullptr;
-    char                           buffSearch_[512];
+    BuffComboBox                   previewSelector_;
     RenderTarget                   preview_;
     GridRenderer<1>                previewRenderer_;
     bool                           drewMenu_     = false;

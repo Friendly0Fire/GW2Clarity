@@ -267,3 +267,5 @@ GW2Clarity/include/git.h
 GW2Clarity/include/github.h
 
 vcpkg_installed
+GW2Clarity/assets/atlas.dds
+GW2Clarity/assets/atlas.inc

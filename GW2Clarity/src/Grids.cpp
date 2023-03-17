@@ -34,6 +34,7 @@ Grids::Grids(ComPtr<ID3D11Device>& dev, const Buffs* buffs, const Styles* styles
     , buffs_(buffs)
     , styles_(styles)
     , gridRenderer_(dev, buffs)
+    , selector_(buffs, "")
 {
     Input::i().mouseButtonEvent().AddCallback(
         [&](EventKey ek, bool&)
@@ -139,7 +140,7 @@ void Grids::DrawGridList()
         {
             for (auto it : grids_ | ranges::views::enumerate)
             {
-                // Need explicit types to shut up IntelliSense, still present as of 17.2.6
+                // Need explicit types to shut up IntelliSense, still present as of 17.5.1
                 short gid = short(it.first);
                 Grid& g   = it.second;
 
@@ -187,7 +188,7 @@ void Grids::DrawGridList()
                 auto  gid = selectedId_.grid;
                 for (auto it : g.items | ranges::views::enumerate)
                 {
-                    // Need explicit types to shut up IntelliSense, still present as of 17.2.6
+                    // Need explicit types to shut up IntelliSense, still present as of 17.5.1
                     short       iid = it.first;
                     Item&       i   = it.second;
 
@@ -312,7 +313,7 @@ void Grids::DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Layouts::Layout* l
 
                 for (auto it : g.items | ranges::views::enumerate)
                 {
-                    // Need explicit types to shut up IntelliSense, still present as of 17.2.6
+                    // Need explicit types to shut up IntelliSense, still present as of 17.5.1
                     short       iid     = it.first;
                     const Item& i       = it.second;
 
@@ -549,13 +550,17 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind)
             else
                 ImGuiTitle(std::format("New Item in '{}'", getG(selectedId_).name).c_str(), 0.75f);
 
-            auto buffCombo = [&](auto& buff, int id, const char* name) { saveCheck(buffs_->DrawBuffCombo(std::format("{}##{}", name, id).c_str(), buff, buffSearch_)); };
+            auto buffCombo = [&](auto& buff, int id, const char* name)
+            {
+                if (saveCheck(selector_.Draw(std::format("{}##{}", name, id).c_str())))
+                    buff = selector_.selectedBuff();
+            };
 
             buffCombo(editItem.buff, -1, "Main buff");
             int removeId = -1;
             for (auto it : editItem.additionalBuffs | ranges::views::enumerate)
             {
-                // Need explicit types to shut up IntelliSense, still present as of 17.2.6
+                // Need explicit types to shut up IntelliSense, still present as of 17.5.1
                 short        n         = short(it.first);
                 const Buff*& extraBuff = it.second;
 

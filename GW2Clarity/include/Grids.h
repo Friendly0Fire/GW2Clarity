@@ -119,8 +119,8 @@ protected:
     bool                           placingItem_   = false;
     mstime                         lastSaveTime_  = 0;
     bool                           needsSaving_   = false;
-    static inline constexpr mstime SaveDelay      = 1000;
-    char                           buffSearch_[512];
+    BuffComboBox                   selector_;
+    static inline constexpr mstime SaveDelay           = 1000;
     bool                           firstDraw_          = true;
     ScanCode                       holdingMouseButton_ = ScanCode::NONE;
     ImVec2                         heldMousePos_{};

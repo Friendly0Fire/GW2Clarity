@@ -16,6 +16,7 @@ namespace GW2Clarity
 {
 Styles::Styles(ComPtr<ID3D11Device>& dev, const Buffs* buffs)
     : buffs_(buffs)
+    , previewSelector_(buffs, "##PreviewBuff")
     , previewRenderer_(dev, buffs)
 {
     Load();
@@ -52,14 +53,14 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
     {
         for (auto it : styles_ | ranges::views::enumerate)
         {
-            // Need explicit types to shut up IntelliSense, still present as of 17.2.6
+            // Need explicit types to shut up IntelliSense, still present as of 17.5.1
             uint   sid = static_cast<uint>(it.first);
             Style& s   = it.second;
 
             if (ImGui::Selectable(s.name.c_str(), selectedId_ == sid, ImGuiSelectableFlags_AllowItemOverlap))
                 selectedId_ = sid;
 
-            if (sid != 0 && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) || ImGui::IsItemActive())
+            if (sid != 0 && !s.builtIn && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) || ImGui::IsItemActive())
             {
                 auto& style = ImGui::GetStyle();
                 auto  orig  = style.Colors[ImGuiCol_Button];
@@ -91,16 +92,16 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
             ImGui::SameLine();
             if (ImGui::Button(std::format("Duplicate{}", d.disabled() ? "" : std::format(" '{}'", styles_[selectedId_].name)).c_str()))
             {
-                const auto& baseName = styles_[selectedId_].name;
-                std::string name;
-                int         nameIdx = 1;
-                do
-                    name = std::format("{} ({})", baseName, ++nameIdx);
-                while (ranges::any_of(styles_, [&](const auto& s) { return s.name == name; }));
-
                 styles_.push_back(styles_[selectedId_]);
-                styles_.back().name = name;
-                selectedId_         = uint(styles_.size()) - 1;
+                auto& s        = styles_.back();
+                auto  baseName = s.name;
+                auto& name     = s.name;
+                int   nameIdx  = 1;
+                while (ranges::any_of(styles_, [&](const auto& s2) { return &s != &s2 && s2.name == name; }))
+                {
+                    name = std::format("{} ({})", baseName, ++nameIdx);
+                }
+                selectedId_ = uint(styles_.size()) - 1;
             }
         }
     }
@@ -110,12 +111,12 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
         auto& s = styles_.at(selectedId_);
 
         {
-            ImGuiDisabler disable(selectedId_ == 0);
+            ImGuiDisabler disable(selectedId_ == 0 || s.builtIn);
             ImGui::InputText("Name", &s.name);
         }
         if (selectedId_ == 0)
         {
-            ImGui::TextUnformatted("(cannot rename default style)");
+            ImGui::TextUnformatted("(cannot rename built-in style)");
         }
 
         ImGui::NewLine();
@@ -127,96 +128,99 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
         ImGuiHelpTooltip("Helper feature to tune styles. Will simulate what the buff icon would look like with the given number of stacks.");
         ImGui::SameLine();
         ImGui::TextUnformatted(" of buff ");
-        buffs_->DrawBuffCombo("##PreviewBuff", previewBuff_, buffSearch_);
+        previewSelector_.Draw();
         ImGui::Separator();
 
         ImGui::SetCursorPosX((ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x) * 0.5f - PreviewSize * 0.25f);
         ImGui::Image(preview_.srv.Get(), ImVec2(PreviewSize, PreviewSize) * 0.5f, ImVec2(0.f, 0.f), ImVec2(1.f, 1.f), ImVec4(1.f, 1.f, 1.f, 1.f), ImVec4(1.f, 1.f, 1.f, 1.f));
 
-        ImGui::Separator();
-
-        if (ImGuiBeginTimeline("Range", 26, ImGui::CalcTextSize("99-99").x))
+        if (!s.builtIn)
         {
-            for (size_t i = 0; i < s.thresholds.size(); i++)
+            ImGui::Separator();
+
+            if (ImGuiBeginTimeline("Range", 26, ImGui::CalcTextSize("99-99").x))
             {
-                auto&           th = s.thresholds[i];
-                ImTimelineRange r{ int(th.thresholdMin), int(th.thresholdMax) };
-                const auto      name     = th.thresholdMin == th.thresholdMax ? std::format("{}", th.thresholdMin) : std::format("{}-{}", th.thresholdMin, th.thresholdMax);
-                auto [changed, selected] = ImGuiTimelineEvent(std::format("{}", i).c_str(), name.c_str(), r, selectedThresholdId_ == i);
-                if (changed)
+                for (size_t i = 0; i < s.thresholds.size(); i++)
                 {
-                    th.thresholdMin = r[0];
-                    th.thresholdMax = r[1];
-                    needsSaving_    = true;
-                }
-
-                if (selected)
-                    selectedThresholdId_ = int(i);
-            }
-        }
-        int lines[] = { 0, 1, 5, 10, 15, 20, 25 };
-        ImGuiEndTimeline(std::size(lines), lines);
-
-        if (saveCheck(ImGui::Button("Add range")))
-        {
-            s.thresholds.emplace_back();
-        }
-
-        if (selectedThresholdId_ != UnselectedId)
-        {
-            if (selectedThresholdId_ >= s.thresholds.size())
-            {
-                selectedThresholdId_ = UnselectedId;
-            }
-            else
-            {
-                auto& th = s.thresholds[selectedThresholdId_];
-                if (th.thresholdMin == th.thresholdMax)
-                    ImGui::TextUnformatted(std::format("At {} stacks:", th.thresholdMin).c_str());
-                else
-                    ImGui::TextUnformatted(std::format("Between {} and {} stacks:", th.thresholdMin, th.thresholdMax).c_str());
-                auto& app = th.appearance;
-
-                ImGui::TextUnformatted("Priority control:");
-                ImGui::SameLine();
-                if (selectedThresholdId_ > 0)
-                {
-                    if (ImGui::Button("Move up"))
+                    auto&           th = s.thresholds[i];
+                    ImTimelineRange r{ int(th.thresholdMin), int(th.thresholdMax) };
+                    const auto      name     = th.thresholdMin == th.thresholdMax ? std::format("{}", th.thresholdMin) : std::format("{}-{}", th.thresholdMin, th.thresholdMax);
+                    auto [changed, selected] = ImGuiTimelineEvent(std::format("{}", i).c_str(), name.c_str(), r, selectedThresholdId_ == i);
+                    if (changed)
                     {
-                        std::swap(s.thresholds[selectedThresholdId_], s.thresholds[selectedThresholdId_ - 1]);
-                        selectedThresholdId_--;
+                        th.thresholdMin = r[0];
+                        th.thresholdMax = r[1];
+                        needsSaving_    = true;
                     }
 
-                    ImGui::SameLine();
+                    if (selected)
+                        selectedThresholdId_ = int(i);
                 }
+            }
+            int lines[] = { 0, 1, 5, 10, 15, 20, 25 };
+            ImGuiEndTimeline(std::size(lines), lines);
 
-                if (selectedThresholdId_ < s.thresholds.size() - 1)
+            if (saveCheck(ImGui::Button("Add range")))
+            {
+                s.thresholds.emplace_back();
+            }
+
+            if (selectedThresholdId_ != UnselectedId)
+            {
+                if (selectedThresholdId_ >= s.thresholds.size())
                 {
-                    if (ImGui::Button("Move down"))
-                    {
-                        std::swap(s.thresholds[selectedThresholdId_], s.thresholds[selectedThresholdId_ + 1]);
-                        selectedThresholdId_++;
-                    }
-                }
-
-                ImGuiHelpTooltip("If more than one range is defined for the same stack count, the highest priority range (first in the list) will be used.");
-
-                saveCheck(ImGui::ColorEdit4("Tint Color", &app.tint.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
-                saveCheck(ImGui::DragFloat("Glow Size", &app.glowSize, 0.01f, 0.f, 10.f));
-                if (app.glowSize > 0.f)
-                {
-                    saveCheck(ImGui::ColorEdit4("Glow Color", &app.glow.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
-                    saveCheck(ImGui::DragFloat("Glow Pulse Intensity", &app.glowPulse.x, 0.01f, 0.f, 1.f));
-                    saveCheck(ImGui::DragFloat("Glow Pulse Speed", &app.glowPulse.y, 0.01f, 0.f, 5.f));
-                }
-                saveCheck(ImGui::DragFloat("Border Thickness", &app.borderThickness, 0.1f, 0.f, 512.f));
-                if (app.borderThickness > 0.f)
-                    saveCheck(ImGui::ColorEdit4("Border Color", &app.border.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
-
-                if (ImGui::Button("Delete selected"))
-                {
-                    s.thresholds.erase(s.thresholds.begin() + selectedThresholdId_);
                     selectedThresholdId_ = UnselectedId;
+                }
+                else
+                {
+                    auto& th = s.thresholds[selectedThresholdId_];
+                    if (th.thresholdMin == th.thresholdMax)
+                        ImGui::TextUnformatted(std::format("At {} stacks:", th.thresholdMin).c_str());
+                    else
+                        ImGui::TextUnformatted(std::format("Between {} and {} stacks:", th.thresholdMin, th.thresholdMax).c_str());
+                    auto& app = th.appearance;
+
+                    ImGui::TextUnformatted("Priority control:");
+                    ImGui::SameLine();
+                    if (selectedThresholdId_ > 0)
+                    {
+                        if (ImGui::Button("Move up"))
+                        {
+                            std::swap(s.thresholds[selectedThresholdId_], s.thresholds[selectedThresholdId_ - 1]);
+                            selectedThresholdId_--;
+                        }
+
+                        ImGui::SameLine();
+                    }
+
+                    if (selectedThresholdId_ < s.thresholds.size() - 1)
+                    {
+                        if (ImGui::Button("Move down"))
+                        {
+                            std::swap(s.thresholds[selectedThresholdId_], s.thresholds[selectedThresholdId_ + 1]);
+                            selectedThresholdId_++;
+                        }
+                    }
+
+                    ImGuiHelpTooltip("If more than one range is defined for the same stack count, the highest priority range (first in the list) will be used.");
+
+                    saveCheck(ImGui::ColorEdit4("Tint Color", &app.tint.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
+                    saveCheck(ImGui::DragFloat("Glow Size", &app.glowSize, 0.01f, 0.f, 10.f));
+                    if (app.glowSize > 0.f)
+                    {
+                        saveCheck(ImGui::ColorEdit4("Glow Color", &app.glow.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
+                        saveCheck(ImGui::DragFloat("Glow Pulse Intensity", &app.glowPulse.x, 0.01f, 0.f, 1.f));
+                        saveCheck(ImGui::DragFloat("Glow Pulse Speed", &app.glowPulse.y, 0.01f, 0.f, 5.f));
+                    }
+                    saveCheck(ImGui::DragFloat("Border Thickness", &app.borderThickness, 0.1f, 0.f, 512.f));
+                    if (app.borderThickness > 0.f)
+                        saveCheck(ImGui::ColorEdit4("Border Color", &app.border.x, ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
+
+                    if (ImGui::Button("Delete selected"))
+                    {
+                        s.thresholds.erase(s.thresholds.begin() + selectedThresholdId_);
+                        selectedThresholdId_ = UnselectedId;
+                    }
                 }
             }
         }
@@ -229,14 +233,16 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
 
 void Styles::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 {
-    if (selectedId_ == UnselectedId || !drewMenu_ || !previewBuff_)
+    const auto* previewBuff = previewSelector_.selectedBuff();
+
+    if (selectedId_ == UnselectedId || !drewMenu_ || !previewBuff)
         return;
 
     GridInstanceData data{
         .posDims    = {0.5f, 0.5f, 1.f, 1.f},
-        .uv         = previewBuff_->uv,
+        .uv         = previewBuff->uv,
         .numberUV   = buffs_->GetNumber(editingItemFakeCount_),
-        .showNumber = previewBuff_->ShowNumber(editingItemFakeCount_)
+        .showNumber = previewBuff->ShowNumber(editingItemFakeCount_)
     };
     ApplyStyle(selectedId_, editingItemFakeCount_, data);
 
@@ -251,8 +257,15 @@ void Styles::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 
 void Styles::Load()
 {
+    using namespace std::literals;
     using namespace nlohmann;
     styles_.clear();
+
+    styles_.emplace_back("Simple On/Off (hidden)"sv, ThresholdBuilder().tint(0.f, 0.f), ThresholdBuilder().min(1).max(99));
+    styles_.emplace_back("Simple On/Off (faded)"sv, ThresholdBuilder().tint(0.75f, 0.25f), ThresholdBuilder().min(1).max(99));
+    styles_.emplace_back("Simple On/Off (red faded)"sv, ThresholdBuilder().tint(1.f, 0.f, 0.f, 0.25f), ThresholdBuilder().min(1).max(99));
+    styles_.emplace_back("0/5/20 Stacks (green)"sv, ThresholdBuilder().min(0).max(4).tint(0.75f, 0.25f), ThresholdBuilder().min(5).max(19).tint(0.75f, 0.65f),
+                         ThresholdBuilder().min(20).max(100).tint(0.25f, 1.f, 0.25f, 1.f));
 
     auto& cfg = JSONConfigurationFile::i();
     cfg.Reload();
@@ -293,23 +306,6 @@ void Styles::Load()
         styles_.push_back(s);
     }
 
-    if (styles_.empty() || styles_[0].name != "Default")
-    {
-        Style s;
-        if (auto it = ranges::find_if(styles_, [](const auto& s) { return s.name == "Default"; }); it != styles_.end())
-        {
-            s = *it;
-            styles_.erase(it);
-        }
-        else
-        {
-            s.name = "Default";
-            s.thresholds.emplace_back();
-        }
-
-        styles_.insert(styles_.begin(), s);
-    }
-
     BuildCache();
 }
 
@@ -323,6 +319,9 @@ void Styles::Save()
     styles       = json::array();
     for (const auto& s : styles_)
     {
+        if (s.builtIn)
+            continue;
+
         json style;
         style["name"]         = s.name;
 

@@ -18,7 +18,7 @@ std::vector<glm::vec2> GenerateNumbersMap(glm::vec2& uvSize)
     uvSize = atlasElements.at("");
 
     std::vector<glm::vec2> numbers;
-    numbers.resize(atlasElements.size());
+    numbers.resize(atlasElements.size() - 1);
 
     for (const auto& [name, pos] : atlasElements)
     {
