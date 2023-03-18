@@ -16,7 +16,6 @@ namespace GW2Clarity
 {
 Styles::Styles(ComPtr<ID3D11Device>& dev, const Buffs* buffs)
     : buffs_(buffs)
-    , previewSelector_(buffs, "##PreviewBuff")
     , previewRenderer_(dev, buffs)
 {
     Load();
@@ -101,7 +100,8 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
                 {
                     name = std::format("{} ({})", baseName, ++nameIdx);
                 }
-                selectedId_ = uint(styles_.size()) - 1;
+                selectedId_  = uint(styles_.size()) - 1;
+                needsSaving_ = true;
             }
         }
     }
@@ -111,7 +111,7 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
         auto& s = styles_.at(selectedId_);
 
         {
-            ImGuiDisabler disable(selectedId_ == 0 || s.builtIn);
+            ImGuiDisabler disable(s.builtIn);
             ImGui::InputText("Name", &s.name);
         }
         if (selectedId_ == 0)
@@ -119,26 +119,14 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
             ImGui::TextUnformatted("(cannot rename built-in style)");
         }
 
-        ImGui::NewLine();
-
-        ImGui::TextUnformatted("Preview style with ");
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(100.f);
-        ImGui::DragInt("stacks##SimulatedStacks", &editingItemFakeCount_, 0.1f, 0, 100, "%d", ImGuiSliderFlags_AlwaysClamp);
-        ImGuiHelpTooltip("Helper feature to tune styles. Will simulate what the buff icon would look like with the given number of stacks.");
-        ImGui::SameLine();
-        ImGui::TextUnformatted(" of buff ");
-        previewSelector_.Draw();
         ImGui::Separator();
 
-        ImGui::SetCursorPosX((ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x) * 0.5f - PreviewSize * 0.25f);
-        ImGui::Image(preview_.srv.Get(), ImVec2(PreviewSize, PreviewSize) * 0.5f, ImVec2(0.f, 0.f), ImVec2(1.f, 1.f), ImVec4(1.f, 1.f, 1.f, 1.f), ImVec4(1.f, 1.f, 1.f, 1.f));
-
-        if (!s.builtIn)
         {
-            ImGui::Separator();
+            ImGuiDisabler      disable(s.builtIn);
 
-            if (ImGuiBeginTimeline("Range", 26, ImGui::CalcTextSize("99-99").x))
+            static const float marginSize = ImGui::CalcTextSize("000-000").x;
+
+            if (ImGuiBeginTimeline("Range", 26, marginSize, s.thresholds.size()))
             {
                 for (size_t i = 0; i < s.thresholds.size(); i++)
                 {
@@ -157,9 +145,33 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
                         selectedThresholdId_ = int(i);
                 }
             }
-            int lines[] = { 0, 1, 5, 10, 15, 20, 25 };
-            ImGuiEndTimeline(std::size(lines), lines);
+            int    lines[] = { 0, 1, 5, 10, 15, 20, 25 };
 
+            ImVec2 tooltipLocation;
+            int    tooltipNum = -1;
+            ImGuiEndTimeline(std::size(lines), lines, &tooltipLocation, &tooltipNum);
+            if (tooltipNum > 0)
+            {
+                disable.Enable();
+
+                previewCount_ = tooltipNum - 1;
+                float d       = ImGuiGetWindowContentRegionWidth() * 0.15f;
+                ImGui::SetNextWindowPos(tooltipLocation, ImGuiCond_Always, ImVec2(0.5f, 1.f));
+                if (ImGui::Begin("##TimelineTooltip", nullptr,
+                                 ImGuiWindowFlags_Tooltip | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
+                                     ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDocking))
+                {
+                    ImGui::Text("%d stacks", previewCount_);
+                    ImGui::Image(preview_.srv.Get(), ImVec2(d, d), ImVec2(0.f, 0.f), ImVec2(1.f, 1.f), ImVec4(1.f, 1.f, 1.f, 1.f), ImVec4(1.f, 1.f, 1.f, 1.f));
+                }
+                ImGui::End();
+
+                disable.Disable();
+            }
+        }
+
+        if (!s.builtIn)
+        {
             if (saveCheck(ImGui::Button("Add range")))
             {
                 s.thresholds.emplace_back();
@@ -233,18 +245,26 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
 
 void Styles::Draw(ComPtr<ID3D11DeviceContext>& ctx)
 {
-    const auto* previewBuff = previewSelector_.selectedBuff();
-
-    if (selectedId_ == UnselectedId || !drewMenu_ || !previewBuff)
+    if (selectedId_ == UnselectedId || !drewMenu_)
         return;
 
+    auto currentTime = TimeInMilliseconds();
+    if (currentTime - lastPreviewChoiceTime_ > 1000)
+    {
+        lastPreviewChoiceTime_ = currentTime;
+        std::uniform_int_distribution<> dist(0, buffs_->buffs().size() - 1);
+        do
+        {
+            previewBuff_ = &buffs_->buffs()[dist(previewRng_)];
+        }
+        while (previewBuff_->id == 0xFFFFFFFF);
+    }
+
     GridInstanceData data{
-        .posDims    = {0.5f, 0.5f, 1.f, 1.f},
-        .uv         = previewBuff->uv,
-        .numberUV   = buffs_->GetNumber(editingItemFakeCount_),
-        .showNumber = previewBuff->ShowNumber(editingItemFakeCount_)
+        .posDims = {0.5f, 0.5f, 1.f, 1.f},
+          .uv = previewBuff_->uv, .numberUV = buffs_->GetNumber(previewCount_), .showNumber = previewBuff_->ShowNumber(previewCount_)
     };
-    ApplyStyle(selectedId_, editingItemFakeCount_, data);
+    ApplyStyle(selectedId_, previewCount_, data);
 
     float clear[4] = { 0.f, 0.f, 0.f, 1.f };
     ctx->ClearRenderTargetView(preview_.rtv.Get(), clear);

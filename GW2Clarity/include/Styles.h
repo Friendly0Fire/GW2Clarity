@@ -158,6 +158,10 @@ public:
                 name = s.name;
         }
 
+        Style(std::string_view name)
+            : name(name)
+        {}
+
         Style(std::string_view name, auto&&... thresholds)
             : name(BuiltInPrefix + std::string(name))
             , thresholds(std::initializer_list<Threshold>{ thresholds... })
@@ -235,11 +239,13 @@ protected:
     static constexpr uint          UnselectedId = std::numeric_limits<uint>::max();
     const Buffs*                   buffs_;
     std::vector<Style>             styles_;
-    uint                           selectedId_           = UnselectedId;
-    int                            selectedThresholdId_  = UnselectedId;
-    int                            editingItemFakeCount_ = 1;
-    BuffComboBox                   previewSelector_;
+    uint                           selectedId_            = UnselectedId;
+    int                            selectedThresholdId_   = UnselectedId;
+    mstime                         lastPreviewChoiceTime_ = 0;
+    const Buff*                    previewBuff_           = nullptr;
+    int                            previewCount_          = 0;
     RenderTarget                   preview_;
+    std::mt19937                   previewRng_{ std::random_device{}() };
     GridRenderer<1>                previewRenderer_;
     bool                           drewMenu_     = false;
 
