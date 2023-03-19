@@ -25,7 +25,10 @@ std::vector<glm::vec2> GenerateNumbersMap(glm::vec2& uvSize)
         if (name.empty())
             continue;
 
-        int idx          = strtol(name.c_str(), nullptr, 10);
+        int idx = strtol(name.c_str(), nullptr, 10);
+        if (idx < 2)
+            continue;
+
         numbers[idx - 2] = pos;
     }
 

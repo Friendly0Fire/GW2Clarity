@@ -2,7 +2,6 @@
   "profiles": {
     "WSL": {
       "commandName": "WSL2",
-      "environmentVariables": {},
       "distributionName": ""
     },
     "Icon Atlas": {
@@ -11,7 +10,7 @@
     },
     "Numbers Atlas": {
       "commandName": "Project",
-      "commandLineArgs": "--directory \"$(SolutionDir)GW2Clarity/assets/numbers\"\r\n--output \"$(SolutionDir)GW2Clarity/assets/numbers.dds\"\r\n--verbose"
+      "commandLineArgs": "--font \"Trebuchet\" --fontsize 20 --fontcount 100\r\n--bold --size 64 --shadow 2\r\n--output \"$(SolutionDir)GW2Clarity/assets/numbers.dds\"\r\n--verbose"
     }
   }
 }

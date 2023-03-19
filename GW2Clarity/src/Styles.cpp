@@ -150,7 +150,7 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind)
             ImVec2 tooltipLocation;
             int    tooltipNum = -1;
             ImGuiEndTimeline(std::size(lines), lines, &tooltipLocation, &tooltipNum);
-            if (tooltipNum > 0)
+            if (tooltipNum > 0 && previewBuff_)
             {
                 disable.Enable();
 
@@ -248,17 +248,29 @@ void Styles::Draw(ComPtr<ID3D11DeviceContext>& ctx)
     if (selectedId_ == UnselectedId || !drewMenu_)
         return;
 
+    drewMenu_        = false;
+
     auto currentTime = TimeInMilliseconds();
     if (currentTime - lastPreviewChoiceTime_ > 1000)
     {
         lastPreviewChoiceTime_ = currentTime;
         std::uniform_int_distribution<> dist(0, buffs_->buffs().size() - 1);
+        int                             attempts = 100;
         do
         {
             previewBuff_ = &buffs_->buffs()[dist(previewRng_)];
         }
-        while (previewBuff_->id == 0xFFFFFFFF);
+        while (--attempts > 0 && (previewBuff_->id == 0xFFFFFFFF || previewBuff_->maxStacks < previewCount_));
+
+        if (attempts == 0)
+            previewBuff_ = nullptr;
     }
+
+    float clear[4] = { 0.f, 0.f, 0.f, 1.f };
+    ctx->ClearRenderTargetView(preview_.rtv.Get(), clear);
+
+    if (!previewBuff_)
+        return;
 
     GridInstanceData data{
         .posDims = {0.5f, 0.5f, 1.f, 1.f},
@@ -266,13 +278,8 @@ void Styles::Draw(ComPtr<ID3D11DeviceContext>& ctx)
     };
     ApplyStyle(selectedId_, previewCount_, data);
 
-    float clear[4] = { 0.f, 0.f, 0.f, 1.f };
-    ctx->ClearRenderTargetView(preview_.rtv.Get(), clear);
-
     previewRenderer_.Add(std::move(data));
     previewRenderer_.Draw(ctx, true, &preview_, false);
-
-    drewMenu_ = false;
 }
 
 void Styles::Load()
