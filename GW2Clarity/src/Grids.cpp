@@ -59,67 +59,48 @@ Grids::~Grids()
 
 void Grids::DrawEditingGrid()
 {
-    if (draggingGridScale_ || placingItem_)
+    if (selectedId_.grid != UnselectedSubId)
     {
-        const auto& sp      = getG(selectedId_).spacing;
-        const auto& off     = getG(selectedId_).offset;
-        auto        d       = ImGui::GetIO().DisplaySize;
-        auto        c       = d * 0.5f + ToImGui(off);
+        const glm::vec2 screen{ ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y };
+        const glm::vec2 mouse{ ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y };
 
-        auto*       cmdList = ImGui::GetWindowDrawList();
+        const auto&     sp      = grid().spacing;
+        auto            c       = grid().ComputeOrigin(*this, !testMouseMode_, screen, mouse);
+        auto*           cmdList = ImGui::GetBackgroundDrawList();
         cmdList->PushClipRectFullScreen();
 
         int  i     = 0;
         auto color = [&i]() { return i != 0 ? (i % 4 == 0 ? 0xCCFFFFFF : 0x55FFFFFF) : 0xFFFFFFFF; };
         for (float x = 0.f; x < c.x; x += sp.x)
         {
-            cmdList->AddLine(ImVec2(c.x + x, 0.f), ImVec2(c.x + x, d.y), color(), 1.2f);
-            cmdList->AddLine(ImVec2(c.x - x, 0.f), ImVec2(c.x - x, d.y), color(), 1.2f);
+            cmdList->AddLine(ImVec2(c.x + x, 0.f), ImVec2(c.x + x, screen.y), color(), 1.2f);
+            cmdList->AddLine(ImVec2(c.x - x, 0.f), ImVec2(c.x - x, screen.y), color(), 1.2f);
             i++;
         }
 
         i = 0;
         for (float y = 0.f; y < c.y; y += sp.y)
         {
-            cmdList->AddLine(ImVec2(0.f, c.y + y), ImVec2(d.x, c.y + y), color(), 1.2f);
-            cmdList->AddLine(ImVec2(0.f, c.y - y), ImVec2(d.x, c.y - y), color(), 1.2f);
+            cmdList->AddLine(ImVec2(0.f, c.y + y), ImVec2(screen.x, c.y + y), color(), 1.2f);
+            cmdList->AddLine(ImVec2(0.f, c.y - y), ImVec2(screen.x, c.y - y), color(), 1.2f);
             i++;
         }
-        cmdList->PopClipRect();
 
-        draggingGridScale_ = ImGui::IsMouseDragging(ImGuiMouseButton_Left);
-        if (!draggingGridScale_)
-            needsSaving_ = true;
+        cmdList->AddCircle(ImVec2(c.x, c.y), 4.f, 0xFF0000FF);
+
+        cmdList->PopClipRect();
     }
 
     if (draggingMouseBoundaries_)
     {
-        auto* cmdList = ImGui::GetWindowDrawList();
+        auto* cmdList = ImGui::GetBackgroundDrawList();
         cmdList->PushClipRectFullScreen();
-        cmdList->AddRect(ToImGui(getG(selectedId_).mouseClipMin), ToImGui(getG(selectedId_).mouseClipMax), 0xFFFF0000);
+        cmdList->AddRect(ToImGui(grid().mouseClipMin), ToImGui(grid().mouseClipMax), 0xFFFF0000);
         cmdList->PopClipRect();
 
         draggingMouseBoundaries_ = ImGui::IsMouseDragging(ImGuiMouseButton_Left);
         if (!draggingMouseBoundaries_)
             needsSaving_ = true;
-    }
-}
-
-void Grids::PlaceItem()
-{
-    if (placingItem_)
-    {
-        const auto& sp    = getG(selectedId_).spacing;
-        auto&       item  = getI(selectedId_);
-        auto        mouse = ImGui::GetIO().MousePos - ImGui::GetIO().DisplaySize * 0.5f;
-
-        item.pos          = glm::ivec2(glm::floor(glm::vec2(mouse.x, mouse.y) / glm::vec2(sp)));
-
-        if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-        {
-            placingItem_ = false;
-            needsSaving_ = true;
-        }
     }
 }
 
@@ -184,7 +165,7 @@ void Grids::DrawGridList()
         {
             if (selectedId_.grid != UnselectedSubId)
             {
-                auto& g   = getG(selectedId_);
+                auto& g   = grid();
                 auto  gid = selectedId_.grid;
                 for (auto it : g.items | ranges::views::enumerate)
                 {
@@ -231,13 +212,17 @@ void Grids::DrawGridList()
         ImGui::TableNextColumn();
         if (ImGui::Button("New grid"))
         {
-            selectedId_ = New();
+            grids_.emplace_back();
+            selectedId_  = Unselected(grids_.size() - 1);
+            needsSaving_ = true;
         }
         ImGui::TableNextColumn();
         ImGui::BeginDisabled(disableItemsList);
         if (ImGui::Button("New item"))
         {
-            selectedId_ = New(selectedId_.grid);
+            grid().items.emplace_back();
+            selectedId_  = { selectedId_.grid, grid().items.size() - 1 };
+            needsSaving_ = true;
         }
         ImGui::EndDisabled();
 
@@ -291,25 +276,7 @@ void Grids::DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Layouts::Layout* l
 
             auto drawGrid = [&](const Grid& g, short gid)
             {
-                glm::vec2 gridOrigin;
-                if (!g.attached || (editMode && !testMouseMode_))
-                    gridOrigin = screen * 0.5f + glm::vec2(g.offset);
-                else
-                {
-                    if (!g.trackMouseWhileHeld && holdingMouseButton_ != ScanCode::NONE)
-                        gridOrigin = glm::vec2{ heldMousePos_.x, heldMousePos_.y };
-                    else
-                        gridOrigin = mouse;
-
-                    if (g.mouseClipMin.x != std::numeric_limits<int>::max())
-                    {
-                        gridOrigin = glm::max(gridOrigin, glm::vec2(g.mouseClipMin));
-                        gridOrigin = glm::min(gridOrigin, glm::vec2(g.mouseClipMax));
-                    }
-
-                    if (g.centralWeight > 0.f)
-                        gridOrigin = glm::mix(gridOrigin, screen * 0.5f, g.centralWeight);
-                }
+                auto gridOrigin = g.ComputeOrigin(*this, editMode, screen, mouse);
 
                 for (auto it : g.items | ranges::views::enumerate)
                 {
@@ -327,12 +294,10 @@ void Grids::DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Layouts::Layout* l
 
                     drawItem(g.spacing, i, gridOrigin, count, editing);
                 }
-                if (editMode && selectedId_ == New(gid))
-                    drawItem(g.spacing, creatingItem_, screen * 0.5f, editingItemFakeCount_, true);
             };
 
             if (editMode)
-                drawGrid(getG(selectedId_), selectedId_.grid);
+                drawGrid(grid(), selectedId_.grid);
             else if (shouldIgnoreLayout)
                 for (const auto& g : grids_)
                     drawGrid(g, UnselectedSubId);
@@ -402,7 +367,7 @@ void Grids::Delete(Id id)
 {
     if (id.item >= 0)
     {
-        auto& g = getG(id);
+        auto& g = grid(id);
         g.items.erase(g.items.begin() + id.item);
 
         if (id == selectedId_)
@@ -436,8 +401,33 @@ void Grids::StyleDeleted(uint id)
 
 void Grids::DrawMenu(Keybind** currentEditedKeybind)
 {
+    if (selectedId_.grid != UnselectedSubId)
+    {
+        const auto& sp    = grid().spacing;
+        auto        mouse = ImGui::GetIO().MousePos - ImGui::GetIO().DisplaySize * 0.5f;
+
+        auto        pos   = glm::ivec2(glm::floor(glm::vec2(mouse.x, mouse.y) / glm::vec2(sp)));
+
+        ImGui::SetNextWindowPos(ToImGui(glm::vec2(pos * sp) - glm::vec2(0.f, sp.y * 0.2f) + FromImGui(ImGui::GetIO().DisplaySize * 0.5f)), ImGuiCond_Always, ImVec2(0.5f, 1.f));
+        if (ImGui::Begin("##GridElementTooltip", nullptr, ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            auto it = ranges::find_if(grid().items, [&](const auto& i) { return i.pos.x == pos.x && i.pos.y == pos.y; });
+
+            if (it != grid().items.end())
+            {
+                ImGui::TextUnformatted(it->buff->name.c_str());
+                ImGui::Text("(%d, %d)", it->pos.x, it->pos.y);
+            }
+            else
+            {
+                ImGui::TextUnformatted("<no buff>");
+                ImGui::Text("(%d, %d)", pos.x, pos.y);
+            }
+        }
+        ImGui::End();
+    }
+
     DrawEditingGrid();
-    PlaceItem();
 
     ImGuiConfigurationWrapper(ImGui::Checkbox, enableBetterFiltering_);
     ImGuiHelpTooltip("Enables higher quality texture filtering, improving the icons' appearance at a cost to performance.");
@@ -455,34 +445,27 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind)
         bool editingItem = selectedId_.item >= 0;
         if (!editingGrid)
             testMouseMode_ = false;
-        if (editingGrid || selectedId_.grid == NewSubId)
+        if (editingGrid)
         {
-            auto& editGrid = editingGrid ? getG(selectedId_) : creatingGrid_;
-            if (editingGrid)
-                ImGuiTitle(std::format("Editing Grid '{}'", editGrid.name).c_str(), 0.75f);
-            else
-                ImGuiTitle("New Grid", 0.75f);
+            auto& editGrid = grid();
+            ImGuiTitle(std::format("Editing Grid '{}'", editGrid.name).c_str(), 0.75f);
 
             saveCheck(ImGui::InputText("Grid Name", &editGrid.name));
             ImGui::NewLine();
 
             // If drag was triggered, stay on as long as dragging occurs, otherwise disable
-            draggingGridScale_       = draggingGridScale_ ? ImGui::IsMouseDragging(ImGuiMouseButton_Left) : false;
             draggingMouseBoundaries_ = draggingMouseBoundaries_ ? ImGui::IsMouseDragging(ImGuiMouseButton_Left) : false;
 
             saveCheck(ImGui::Checkbox("Square Grid", &editGrid.square));
-            if (editGrid.square && saveCheck(ImGui::DragInt("Grid Scale", (int*)&editGrid.spacing, 0.1f, 1, 2048)) ||
-                !editGrid.square && saveCheck(ImGui::DragInt2("Grid Scale", glm::value_ptr(editGrid.spacing), 0.1f, 1, 2048)))
-            {
-                draggingGridScale_ |= ImGui::IsMouseDragging(ImGuiMouseButton_Left);
-            }
+            if (editGrid.square)
+                saveCheck(ImGui::DragInt("Grid Scale", (int*)&editGrid.spacing, 0.1f, 1, 2048));
+            else
+                saveCheck(ImGui::DragInt2("Grid Scale", glm::value_ptr(editGrid.spacing), 0.1f, 1, 2048));
+
             if (editGrid.square)
                 editGrid.spacing.y = editGrid.spacing.x;
 
-            if (saveCheck(ImGui::DragInt2("Grid Offset", glm::value_ptr(editGrid.offset), 0.1f, -int(ImGui::GetIO().DisplaySize.x) / 2, int(ImGui::GetIO().DisplaySize.x) / 2)))
-            {
-                draggingGridScale_ |= ImGui::IsMouseDragging(ImGuiMouseButton_Left);
-            }
+            saveCheck(ImGui::DragInt2("Grid Offset", glm::value_ptr(editGrid.offset), 0.1f, -int(ImGui::GetIO().DisplaySize.x) / 2, int(ImGui::GetIO().DisplaySize.x) / 2));
 
             saveCheck(ImGui::Checkbox("Attached to Mouse", &editGrid.attached));
             if (editGrid.attached)
@@ -531,24 +514,11 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind)
 
                 ImGui::Unindent();
             }
-
-            ImGui::PushFont(Core::i().fontBold());
-            if (selectedId_.grid == NewSubId && ImGui::Button("Create Grid"))
-            {
-                grids_.push_back(creatingGrid_);
-                creatingGrid_ = {};
-                selectedId_   = Unselected(grids_.size() - 1);
-                needsSaving_  = true;
-            }
-            ImGui::PopFont();
         }
-        else if (editingItem || selectedId_.item == NewSubId)
+        else if (editingItem)
         {
-            auto& editItem = editingItem ? getI(selectedId_) : creatingItem_;
-            if (editingItem)
-                ImGuiTitle(std::format("Editing Item '{}' of '{}'", editItem.buff->name, getG(selectedId_).name).c_str(), 0.75f);
-            else
-                ImGuiTitle(std::format("New Item in '{}'", getG(selectedId_).name).c_str(), 0.75f);
+            auto& editItem = item();
+            ImGuiTitle(std::format("Editing Item '{}' of '{}'", editItem.buff->name, grid().name).c_str(), 0.75f);
 
             auto buffCombo = [&](auto& buff, int id, const char* name)
             {
@@ -579,12 +549,6 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind)
 
             ImGui::NewLine();
 
-            if (ImGui::Button("Place..."))
-            {
-                testMouseMode_ = false;
-                placingItem_   = true;
-            }
-            ImGui::SameLine();
             saveCheck(ImGui::DragInt2("Location", glm::value_ptr(editItem.pos), 0.1f));
 
             if (ImGui::BeginCombo("Style", styles_->style(editItem.style).name.c_str()))
@@ -599,18 +563,6 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind)
 
                 ImGui::EndCombo();
             }
-
-            ImGui::Separator();
-
-            ImGui::PushFont(Core::i().fontBold());
-            if (selectedId_.item == NewSubId && ImGui::Button("Create Item"))
-            {
-                getG(selectedId_).items.push_back(creatingItem_);
-                creatingItem_ = {};
-                selectedId_   = { selectedId_.grid, getG(selectedId_).items.size() - 1 };
-                needsSaving_  = true;
-            }
-            ImGui::PopFont();
         }
     }
 

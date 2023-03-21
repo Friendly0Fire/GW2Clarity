@@ -25,11 +25,11 @@ union Id
         , item(short(i))
     {}
 
-    constexpr bool operator==(const Id& other) const
+    constexpr bool operator==(Id other) const
     {
         return id == other.id;
     }
-    constexpr bool operator!=(const Id& other) const
+    constexpr bool operator!=(Id other) const
     {
         return id != other.id;
     }
@@ -37,17 +37,11 @@ union Id
 static_assert(sizeof(Id) == sizeof(int));
 
 static inline constexpr short UnselectedSubId = -1;
-static inline constexpr short NewSubId        = -2;
 
 template<std::integral T = short>
 static Id Unselected(T gid = T(UnselectedSubId))
 {
     return { short(gid), UnselectedSubId };
-}
-template<std::integral T = short>
-static Id New(T gid = T(NewSubId))
-{
-    return { short(gid), NewSubId };
 }
 
 } // namespace GW2Clarity

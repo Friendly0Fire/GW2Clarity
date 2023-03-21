@@ -65,7 +65,6 @@ public:
     }
 
 protected:
-    Layout                         creatingLayout_;
     short                          currentLayoutId_      = UnselectedSubId;
     short                          currentHoveredLayout_ = UnselectedSubId;
 

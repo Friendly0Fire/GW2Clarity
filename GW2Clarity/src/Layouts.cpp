@@ -128,17 +128,15 @@ void Layouts::DrawMenu(Keybind** currentEditedKeybind)
     }
     if (ImGui::Button("New Layout"))
     {
-        selectedLayoutId_ = NewSubId;
+        layouts_.emplace_back();
+        selectedLayoutId_ = UnselectedSubId;
+        needsSaving_      = true;
     }
 
-    bool editingLayout = selectedLayoutId_ != NewSubId;
     if (selectedLayoutId_ != UnselectedSubId)
     {
-        auto& editLayout = selectedLayoutId_ == NewSubId ? creatingLayout_ : layouts_[selectedLayoutId_];
-        if (editingLayout)
-            ImGuiTitle(std::format("Editing Layout '{}'", editLayout.name).c_str(), 0.75f);
-        else
-            ImGuiTitle("New Layout", 0.75f);
+        auto& editLayout = layouts_[selectedLayoutId_];
+        ImGuiTitle(std::format("Editing Layout '{}'", editLayout.name).c_str(), 0.75f);
 
         saveCheck(ImGui::InputText("Name##NewLayout", &editLayout.name));
         saveCheck(ImGui::Checkbox("Show in Combat Only##NewLayout", &editLayout.combatOnly));
@@ -158,14 +156,7 @@ void Layouts::DrawMenu(Keybind** currentEditedKeybind)
         }
 
         ImGui::PushFont(Core::i().fontBold());
-        if (selectedLayoutId_ == NewSubId && ImGui::Button("Create Layout"))
-        {
-            layouts_.push_back(creatingLayout_);
-            creatingLayout_   = {};
-            selectedLayoutId_ = UnselectedSubId;
-            needsSaving_      = true;
-        }
-        else if (selectedLayoutId_ >= 0 && ImGui::Button("Delete Layout"))
+        if (selectedLayoutId_ >= 0 && ImGui::Button("Delete Layout"))
             ImGui::OpenPopup("Confirm Deletion");
         ImGui::PopFont();
     }

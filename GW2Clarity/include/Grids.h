@@ -46,7 +46,6 @@ protected:
     void                               Save();
 
     void                               DrawEditingGrid();
-    void                               PlaceItem();
     void                               DrawGridList();
     void                               DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Layouts::Layout* layout, bool shouldIgnoreLayout);
 
@@ -63,6 +62,7 @@ protected:
 public:
     struct Grid
     {
+        std::string       name{ "New Grid" };
         glm::ivec2        spacing       = GridDefaultSpacing;
         glm::ivec2        offset        = {};
         float             centralWeight = 0.f;
@@ -70,9 +70,33 @@ public:
         glm::ivec2        mouseClipMax{ std::numeric_limits<int>::min() };
         bool              trackMouseWhileHeld = true;
         std::vector<Item> items;
-        std::string       name{ "New Grid" };
         bool              attached = false;
         bool              square   = true;
+
+        auto              ComputeOrigin(const Grids& grids, bool editMode, const glm::vec2& screen, const glm::vec2& mouse) const
+        {
+            glm::vec2 gridOrigin;
+            if (!attached || (editMode && !grids.testMouseMode_))
+                gridOrigin = screen * 0.5f + glm::vec2(offset);
+            else
+            {
+                if (!trackMouseWhileHeld && grids.holdingMouseButton_ != ScanCode::NONE)
+                    gridOrigin = glm::vec2{ grids.heldMousePos_.x, grids.heldMousePos_.y };
+                else
+                    gridOrigin = mouse;
+
+                if (mouseClipMin.x != std::numeric_limits<int>::max())
+                {
+                    gridOrigin = glm::max(gridOrigin, glm::vec2(mouseClipMin));
+                    gridOrigin = glm::min(gridOrigin, glm::vec2(mouseClipMax));
+                }
+
+                if (centralWeight > 0.f)
+                    gridOrigin = glm::mix(gridOrigin, screen * 0.5f, centralWeight);
+            }
+
+            return gridOrigin;
+        }
     };
 
     [[nodiscard]] const std::vector<Grid>& grids() const
@@ -80,45 +104,54 @@ public:
         return grids_;
     }
 
-    [[nodiscard]] inline Grid& getG(const Id& id)
+    [[nodiscard]] inline Grid& grid(Id id)
     {
         if (id.grid == UnselectedSubId)
             throw std::invalid_argument("unselected id");
-        else if (id.grid == NewSubId)
-            return creatingGrid_;
         else
             return grids_[id.grid];
     }
 
-    [[nodiscard]] inline Item& getI(const Id& id)
+    [[nodiscard]] inline Grid& grid()
+    {
+        if (selectedId_.grid == UnselectedSubId)
+            throw std::invalid_argument("unselected id");
+        else
+            return grids_[selectedId_.grid];
+    }
+
+    [[nodiscard]] inline Item& item(Id id)
     {
         if (id.grid == UnselectedSubId || id.item == UnselectedSubId)
             throw std::invalid_argument("unselected id");
-        else if (id.item == NewSubId)
-            return creatingItem_;
         else
             return grids_[id.grid].items[id.item];
+    }
+
+    [[nodiscard]] inline Item& item()
+    {
+        if (selectedId_.grid == UnselectedSubId || selectedId_.item == UnselectedSubId)
+            throw std::invalid_argument("unselected id");
+        else
+            return grids_[selectedId_.grid].items[selectedId_.item];
     }
 
 protected:
     const Buffs*                   buffs_;
     const Styles*                  styles_;
     GridRenderer<1024>             gridRenderer_;
-    Grid                           creatingGrid_;
-    Item                           creatingItem_;
     Id                             currentHovered_ = Unselected();
 
     std::vector<Grid>              grids_;
 
-    Id                             selectedId_           = Unselected();
+    Id                             selectedId_              = Unselected();
 
-    int                            editingItemFakeCount_ = 1;
+    int                            editingItemFakeCount_    = 1;
 
-    bool                           draggingGridScale_ = false, draggingMouseBoundaries_ = false;
-    bool                           testMouseMode_ = false;
-    bool                           placingItem_   = false;
-    mstime                         lastSaveTime_  = 0;
-    bool                           needsSaving_   = false;
+    bool                           draggingMouseBoundaries_ = false;
+    bool                           testMouseMode_           = false;
+    mstime                         lastSaveTime_            = 0;
+    bool                           needsSaving_             = false;
     BuffComboBox                   selector_;
     static inline constexpr mstime SaveDelay           = 1000;
     bool                           firstDraw_          = true;
