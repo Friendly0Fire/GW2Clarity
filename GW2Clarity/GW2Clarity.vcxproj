@@ -46,15 +46,15 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)include\;$(ProjectDir);$(ProjectDir)common\ZipLib\Source\ZipLib;$(ProjectDir)common\include;$(ProjectDir)common\imgui;$(ProjectDir)common\d3d9_wrapper\include;$(ProjectDir)common\loader-core\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)include\;$(ProjectDir);$(ProjectDir)common\ZipLib\Source\ZipLib;$(ProjectDir)common\include;$(ProjectDir)common\imgui;$(ProjectDir)common\d3d9_wrapper\include;$(ProjectDir)common\loader-core\include;$(SolutionDir)extern\ultralight_$(Configuration)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)extern\ultralight_$(Configuration)\lib;$(LibraryPath)</LibraryPath>
     <SourcePath>$(ProjectDir)src\;$(SourcePath)</SourcePath>
     <TargetName>gw2addon_gw2clarity</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)include\;$(ProjectDir);$(ProjectDir)common\ZipLib\Source\ZipLib;$(ProjectDir)common\include;$(ProjectDir)common\imgui;$(ProjectDir)common\d3d9_wrapper\include;$(ProjectDir)common\loader-core\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)include\;$(ProjectDir);$(ProjectDir)common\ZipLib\Source\ZipLib;$(ProjectDir)common\include;$(ProjectDir)common\imgui;$(ProjectDir)common\d3d9_wrapper\include;$(ProjectDir)common\loader-core\include;$(SolutionDir)extern\ultralight_$(Configuration)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)extern\ultralight_$(Configuration)\lib;$(LibraryPath)</LibraryPath>
     <SourcePath>$(ProjectDir)src\;$(SourcePath)</SourcePath>
     <TargetName>gw2addon_gw2clarity</TargetName>
   </PropertyGroup>
@@ -83,13 +83,19 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ModuleDefinitionFile>main.def</ModuleDefinitionFile>
-      <AdditionalDependencies>Wininet.lib;Shlwapi.lib;d3dcompiler.lib;WindowsCodecs.lib;$(ProjectDir)common\$(Platform)\$(Configuration)\BaseResource.res;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Wininet.lib;Shlwapi.lib;d3dcompiler.lib;WindowsCodecs.lib;AppCore.lib;Ultralight.lib;UltralightCore.lib;$(ProjectDir)common\$(Platform)\$(Configuration)\BaseResource.res;%(AdditionalDependencies)</AdditionalDependencies>
+      <DelayLoadDLLs>AppCore.dll;Ultralight.dll;UltralightCore.dll;WebCore.dll</DelayLoadDLLs>
     </Link>
     <PostBuildEvent>
-      <Command>if exist "$(GW2CLARITY_TARGET_DIR)" (
+      <Command>xcopy /F /Y "$(SolutionDir)extern\ultralight_$(Configuration)\bin\" "$(TargetDir)"
+xcopy /F /Y "$(SolutionDir)extern\ultralight_$(Configuration)\resources\" "$(TargetDir)resources\"
+
+if exist "$(GW2CLARITY_TARGET_DIR)" (
   echo f | xcopy /F /Y $(TargetPath) "$(GW2CLARITY_TARGET_DIR)\addons\gw2clarity\gw2addon_gw2clarity.dll"
   echo f | xcopy /F /Y $(OutDir)$(TargetName).pdb "$(GW2CLARITY_TARGET_DIR)\addons\gw2clarity\gw2addon_gw2clarity.pdb"
   echo f | xcopy /F /Y $(OutDir)getbuffs.dll "$(GW2CLARITY_TARGET_DIR)\addons\gw2clarity\getbuffs.dll"
+  xcopy /F /Y "$(SolutionDir)extern\ultralight_$(Configuration)\bin\" "$(GW2CLARITY_TARGET_DIR)\addons\gw2clarity\"
+  xcopy /F /Y "$(SolutionDir)extern\ultralight_$(Configuration)\resources\" "$(GW2CLARITY_TARGET_DIR)\addons\gw2clarity\resources\"
 ) else (
   echo No target defined, skipping copy. To setup automatic copy, define environment variable GW2CLARITY_TARGET_DIR to your GW2 root install directory.
 )</Command>
@@ -130,13 +136,19 @@ git describe --always --dirty --match "NOT A TAG" &gt;&gt; "$(ProjectDir)include
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ModuleDefinitionFile>main.def</ModuleDefinitionFile>
-      <AdditionalDependencies>Wininet.lib;Shlwapi.lib;d3dcompiler.lib;WindowsCodecs.lib;$(ProjectDir)common\$(Platform)\$(Configuration)\BaseResource.res;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Wininet.lib;Shlwapi.lib;d3dcompiler.lib;WindowsCodecs.lib;AppCore.lib;Ultralight.lib;UltralightCore.lib;$(ProjectDir)common\$(Platform)\$(Configuration)\BaseResource.res;%(AdditionalDependencies)</AdditionalDependencies>
+      <DelayLoadDLLs>AppCore.dll;Ultralight.dll;UltralightCore.dll;WebCore.dll</DelayLoadDLLs>
     </Link>
     <PostBuildEvent>
-      <Command>if exist "$(GW2CLARITY_TARGET_DIR)" (
+      <Command>xcopy /F /Y "$(SolutionDir)extern\ultralight_$(Configuration)\bin\" "$(TargetDir)"
+xcopy /F /Y "$(SolutionDir)extern\ultralight_$(Configuration)\resources\" "$(TargetDir)resources\"
+
+if exist "$(GW2CLARITY_TARGET_DIR)" (
   echo f | xcopy /F /Y $(TargetPath) "$(GW2CLARITY_TARGET_DIR)\addons\gw2clarity\gw2addon_gw2clarity.dll"
   echo f | xcopy /F /Y $(OutDir)$(TargetName).pdb "$(GW2CLARITY_TARGET_DIR)\addons\gw2clarity\gw2addon_gw2clarity.pdb"
   echo f | xcopy /F /Y $(OutDir)getbuffs.dll "$(GW2CLARITY_TARGET_DIR)\addons\gw2clarity\getbuffs.dll"
+  xcopy /F /Y "$(SolutionDir)extern\ultralight_$(Configuration)\bin\" "$(GW2CLARITY_TARGET_DIR)\addons\gw2clarity\"
+  xcopy /F /Y "$(SolutionDir)extern\ultralight_$(Configuration)\resources\" "$(GW2CLARITY_TARGET_DIR)\addons\gw2clarity\resources\"
 ) else (
   echo No target defined, skipping copy. To setup automatic copy, define environment variable GW2CLARITY_TARGET_DIR to your GW2 root install directory.
 )</Command>
@@ -244,6 +256,11 @@ git describe --always --dirty --match "NOT A TAG" &gt;&gt; "$(ProjectDir)include
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\perlin.hlsli">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\Ultralight.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

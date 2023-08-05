@@ -27,7 +27,7 @@ Cursor::Cursor(ComPtr<ID3D11Device>& dev)
 
     auto& sm       = ShaderManager::i();
     cursorCB_      = sm.MakeConstantBuffer<CursorData>();
-    screenSpaceVS_ = sm.GetShader(L"ScreenQuad.hlsl", D3D11_SHVER_VERTEX_SHADER, "ScreenQuad");
+    screenSpaceVS_ = sm.GetShader(L"ScreenQuad.hlsl", D3D11_SHVER_VERTEX_SHADER, "ScreenQuad", { { "CURSOR_HLSL" } });
     auto makePS    = [&](const char* ep) { return sm.GetShader(L"Cursor.hlsl", D3D11_SHVER_PIXEL_SHADER, ep); };
     cursorPS_      = { makePS("Circle"), makePS("Square"), makePS("Cross"), makePS("Smooth") };
 

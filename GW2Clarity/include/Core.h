@@ -12,6 +12,8 @@
 #include <dxgi.h>
 #include <variant>
 
+#include <AppCore/AppCore.h>
+
 class ShaderManager;
 
 namespace GW2Clarity
@@ -73,6 +75,13 @@ protected:
     std::unique_ptr<Grids>                     grids_;
     std::unique_ptr<Layouts>                   layouts_;
     std::unique_ptr<Cursor>                    cursor_;
+    ultralight::RefPtr<ultralight::Renderer>   ulrenderer_;
+    ultralight::RefPtr<ultralight::View>       ulview_;
+    Texture2D                                  ultex_;
+    ConstantBufferSPtr<glm::vec4>              ulcb_;
+    ShaderId                                   ulps_, ulvs_;
+    ComPtr<ID3D11SamplerState>                 defaultSampler_;
+    ComPtr<ID3D11BlendState>                   defaultBlend_;
     HMODULE                                    buffLib_                 = nullptr;
     GetBuffsCallback                           getBuffs_                = nullptr;
 

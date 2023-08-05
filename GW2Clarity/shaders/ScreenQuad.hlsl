@@ -1,5 +1,11 @@
-#define CURSOR_HLSL
 #include "common.hlsli"
+
+#ifdef SIMPLE_HLSL
+cbuffer ScreenQuad : register(b0)
+{
+	float4 dimensions;
+};
+#endif
 
 struct VS_SCREEN
 {

@@ -19,6 +19,9 @@
 #include <imgui_internal.h>
 #include <shellapi.h>
 
+#include <AppCore/Platform.h>
+#include <Ultralight/Ultralight.h>
+
 KeyCombo GetSettingsKeyCombo()
 {
     return { GetScanCodeFromVirtualKey('P'), Modifier::SHIFT | Modifier::ALT };
@@ -58,6 +61,26 @@ void Core::InnerInitPostImGui()
     grids_             = std::make_unique<Grids>(device_, buffs_.get(), styles_.get());
     layouts_           = std::make_unique<Layouts>(device_, grids_.get());
     cursor_            = std::make_unique<Cursor>(device_);
+
+    {
+        auto& sm = ShaderManager::i();
+        ulcb_    = sm.MakeConstantBuffer<glm::vec4>();
+        ulvs_    = sm.GetShader(L"ScreenQuad.hlsl", D3D11_SHVER_VERTEX_SHADER, "ScreenQuad", { { "SIMPLE_HLSL" } });
+        ulps_    = sm.GetShader(L"Ultralight.hlsl", D3D11_SHVER_PIXEL_SHADER, "Ultralight");
+
+        CD3D11_SAMPLER_DESC samplerDesc(D3D11_DEFAULT);
+        GW2_CHECKED_HRESULT(device_->CreateSamplerState(&samplerDesc, defaultSampler_.GetAddressOf()));
+
+        CD3D11_BLEND_DESC blendDesc(D3D11_DEFAULT);
+        blendDesc.RenderTarget[0].BlendEnable    = true;
+        blendDesc.RenderTarget[0].SrcBlend       = D3D11_BLEND_ONE;
+        blendDesc.RenderTarget[0].DestBlend      = D3D11_BLEND_INV_SRC_ALPHA;
+        blendDesc.RenderTarget[0].SrcBlendAlpha  = D3D11_BLEND_ONE;
+        blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
+        GW2_CHECKED_HRESULT(device_->CreateBlendState(&blendDesc, defaultBlend_.GetAddressOf()));
+
+        ultex_ = MakeTexture<ID3D11Texture2D>(device_, screenWidth(), screenHeight(), 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+    }
 }
 
 void Core::InnerInternalInit()
@@ -101,6 +124,8 @@ void Core::InnerFrequentUpdate()
 {
     if (getBuffs_)
         buffs_->UpdateBuffsTable(getBuffs_());
+
+    ulrenderer_->Update();
 }
 
 void Core::InnerUpdate()
@@ -114,6 +139,25 @@ void Core::DisplayDeletionMenu(DeletionInfo&& info)
 
 void Core::InnerDraw()
 {
+    if (!ulrenderer_)
+    {
+        using namespace ultralight;
+
+        Config config;
+
+        Platform::instance().set_config(config);
+        Platform::instance().set_font_loader(GetPlatformFontLoader());
+        Platform::instance().set_file_system(GetPlatformFileSystem("./addons/gw2clarity"));
+        Platform::instance().set_logger(GetDefaultLogger("ultralight.log"));
+        ulrenderer_ = Renderer::Create();
+
+        ViewConfig vc;
+        vc.is_accelerated = false;
+
+        ulview_           = ulrenderer_->CreateView(screenWidth(), screenHeight(), vc, nullptr);
+        ulview_->LoadHTML("<h1>Hello World!</h1>");
+    }
+
     if (!confirmDeletionPopupID_)
         confirmDeletionPopupID_ = ImGui::GetID(ConfirmDeletionPopupName);
     if (ImGui::BeginPopupModal(ConfirmDeletionPopupName))
@@ -180,6 +224,52 @@ void Core::InnerDraw()
     layouts_->Draw(context_);
     cursor_->Draw(context_);
     styles_->Draw(context_);
+
+    if (false)
+    {
+        using namespace ultralight;
+
+        ulrenderer_->Render();
+
+        auto* surface = static_cast<BitmapSurface*>(ulview_->surface());
+        if (!surface->dirty_bounds().IsEmpty())
+        {
+            auto     bitmap = surface->bitmap();
+
+            void*    pixels = bitmap->LockPixels();
+
+            uint32_t width  = bitmap->width();
+            uint32_t height = bitmap->height();
+            uint32_t stride = bitmap->row_bytes();
+
+            context_->UpdateSubresource(ultex_.texture.Get(), 0, nullptr, pixels, stride, stride * height);
+
+            bitmap->UnlockPixels();
+
+            surface->ClearDirtyBounds();
+        }
+
+        ID3D11ShaderResourceView* srvs[] = { ultex_.srv.Get() };
+        context_->PSSetShaderResources(0, 1, srvs);
+
+
+        ID3D11SamplerState* samplers[] = { defaultSampler_.Get() };
+        context_->PSSetSamplers(0, 1, samplers);
+
+        context_->OMSetBlendState(defaultBlend_.Get(), nullptr, 0xffffffff);
+        ID3D11RenderTargetView* rtvs[] = { backBufferRTV_.Get() };
+        context_->OMSetRenderTargets(1, rtvs, nullptr);
+
+        auto& cb = *ulcb_;
+        *cb      = glm::vec4(0.5f, 0.5f, 1.f, 1.f);
+        cb.Update(context_.Get());
+
+        auto& sm = ShaderManager::i();
+        sm.SetConstantBuffers(context_.Get(), cb);
+        sm.SetShaders(context_.Get(), ulvs_, ulps_);
+
+        DrawScreenQuad(context_.Get());
+    }
 }
 
 

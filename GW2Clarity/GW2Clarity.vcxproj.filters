@@ -110,6 +110,9 @@
     <None Include="shaders\perlin.hlsli">
       <Filter>Resource Files\Shaders</Filter>
     </None>
+    <None Include="shaders\Ultralight.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc">

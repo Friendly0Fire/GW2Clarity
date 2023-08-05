@@ -69,3 +69,66 @@ bool WINAPI   DllMain(HMODULE hModule, DWORD fdwReason, LPVOID lpReserved)
 
     return true;
 }
+
+#include <Shlwapi.h>
+#include <delayimp.h>
+
+bool    loadedModules     = false;
+HMODULE appCoreMod        = nullptr;
+HMODULE ultralightMod     = nullptr;
+HMODULE ultralightCoreMod = nullptr;
+HMODULE webCoreMod        = nullptr;
+
+void    LoadUltralightDLLs()
+{
+    if (loadedModules)
+        return;
+
+    HMODULE hModule;
+    GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCSTR)LoadUltralightDLLs, &hModule);
+    char path[MAX_PATH];
+    GetModuleFileNameA(hModule, path, MAX_PATH);
+    std::filesystem::path dir(path);
+    dir               = dir.parent_path();
+
+    // Load DLL without any dependencies first
+    ultralightCoreMod = LoadLibraryW((dir / "UltralightCore.dll").c_str());
+
+    // Depends on the above
+    webCoreMod        = LoadLibraryW((dir / "WebCore.dll").c_str());
+
+    // Depends on the two above
+    ultralightMod     = LoadLibraryW((dir / "Ultralight.dll").c_str());
+
+    // Depends on all of the above
+    appCoreMod        = LoadLibraryW((dir / "AppCore.dll").c_str());
+
+    loadedModules     = true;
+}
+
+HMODULE LoadLocalDLL(LPCSTR name)
+{
+    LoadUltralightDLLs();
+
+    if (StrCmpICA(name, "appcore.dll") == 0)
+        return std::exchange(appCoreMod, nullptr);
+    if (StrCmpICA(name, "ultralight.dll") == 0)
+        return std::exchange(ultralightMod, nullptr);
+    if (StrCmpICA(name, "ultralightcore.dll") == 0)
+        return std::exchange(ultralightCoreMod, nullptr);
+    if (StrCmpICA(name, "webcore.dll") == 0)
+        return std::exchange(webCoreMod, nullptr);
+}
+
+FARPROC WINAPI delayHook(unsigned dliNotify, PDelayLoadInfo pdli)
+{
+    if (dliNotify == dliNotePreLoadLibrary)
+    {
+        return (FARPROC)LoadLocalDLL(pdli->szDll);
+    }
+
+    return NULL;
+}
+
+extern "C" const PfnDliHook __pfnDliNotifyHook2  = delayHook;
+extern "C" const PfnDliHook __pfnDliFailureHook2 = delayHook;
