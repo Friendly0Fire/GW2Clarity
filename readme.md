@@ -1,6 +1,6 @@
 # GW2 Clarity
 
-[![GitHub all releases](https://img.shields.io/github/downloads/Friendly0Fire/GW2Clarity/total)](https://github.com/Friendly0Fire/GW2Clarity/releases/latest) [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Friendly0Fire/GW2Clarity/CI)](https://github.com/Friendly0Fire/GW2Clarity/actions/workflows/main.yml) [![Discord](https://img.shields.io/discord/961414916307296266?label=Discord)](https://discord.gg/7Ja2JnbDdW)
+[![GitHub all releases](https://img.shields.io/github/downloads/Friendly0Fire/GW2Clarity/total)](https://github.com/Friendly0Fire/GW2Clarity/releases/latest) [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/Friendly0Fire/GW2Clarity/.github/workflows/main.yml?branch=master)](https://github.com/Friendly0Fire/GW2Clarity/actions/workflows/main.yml) [![Discord](https://img.shields.io/discord/961414916307296266?label=Discord)](https://discord.gg/7Ja2JnbDdW)
 
 ## Installation
 
