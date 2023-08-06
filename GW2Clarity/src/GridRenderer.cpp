@@ -71,7 +71,7 @@ void BaseGridRenderer::Draw(ComPtr<ID3D11DeviceContext>& ctx, std::span<Instance
 
         D3D11_TEXTURE2D_DESC desc;
         rt->texture->GetDesc(&desc);
-        cb->screenSize = glm::vec4(desc.Width, desc.Height, 1.f / desc.Width, 1.f / desc.Height);
+        cb->screenSize = vec4(desc.Width, desc.Height, 1.f / desc.Width, 1.f / desc.Height);
 
         // Setup viewport
         D3D11_VIEWPORT vp;
@@ -84,7 +84,7 @@ void BaseGridRenderer::Draw(ComPtr<ID3D11DeviceContext>& ctx, std::span<Instance
         ctx->RSSetViewports(1, &vp);
     }
     else
-        cb->screenSize = glm::vec4(Core::i().screenDims(), 1.f / Core::i().screenDims());
+        cb->screenSize = vec4(Core::i().screenDims(), 1.f / Core::i().screenDims());
     cb->atlasUVSize = buffs_->buffsAtlasUVSize();
     cb->numbersUVSize = buffs_->numbersAtlasUVSize();
     cb->time = fmod(TimeInMilliseconds() / 1000.f, 60.f);

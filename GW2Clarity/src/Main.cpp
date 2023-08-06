@@ -25,7 +25,7 @@ gw2al_api_ret gw2addon_load(gw2al_core_vtable* core_api) {
     return GW2AL_OK;
 }
 
-gw2al_api_ret gw2addon_unload(int gameExiting) { return GW2AL_OK; }
+gw2al_api_ret gw2addon_unload(i32 gameExiting) { return GW2AL_OK; }
 
 std::ofstream g_logStream;
 

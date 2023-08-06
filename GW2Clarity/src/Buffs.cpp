@@ -13,21 +13,21 @@
 namespace GW2Clarity
 {
 
-std::vector<glm::vec2> GenerateNumbersMap(glm::vec2& uvSize) {
-    const std::unordered_map<std::string, glm::vec2> atlasElements {
+std::vector<vec2> GenerateNumbersMap(vec2& uvSize) {
+    const std::unordered_map<std::string, vec2> atlasElements {
 #include <assets/numbers.inc>
     };
 
     uvSize = atlasElements.at("");
 
-    std::vector<glm::vec2> numbers;
+    std::vector<vec2> numbers;
     numbers.resize(atlasElements.size() - 1);
 
     for(const auto& [name, pos] : atlasElements) {
         if(name.empty())
             continue;
 
-        int idx = strtol(name.c_str(), nullptr, 10);
+        i32 idx = strtol(name.c_str(), nullptr, 10);
         if(idx < 2)
             continue;
 
@@ -165,10 +165,10 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind) {
             if(ImGui::Button(std::format("Say in G{}##{}", guildLogId_, chatCodeStr).c_str())) {
                 ImGui::SetClipboardText(std::format("/g{} {}: {}", guildLogId_, id, chatCodeStr).c_str());
 
-                auto wait = [](int i) {
+                auto wait = [](i32 i) {
                     std::this_thread::sleep_for(std::chrono::milliseconds(i));
                 };
-                auto sendKeyEvent = [](uint vk, ScanCode sc, bool down) {
+                auto sendKeyEvent = [](u32 vk, ScanCode sc, bool down) {
                     INPUT i;
                     ZeroMemory(&i, sizeof(INPUT));
                     i.type = INPUT_KEYBOARD;
@@ -225,7 +225,7 @@ void Buffs::UpdateBuffsTable(StackedBuff* buffs) {
 #endif
 
     if(buffs[0].id == 0) {
-        int e = lastGetBuffsError_;
+        i32 e = lastGetBuffsError_;
         lastGetBuffsError_ = buffs[0].count;
         if(lastGetBuffsError_ != e) {
             switch(lastGetBuffsError_) {
@@ -303,8 +303,8 @@ bool Buffs::DrawBuffCombo(const char* name, const Buff*& selectedBuf, std::span<
 
 #include "BuffsList.inc"
 
-std::vector<Buff> Buffs::GenerateBuffsList(glm::vec2& uvSize) {
-    const std::unordered_map<std::string, glm::vec2> atlasElements {
+std::vector<Buff> Buffs::GenerateBuffsList(vec2& uvSize) {
+    const std::unordered_map<std::string, vec2> atlasElements {
 #include <assets/atlas.inc>
     };
 
@@ -330,7 +330,7 @@ std::vector<Buff> Buffs::GenerateBuffsList(glm::vec2& uvSize) {
             b.category = cat;
 
         auto it = atlasElements.find(b.atlasEntry);
-        b.uv = it != atlasElements.end() ? it->second : glm::vec4 { 0.f, 0.f, 0.f, 0.f };
+        b.uv = it != atlasElements.end() ? it->second : vec4 { 0.f, 0.f, 0.f, 0.f };
 
         if(b.id != 0xFFFFFFFF && it == atlasElements.end())
             LogWarn("Buff {} ({}) has no atlas icon.", b.name, b.id);
@@ -339,8 +339,8 @@ std::vector<Buff> Buffs::GenerateBuffsList(glm::vec2& uvSize) {
     return buffs;
 }
 
-std::unordered_map<int, const Buff*> Buffs::GenerateBuffsMap(const std::vector<Buff>& lst) {
-    std::unordered_map<int, const Buff*> m;
+std::unordered_map<i32, const Buff*> Buffs::GenerateBuffsMap(const std::vector<Buff>& lst) {
+    std::unordered_map<i32, const Buff*> m;
     for(auto& b : lst) {
         m[b.id] = &b;
     }

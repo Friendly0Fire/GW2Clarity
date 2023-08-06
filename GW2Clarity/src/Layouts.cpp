@@ -38,7 +38,7 @@ Layouts::~Layouts() {
     SettingsMenu::f([&](auto& i) { i.RemoveImplementer(this); });
 }
 
-void Layouts::Delete(short id) {
+void Layouts::Delete(i16 id) {
     layouts_.erase(layouts_.begin() + selectedLayoutId_);
     selectedLayoutId_ = UnselectedSubId;
     needsSaving_ = true;
@@ -46,11 +46,11 @@ void Layouts::Delete(short id) {
 
 void Layouts::GridDeleted(Id id) {
     for(auto& s : layouts_) {
-        std::vector<int> toadd;
+        std::vector<i32> toadd;
 
         s.grids.erase(id.grid);
         for(auto it = s.grids.begin(); it != s.grids.end();) {
-            int gid = *it;
+            i32 gid = *it;
             if(gid > id.grid) {
                 it = s.grids.erase(it);
                 toadd.push_back(gid - 1);
@@ -59,7 +59,7 @@ void Layouts::GridDeleted(Id id) {
                 ++it;
         }
 
-        for(int i : toadd)
+        for(i32 i : toadd)
             s.grids.insert(i);
     }
 
@@ -78,11 +78,11 @@ void Layouts::DrawMenu(Keybind** currentEditedKeybind) {
     };
 
     if(ImGui::BeginListBox("##LayoutsList", ImVec2(-FLT_MIN, 0.f))) {
-        short newCurrentHovered = currentHoveredLayout_;
+        i16 newCurrentHovered = currentHoveredLayout_;
         for(auto&& [sid, s] : layouts_ | ranges::views::enumerate) {
             if(ImGui::Selectable(std::format("{}##Layout", s.name).c_str(), selectedLayoutId_ == sid || currentHoveredLayout_ == sid,
                                  ImGuiSelectableFlags_AllowItemOverlap)) {
-                selectedLayoutId_ = short(sid);
+                selectedLayoutId_ = i16(sid);
             }
 
             if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) || ImGui::IsItemActive()) {
@@ -90,11 +90,11 @@ void Layouts::DrawMenu(Keybind** currentEditedKeybind) {
                 auto orig = style.Colors[ImGuiCol_Button];
                 style.Colors[ImGuiCol_Button] *= ImVec4(0.5f, 0.5f, 0.5f, 1.f);
                 if(ImGuiClose(std::format("CloseLayout{}", sid).c_str(), 0.75f, false)) {
-                    selectedLayoutId_ = short(sid);
+                    selectedLayoutId_ = i16(sid);
                     Core::i().DisplayDeletionMenu({ s.name, "Layout", "", selectedLayoutId_ });
                 }
                 if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem))
-                    newCurrentHovered = short(sid);
+                    newCurrentHovered = i16(sid);
 
                 style.Colors[ImGuiCol_Button] = orig;
             }
@@ -118,12 +118,12 @@ void Layouts::DrawMenu(Keybind** currentEditedKeybind) {
         ImGui::Separator();
 
         for(auto&& [gid, g] : gridsInstance_->grids() | ranges::views::enumerate) {
-            bool sel = editLayout.grids.count(int(gid)) > 0;
+            bool sel = editLayout.grids.count(i32(gid)) > 0;
             if(saveCheck(ImGui::Checkbox(std::format("{}##GridInLayout", g.name).c_str(), &sel))) {
                 if(sel)
-                    editLayout.grids.insert(int(gid));
+                    editLayout.grids.insert(i32(gid));
                 else
-                    editLayout.grids.erase(int(gid));
+                    editLayout.grids.erase(i32(gid));
             }
         }
 
@@ -160,7 +160,7 @@ void Layouts::Draw(ComPtr<ID3D11DeviceContext>& ctx) {
 
             for(auto&& [i, s] : layouts_ | ranges::views::enumerate) {
                 if(ImGui::Selectable(s.name.c_str(), currentLayoutId_ == i)) {
-                    currentLayoutId_ = short(i);
+                    currentLayoutId_ = i16(i);
                     rememberedLayoutId_.value(currentLayoutId_);
                     showLayoutSelector_ = false;
                 }
@@ -201,10 +201,10 @@ void Layouts::Load(size_t gridCount) {
     };
 
     auto getivec2 = [](const json& j) {
-        return glm::ivec2(j[0].get<int>(), j[1].get<int>());
+        return ivec2(j[0].get<i32>(), j[1].get<i32>());
     };
     auto getImVec4 = [](const json& j) {
-        return ImVec4(j[0].get<float>(), j[1].get<float>(), j[2].get<float>(), j[3].get<float>());
+        return ImVec4(j[0].get<f32>(), j[1].get<f32>(), j[2].get<f32>(), j[3].get<f32>());
     };
 
     const auto& layouts = cfg.json()["buff_layouts"];
@@ -214,7 +214,7 @@ void Layouts::Load(size_t gridCount) {
         s.combatOnly = maybe_at(sIn, "combat_only", false);
 
         for(const auto& gIn : sIn["grids"]) {
-            int id = gIn;
+            i32 id = gIn;
             if(id < gridCount)
                 s.grids.insert(id);
         }
@@ -237,7 +237,7 @@ void Layouts::Save() {
 
         json& layoutGrids = layout["grids"];
 
-        for(int i : s.grids)
+        for(i32 i : s.grids)
             layoutGrids.push_back(i);
 
         layouts.push_back(layout);

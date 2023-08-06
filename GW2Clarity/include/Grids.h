@@ -30,7 +30,7 @@ public:
     [[nodiscard]] const char* GetTabName() const override { return "Grids"; }
 
     void Delete(Id id);
-    void StyleDeleted(uint id);
+    void StyleDeleted(u32 id);
 
 protected:
     void Load();
@@ -40,13 +40,13 @@ protected:
     void DrawGridList();
     void DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Layouts::Layout* layout, bool shouldIgnoreLayout);
 
-    static inline constexpr glm::ivec2 GridDefaultSpacing { 64, 64 };
+    static inline constexpr ivec2 GridDefaultSpacing { 64, 64 };
 
     struct Item
     {
-        glm::ivec2 pos { 0, 0 };
+        ivec2 pos { 0, 0 };
         const Buff* buff = &Buffs::UnknownBuff;
-        uint style = 0;
+        u32 style = 0;
         std::vector<const Buff*> additionalBuffs;
     };
 
@@ -54,29 +54,29 @@ public:
     struct Grid
     {
         std::string name { "New Grid" };
-        glm::ivec2 spacing = GridDefaultSpacing;
-        glm::ivec2 offset = {};
-        float centralWeight = 0.f;
-        glm::ivec2 mouseClipMin { std::numeric_limits<int>::max() };
-        glm::ivec2 mouseClipMax { std::numeric_limits<int>::min() };
+        ivec2 spacing = GridDefaultSpacing;
+        ivec2 offset = {};
+        f32 centralWeight = 0.f;
+        ivec2 mouseClipMin { std::numeric_limits<i32>::max() };
+        ivec2 mouseClipMax { std::numeric_limits<i32>::min() };
         bool trackMouseWhileHeld = true;
         std::vector<Item> items;
         bool attached = false;
         bool square = true;
 
-        auto ComputeOrigin(const Grids& grids, bool editMode, const glm::vec2& screen, const glm::vec2& mouse) const {
-            glm::vec2 gridOrigin;
+        auto ComputeOrigin(const Grids& grids, bool editMode, const vec2& screen, const vec2& mouse) const {
+            vec2 gridOrigin;
             if(!attached || (editMode && !grids.testMouseMode_))
-                gridOrigin = screen * 0.5f + glm::vec2(offset);
+                gridOrigin = screen * 0.5f + vec2(offset);
             else {
                 if(!trackMouseWhileHeld && grids.holdingMouseButton_ != ScanCode::None)
-                    gridOrigin = glm::vec2 { grids.heldMousePos_.x, grids.heldMousePos_.y };
+                    gridOrigin = vec2 { grids.heldMousePos_.x, grids.heldMousePos_.y };
                 else
                     gridOrigin = mouse;
 
-                if(mouseClipMin.x != std::numeric_limits<int>::max()) {
-                    gridOrigin = glm::max(gridOrigin, glm::vec2(mouseClipMin));
-                    gridOrigin = glm::min(gridOrigin, glm::vec2(mouseClipMax));
+                if(mouseClipMin.x != std::numeric_limits<i32>::max()) {
+                    gridOrigin = glm::max(gridOrigin, vec2(mouseClipMin));
+                    gridOrigin = glm::min(gridOrigin, vec2(mouseClipMax));
                 }
 
                 if(centralWeight > 0.f)
@@ -127,7 +127,7 @@ protected:
 
     Id selectedId_ = Unselected();
 
-    int editingItemFakeCount_ = 1;
+    i32 editingItemFakeCount_ = 1;
 
     bool draggingMouseBoundaries_ = false;
     bool testMouseMode_ = false;
@@ -141,7 +141,7 @@ protected:
 
     ConfigurationOption<bool> enableBetterFiltering_;
 
-    static constexpr int InvisibleWindowFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoInputs |
+    static constexpr i32 InvisibleWindowFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoInputs |
                                                 ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoScrollWithMouse;
 
 #ifdef _DEBUG

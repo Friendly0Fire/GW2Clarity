@@ -24,7 +24,7 @@ Styles::~Styles() {
     SettingsMenu::f([&](auto& i) { i.RemoveImplementer(this); });
 }
 
-void Styles::Delete(uint id) {
+void Styles::Delete(u32 id) {
     styles_.erase(styles_.begin() + id);
     selectedId_ = UnselectedId;
     needsSaving_ = true;
@@ -42,7 +42,7 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind) {
     if(ImGui::BeginListBox("##StylesList", ImVec2(-FLT_MIN, 0.f))) {
         for(auto it : styles_ | ranges::views::enumerate) {
             // Need explicit types to shut up IntelliSense, still present as of 17.5.1
-            uint sid = static_cast<uint>(it.first);
+            u32 sid = static_cast<u32>(it.first);
             Style& s = it.second;
 
             if(ImGui::Selectable(s.name.c_str(), selectedId_ == sid, ImGuiSelectableFlags_AllowItemOverlap))
@@ -64,12 +64,12 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind) {
 
         if(ImGui::Button("Add")) {
             std::string name = "New Style";
-            int nameIdx = 1;
+            i32 nameIdx = 1;
             while(ranges::any_of(styles_, [&](const auto& s) { return s.name == name; }))
                 name = std::format("New Style ({})", ++nameIdx);
 
             styles_.emplace_back(name);
-            selectedId_ = uint(styles_.size()) - 1;
+            selectedId_ = u32(styles_.size()) - 1;
         }
 
         {
@@ -80,11 +80,11 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind) {
                 auto& s = styles_.back();
                 auto baseName = s.name;
                 auto& name = s.name;
-                int nameIdx = 1;
+                i32 nameIdx = 1;
                 while(ranges::any_of(styles_, [&](const auto& s2) { return &s != &s2 && s2.name == name; })) {
                     name = std::format("{} ({})", baseName, ++nameIdx);
                 }
-                selectedId_ = uint(styles_.size()) - 1;
+                selectedId_ = u32(styles_.size()) - 1;
                 needsSaving_ = true;
             }
         }
@@ -106,12 +106,12 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind) {
         {
             ImGuiDisabler disable(s.builtIn);
 
-            static const float marginSize = ImGui::CalcTextSize("000-000").x;
+            static const f32 marginSize = ImGui::CalcTextSize("000-000").x;
 
             if(ImGuiBeginTimeline("Range", 26, marginSize, s.thresholds.size())) {
                 for(size_t i = 0; i < s.thresholds.size(); i++) {
                     auto& th = s.thresholds[i];
-                    ImTimelineRange r { int(th.thresholdMin), int(th.thresholdMax) };
+                    ImTimelineRange r { i32(th.thresholdMin), i32(th.thresholdMax) };
                     const auto name = th.thresholdMin == th.thresholdMax ? std::format("{}", th.thresholdMin)
                                                                          : std::format("{}-{}", th.thresholdMin, th.thresholdMax);
                     auto [changed, selected] = ImGuiTimelineEvent(std::format("{}", i).c_str(), name.c_str(), r, selectedThresholdId_ == i);
@@ -122,19 +122,19 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind) {
                     }
 
                     if(selected)
-                        selectedThresholdId_ = int(i);
+                        selectedThresholdId_ = i32(i);
                 }
             }
-            int lines[] = { 0, 1, 5, 10, 15, 20, 25 };
+            i32 lines[] = { 0, 1, 5, 10, 15, 20, 25 };
 
             ImVec2 tooltipLocation;
-            int tooltipNum = -1;
+            i32 tooltipNum = -1;
             ImGuiEndTimeline(std::size(lines), lines, &tooltipLocation, &tooltipNum);
             if(tooltipNum > 0 && previewBuff_) {
                 disable.Enable();
 
                 previewCount_ = tooltipNum - 1;
-                float d = ImGuiGetWindowContentRegionWidth() * 0.15f;
+                f32 d = ImGuiGetWindowContentRegionWidth() * 0.15f;
                 ImGui::SetNextWindowPos(tooltipLocation, ImGuiCond_Always, ImVec2(0.5f, 1.f));
                 if(ImGui::Begin("##TimelineTooltip", nullptr,
                                 ImGuiWindowFlags_Tooltip | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar |
@@ -226,7 +226,7 @@ void Styles::Draw(ComPtr<ID3D11DeviceContext>& ctx) {
     if(currentTime - lastPreviewChoiceTime_ > 1000) {
         lastPreviewChoiceTime_ = currentTime;
         std::uniform_int_distribution<> dist(0, buffs_->buffs().size() - 1);
-        int attempts = 100;
+        i32 attempts = 100;
         do {
             previewBuff_ = &buffs_->buffs()[dist(previewRng_)];
         }
@@ -236,7 +236,7 @@ void Styles::Draw(ComPtr<ID3D11DeviceContext>& ctx) {
             previewBuff_ = nullptr;
     }
 
-    float clear[4] = { 0.f, 0.f, 0.f, 1.f };
+    f32 clear[4] = { 0.f, 0.f, 0.f, 1.f };
     ctx->ClearRenderTargetView(preview_.rtv.Get(), clear);
 
     if(!previewBuff_)
@@ -268,10 +268,10 @@ void Styles::Load() {
     cfg.Reload();
 
     auto getvec4 = [](const json& j) {
-        return glm::vec4(j[0].get<float>(), j[1].get<float>(), j[2].get<float>(), j[3].get<float>());
+        return vec4(j[0].get<f32>(), j[1].get<f32>(), j[2].get<f32>(), j[3].get<f32>());
     };
     auto getvec2 = [](const json& j) {
-        return glm::vec2(j[0].get<float>(), j[1].get<float>());
+        return vec2(j[0].get<f32>(), j[1].get<f32>());
     };
     auto maybe_at = []<typename D>(const json& j, const char* n, const D& def,
                                    const std::variant<std::monostate, std::function<D(const json&)>>& cvt = {}) {
@@ -293,12 +293,12 @@ void Styles::Load() {
             t.thresholdMin = maybe_at(tIn, "threshold_min", 0);
             t.thresholdMax = maybe_at(tIn, "threshold_max", 1);
             auto& app = t.appearance;
-            app.tint = maybe_at(tIn, "tint", glm::vec4(1), { getvec4 });
-            app.border = maybe_at(tIn, "border", glm::vec4(0), { getvec4 });
-            app.glow = maybe_at(tIn, "glow", glm::vec4(0), { getvec4 });
+            app.tint = maybe_at(tIn, "tint", vec4(1), { getvec4 });
+            app.border = maybe_at(tIn, "border", vec4(0), { getvec4 });
+            app.glow = maybe_at(tIn, "glow", vec4(0), { getvec4 });
             app.borderThickness = maybe_at(tIn, "border_thickness", 0.f);
             app.glowSize = maybe_at(tIn, "glow_size", 0.f);
-            app.glowPulse = maybe_at(tIn, "glow_pulse", glm::vec2(0), { getvec2 });
+            app.glowPulse = maybe_at(tIn, "glow_pulse", vec2(0), { getvec2 });
             s.thresholds.push_back(t);
         }
 
@@ -356,7 +356,7 @@ void Styles::BuildCache() {
         // Reverse iteration order so low priority appearance is set first and overwritten by high priority ones
         for(const auto& th : s.thresholds | ranges::views::reverse)
             ranges::fill(s.appearanceCache.begin() + th.thresholdMin,
-                         s.appearanceCache.begin() + std::min(th.thresholdMax + 1, uint(s.appearanceCache.size())), th.appearance);
+                         s.appearanceCache.begin() + std::min(th.thresholdMax + 1, u32(s.appearanceCache.size())), th.appearance);
 
         // Normal iteration order to find first threshold at 100, if any
         for(const auto& th : s.thresholds)
@@ -367,7 +367,7 @@ void Styles::BuildCache() {
     }
 }
 
-void Styles::ApplyStyle(uint id, int count, GridInstanceData& out) const {
+void Styles::ApplyStyle(u32 id, i32 count, GridInstanceData& out) const {
     if(id >= styles_.size() || count < 0)
         return;
 
@@ -376,15 +376,15 @@ void Styles::ApplyStyle(uint id, int count, GridInstanceData& out) const {
         const auto& app = appPair.second;
         if(app.glowPulse.x > 0.f) {
             auto currentTime = TimeInMilliseconds();
-            float x = sinf(static_cast<float>(currentTime) / 1000.f * 2.f * static_cast<float>(M_PI) * app.glowPulse.y) * 0.5f + 0.5f;
+            f32 x = sinf(static_cast<f32>(currentTime) / 1000.f * 2.f * std::numbers::pi_v<f32> * app.glowPulse.y) * 0.5f + 0.5f;
             out.glowSize.x = glm::mix(1.f - app.glowPulse.x, 1.f, x) * app.glowSize;
             out.glowSize.y = app.glowSize;
         }
         else
-            out.glowSize = glm::vec2(app.glowSize);
+            out.glowSize = vec2(app.glowSize);
         out.borderColor = app.border;
         out.borderThickness = app.borderThickness;
-        out.glowColor = app.glowSize > 0.f ? app.glow : glm::vec4(0.f);
+        out.glowColor = app.glowSize > 0.f ? app.glow : vec4(0.f);
         out.tint = app.tint;
     }
 }

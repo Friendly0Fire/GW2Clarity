@@ -12,8 +12,8 @@
 
 namespace GW2Clarity
 {
-template<VectorLike<float, 2> T>
-T AdjustToArea(float w, float h, float availW) {
+template<VectorLike<f32, 2> T>
+T AdjustToArea(f32 w, f32 h, f32 availW) {
     T dims(w, h);
     if(dims.x < dims.y)
         dims.x = dims.y * w / h;
@@ -54,26 +54,26 @@ Grids::~Grids() {
 
 void Grids::DrawEditingGrid() {
     if(selectedId_.grid != UnselectedSubId) {
-        const glm::vec2 screen { ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y };
-        const glm::vec2 mouse { ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y };
+        const vec2 screen { ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y };
+        const vec2 mouse { ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y };
 
         const auto& sp = grid().spacing;
         auto c = grid().ComputeOrigin(*this, !testMouseMode_, screen, mouse);
         auto* cmdList = ImGui::GetBackgroundDrawList();
         cmdList->PushClipRectFullScreen();
 
-        int i = 0;
+        i32 i = 0;
         auto color = [&i]() {
             return i != 0 ? (i % 4 == 0 ? 0xCCFFFFFF : 0x55FFFFFF) : 0xFFFFFFFF;
         };
-        for(float x = 0.f; x < c.x; x += sp.x) {
+        for(f32 x = 0.f; x < c.x; x += sp.x) {
             cmdList->AddLine(ImVec2(c.x + x, 0.f), ImVec2(c.x + x, screen.y), color(), 1.2f);
             cmdList->AddLine(ImVec2(c.x - x, 0.f), ImVec2(c.x - x, screen.y), color(), 1.2f);
             i++;
         }
 
         i = 0;
-        for(float y = 0.f; y < c.y; y += sp.y) {
+        for(f32 y = 0.f; y < c.y; y += sp.y) {
             cmdList->AddLine(ImVec2(0.f, c.y + y), ImVec2(screen.x, c.y + y), color(), 1.2f);
             cmdList->AddLine(ImVec2(0.f, c.y - y), ImVec2(screen.x, c.y - y), color(), 1.2f);
             i++;
@@ -110,7 +110,7 @@ void Grids::DrawGridList() {
         if(ImGui::BeginListBox("##GridsList", ImVec2(-FLT_MIN, 0.f))) {
             for(auto it : grids_ | ranges::views::enumerate) {
                 // Need explicit types to shut up IntelliSense, still present as of 17.5.1
-                short gid = short(it.first);
+                i16 gid = i16(it.first);
                 Grid& g = it.second;
 
                 auto u = Unselected(gid);
@@ -151,7 +151,7 @@ void Grids::DrawGridList() {
                 auto gid = selectedId_.grid;
                 for(auto it : g.items | ranges::views::enumerate) {
                     // Need explicit types to shut up IntelliSense, still present as of 17.5.1
-                    short iid = it.first;
+                    i16 iid = it.first;
                     Item& i = it.second;
 
                     Id id { gid, iid };
@@ -217,20 +217,20 @@ void Grids::DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Layouts::Layout* l
 
     if(layout || shouldIgnoreLayout || editMode || showDebugGrid) {
         auto currentTime = TimeInMilliseconds();
-        float editingBorderCycle = sin(float(currentTime) * 2.f * M_PI / 1000.f) * 0.5f + 0.5f;
+        f32 editingBorderCycle = sin(f32(currentTime) * 2.f * std::numbers::pi_v<f32> / 1000.f) * 0.5f + 0.5f;
 
         if(!MumbleLink::i().isInCompetitiveMode() &&
            (editMode || shouldIgnoreLayout || showDebugGrid || !layout->combatOnly || MumbleLink::i().isInCombat())) {
-            const glm::vec2 screen { ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y };
-            const glm::vec2 mouse { ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y };
+            const vec2 screen { ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y };
+            const vec2 mouse { ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y };
 
-            auto drawItem = [&](const glm::ivec2& spacing, const Item& i, const glm::vec2& gridOrigin, int count, bool editing) {
-                glm::vec2 pos = gridOrigin + glm::vec2(i.pos * spacing);
+            auto drawItem = [&](const ivec2& spacing, const Item& i, const vec2& gridOrigin, i32 count, bool editing) {
+                vec2 pos = gridOrigin + vec2(i.pos * spacing);
 
-                auto adj = AdjustToArea<glm::vec2>(128.f, 128.f, float(spacing.x));
+                auto adj = AdjustToArea<vec2>(128.f, 128.f, f32(spacing.x));
 
                 GridInstanceData inst;
-                inst.posDims = glm::vec4(pos, adj) / glm::vec4(screen, screen);
+                inst.posDims = vec4(pos, adj) / vec4(screen, screen);
                 inst.uv = i.buff->uv;
                 if((inst.showNumber = i.buff->ShowNumber(count)))
                     inst.numberUV = buffs_->GetNumber(count);
@@ -238,29 +238,29 @@ void Grids::DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Layouts::Layout* l
                 styles_->ApplyStyle(i.style, count, inst);
 
                 if(editing) {
-                    inst.borderColor = glm::mix(inst.borderColor, glm::vec4(1, 0, 0, 1), editingBorderCycle);
+                    inst.borderColor = glm::mix(inst.borderColor, vec4(1, 0, 0, 1), editingBorderCycle);
                     inst.borderThickness = std::max(inst.borderThickness, 1.f);
                 }
 
                 gridRenderer_.Add(std::move(inst));
             };
 
-            auto drawGrid = [&](const Grid& g, short gid) {
+            auto drawGrid = [&](const Grid& g, i16 gid) {
                 auto gridOrigin = g.ComputeOrigin(*this, editMode, screen, mouse);
 
                 for(auto it : g.items | ranges::views::enumerate) {
                     // Need explicit types to shut up IntelliSense, still present as of 17.5.1
-                    short iid = it.first;
+                    i16 iid = it.first;
                     const Item& i = it.second;
 
                     bool editing = editMode && selectedId_ == Id { gid, iid };
-                    int count = 0;
+                    i32 count = 0;
                     if(editing)
                         count = editingItemFakeCount_;
                     else if(i.buff)
                         count =
                             std::accumulate(i.additionalBuffs.begin(), i.additionalBuffs.end(), i.buff->GetStacks(buffs_->activeBuffs()),
-                                            [&](int a, const Buff* b) { return a + b->GetStacks(buffs_->activeBuffs()); });
+                                            [&](i32 a, const Buff* b) { return a + b->GetStacks(buffs_->activeBuffs()); });
 
                     drawItem(g.spacing, i, gridOrigin, count, editing);
                 }
@@ -272,7 +272,7 @@ void Grids::DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Layouts::Layout* l
                 for(const auto& g : grids_)
                     drawGrid(g, UnselectedSubId);
             else if(layout)
-                for(int gid : layout->grids)
+                for(i32 gid : layout->grids)
                     drawGrid(grids_[gid], UnselectedSubId);
 
             gridRenderer_.Draw(ctx, enableBetterFiltering_.value());
@@ -282,10 +282,10 @@ void Grids::DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Layouts::Layout* l
                 if (showDebugGrid)
                 {
                     const auto lowerCaseDebugGridFilter = ToLower(debugGridFilter_);
-                    glm::ivec2 dir(1, 0);
-                    int        steps = 1, stepCount = 1;
+                    ivec2 dir(1, 0);
+                    i32        steps = 1, stepCount = 1;
                     Item       fakeItem{
-                        glm::ivec2(0), nullptr, {                           },
+                        ivec2(0), nullptr, {                           },
                           { { 1, ImVec4(1, 1, 1, 0.33f) }, { 100, ImVec4(1, 1, 1, 1) } }
                     };
 
@@ -296,11 +296,11 @@ void Grids::DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Layouts::Layout* l
 
                         fakeItem.buff = &b;
 
-                        int count     = b.GetStacks(activeBuffs_);
-                        drawItem(glm::ivec2(64), fakeItem, screen * 0.5f, count, false);
+                        i32 count     = b.GetStacks(activeBuffs_);
+                        drawItem(ivec2(64), fakeItem, screen * 0.5f, count, false);
 
-                        glm::vec2 minPos = glm::vec2(fakeItem.pos * 64) + screen * 0.5f;
-                        glm::vec2 maxPos = minPos + 64.f;
+                        vec2 minPos = vec2(fakeItem.pos * 64) + screen * 0.5f;
+                        vec2 maxPos = minPos + 64.f;
 
                         if (glm::all(glm::greaterThanEqual(baseMouse, minPos)) && glm::all(glm::lessThan(baseMouse, maxPos)))
                             hoveredBuff = &b;
@@ -309,7 +309,7 @@ void Grids::DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Layouts::Layout* l
                         steps--;
                         if (steps == 0)
                         {
-                            dir = glm::ivec2(-dir.y, dir.x);
+                            dir = ivec2(-dir.y, dir.x);
                             if (dir.x != 0)
                                 stepCount += 1;
                             steps = stepCount;
@@ -352,7 +352,7 @@ void Grids::Delete(Id id) {
     }
 }
 
-void Grids::StyleDeleted(uint id) {
+void Grids::StyleDeleted(u32 id) {
     for(auto& g : grids_) {
         for(auto& i : g.items) {
             if(i.style == id)
@@ -368,9 +368,9 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind) {
         const auto& sp = grid().spacing;
         auto mouse = ImGui::GetIO().MousePos - ImGui::GetIO().DisplaySize * 0.5f;
 
-        auto pos = glm::ivec2(glm::floor(glm::vec2(mouse.x, mouse.y) / glm::vec2(sp)));
+        auto pos = ivec2(glm::floor(vec2(mouse.x, mouse.y) / vec2(sp)));
 
-        ImGui::SetNextWindowPos(ToImGui(glm::vec2(pos * sp) - glm::vec2(0.f, sp.y * 0.2f) + FromImGui(ImGui::GetIO().DisplaySize * 0.5f)),
+        ImGui::SetNextWindowPos(ToImGui(vec2(pos * sp) - vec2(0.f, sp.y * 0.2f) + FromImGui(ImGui::GetIO().DisplaySize * 0.5f)),
                                 ImGuiCond_Always, ImVec2(0.5f, 1.f));
         if(ImGui::Begin(
                "##GridElementTooltip", nullptr,
@@ -418,15 +418,15 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind) {
 
             saveCheck(ImGui::Checkbox("Square Grid", &editGrid.square));
             if(editGrid.square)
-                saveCheck(ImGui::DragInt("Grid Scale", (int*)&editGrid.spacing, 0.1f, 1, 2048));
+                saveCheck(ImGui::DragInt("Grid Scale", (i32*)&editGrid.spacing, 0.1f, 1, 2048));
             else
                 saveCheck(ImGui::DragInt2("Grid Scale", glm::value_ptr(editGrid.spacing), 0.1f, 1, 2048));
 
             if(editGrid.square)
                 editGrid.spacing.y = editGrid.spacing.x;
 
-            saveCheck(ImGui::DragInt2("Grid Offset", glm::value_ptr(editGrid.offset), 0.1f, -int(ImGui::GetIO().DisplaySize.x) / 2,
-                                      int(ImGui::GetIO().DisplaySize.x) / 2));
+            saveCheck(ImGui::DragInt2("Grid Offset", glm::value_ptr(editGrid.offset), 0.1f, -i32(ImGui::GetIO().DisplaySize.x) / 2,
+                                      i32(ImGui::GetIO().DisplaySize.x) / 2));
 
             saveCheck(ImGui::Checkbox("Attached to Mouse", &editGrid.attached));
             if(editGrid.attached) {
@@ -440,7 +440,7 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind) {
                 saveCheck(ImGui::Checkbox("Track Mouse While Button Is Held", &editGrid.trackMouseWhileHeld));
                 ImGuiHelpTooltip("Controls whether to follow the mouse motion when it is hidden while a mouse button is held.");
 
-                bool showMouseClip = editGrid.mouseClipMin.x != std::numeric_limits<int>::max();
+                bool showMouseClip = editGrid.mouseClipMin.x != std::numeric_limits<i32>::max();
                 bool lastShowMouseClip = showMouseClip;
                 saveCheck(ImGui::Checkbox("Enable Mouse Boundaries", &showMouseClip));
                 ImGuiHelpTooltip(
@@ -448,12 +448,12 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind) {
                     "attached grid from moving "
                     "too far to the side of the screen.");
                 if(showMouseClip && !lastShowMouseClip) {
-                    editGrid.mouseClipMin = glm::ivec2 { 0 };
-                    editGrid.mouseClipMax = glm::ivec2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y);
+                    editGrid.mouseClipMin = ivec2 { 0 };
+                    editGrid.mouseClipMax = ivec2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y);
                 }
                 else if(!showMouseClip && lastShowMouseClip) {
-                    editGrid.mouseClipMin = glm::ivec2 { std::numeric_limits<int>::max() };
-                    editGrid.mouseClipMax = glm::ivec2 { std::numeric_limits<int>::min() };
+                    editGrid.mouseClipMin = ivec2 { std::numeric_limits<i32>::max() };
+                    editGrid.mouseClipMax = ivec2 { std::numeric_limits<i32>::min() };
                 }
 
                 if(showMouseClip) {
@@ -461,13 +461,13 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind) {
                     ImGui::Indent();
                     bool editingAny = false;
                     editingAny |=
-                        saveCheck(ImGui::DragInt("Mouse Left", &editGrid.mouseClipMin.x, 1.f, 0, int(ImGui::GetIO().DisplaySize.x)));
+                        saveCheck(ImGui::DragInt("Mouse Left", &editGrid.mouseClipMin.x, 1.f, 0, i32(ImGui::GetIO().DisplaySize.x)));
                     editingAny |=
-                        saveCheck(ImGui::DragInt("Mouse Right", &editGrid.mouseClipMax.x, 1.f, 0, int(ImGui::GetIO().DisplaySize.x)));
+                        saveCheck(ImGui::DragInt("Mouse Right", &editGrid.mouseClipMax.x, 1.f, 0, i32(ImGui::GetIO().DisplaySize.x)));
                     editingAny |=
-                        saveCheck(ImGui::DragInt("Mouse Top", &editGrid.mouseClipMin.y, 1.f, 0, int(ImGui::GetIO().DisplaySize.y)));
+                        saveCheck(ImGui::DragInt("Mouse Top", &editGrid.mouseClipMin.y, 1.f, 0, i32(ImGui::GetIO().DisplaySize.y)));
                     editingAny |=
-                        saveCheck(ImGui::DragInt("Mouse Bottom", &editGrid.mouseClipMax.y, 1.f, 0, int(ImGui::GetIO().DisplaySize.y)));
+                        saveCheck(ImGui::DragInt("Mouse Bottom", &editGrid.mouseClipMax.y, 1.f, 0, i32(ImGui::GetIO().DisplaySize.y)));
                     ImGui::Unindent();
 
                     if(editingAny)
@@ -484,22 +484,22 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind) {
             auto& editItem = item();
             ImGuiTitle(std::format("Editing Item '{}' of '{}'", editItem.buff->name, grid().name).c_str(), 0.75f);
 
-            auto buffCombo = [&](auto& buff, int id, const char* name) {
+            auto buffCombo = [&](auto& buff, i32 id, const char* name) {
                 if(saveCheck(selector_.Draw(std::format("{}##{}", name, id).c_str())))
                     buff = selector_.selectedBuff();
             };
 
             buffCombo(editItem.buff, -1, "Main buff");
-            int removeId = -1;
+            i32 removeId = -1;
             for(auto it : editItem.additionalBuffs | ranges::views::enumerate) {
                 // Need explicit types to shut up IntelliSense, still present as of 17.5.1
-                short n = short(it.first);
+                i16 n = i16(it.first);
                 const Buff*& extraBuff = it.second;
 
-                buffCombo(extraBuff, int(n), "Secondary buff");
+                buffCombo(extraBuff, i32(n), "Secondary buff");
                 ImGui::SameLine();
                 if(ImGuiClose(std::format("RemoveExtraBuff{}", n).c_str()))
-                    removeId = int(n);
+                    removeId = i32(n);
             }
             if(removeId != -1)
                 editItem.additionalBuffs.erase(editItem.additionalBuffs.begin() + removeId);
@@ -516,7 +516,7 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind) {
 
             if(ImGui::BeginCombo("Style", styles_->style(editItem.style).name.c_str())) {
                 for(auto it : styles_->styles() | ranges::views::enumerate) {
-                    uint sid = it.first;
+                    u32 sid = it.first;
                     const Style& s = it.second;
                     if(saveCheck(ImGui::Selectable(s.name.c_str(), sid == editItem.style)))
                         editItem.style = sid;
@@ -563,19 +563,19 @@ void Grids::Load() {
     };
 
     auto getivec2 = [](const json& j) {
-        return glm::ivec2(j[0].get<int>(), j[1].get<int>());
+        return ivec2(j[0].get<i32>(), j[1].get<i32>());
     };
     auto getivec4 = [](const json& j) {
-        return glm::ivec4(j[0].get<int>(), j[1].get<int>(), j[2].get<int>(), j[3].get<int>());
+        return ivec4(j[0].get<i32>(), j[1].get<i32>(), j[2].get<i32>(), j[3].get<i32>());
     };
     auto getImVec4 = [](const json& j) {
-        return ImVec4(j[0].get<float>(), j[1].get<float>(), j[2].get<float>(), j[3].get<float>());
+        return ImVec4(j[0].get<f32>(), j[1].get<f32>(), j[2].get<f32>(), j[3].get<f32>());
     };
     auto getvec4 = [](const json& j) {
-        return glm::vec4(j[0].get<float>(), j[1].get<float>(), j[2].get<float>(), j[3].get<float>());
+        return vec4(j[0].get<f32>(), j[1].get<f32>(), j[2].get<f32>(), j[3].get<f32>());
     };
     auto getBuff = [this](const json& j) -> const Buff* {
-        int id = j;
+        i32 id = j;
         auto it = buffs_->buffsMap().find(id);
         if(it != buffs_->buffsMap().end())
             return it->second;
@@ -586,12 +586,12 @@ void Grids::Load() {
     const auto& grids = cfg.json()["buff_grids"];
     for(const auto& gIn : grids) {
         Grid g;
-        g.spacing = maybeAt(gIn, "spacing", glm::ivec2(32, 32), { getivec2 });
-        g.offset = maybeAt(gIn, "offset", glm::ivec2(), { getivec2 });
+        g.spacing = maybeAt(gIn, "spacing", ivec2(32, 32), { getivec2 });
+        g.offset = maybeAt(gIn, "offset", ivec2(), { getivec2 });
         g.attached = maybeAt(gIn, "attached", false);
         g.centralWeight = maybeAt(gIn, "central_weight", 0.f);
-        g.mouseClipMin = maybeAt(gIn, "mouse_clip_min", glm::ivec2 { std::numeric_limits<int>::max() }, { getivec2 });
-        g.mouseClipMax = maybeAt(gIn, "mouse_clip_max", glm::ivec2 { std::numeric_limits<int>::min() }, { getivec2 });
+        g.mouseClipMin = maybeAt(gIn, "mouse_clip_min", ivec2 { std::numeric_limits<i32>::max() }, { getivec2 });
+        g.mouseClipMax = maybeAt(gIn, "mouse_clip_max", ivec2 { std::numeric_limits<i32>::min() }, { getivec2 });
         g.trackMouseWhileHeld = maybeAt(gIn, "track_mouse_while_held", true);
         g.square = maybeAt(gIn, "square", true);
         g.name = gIn["name"];

@@ -28,12 +28,12 @@ public:
     struct DeletionInfo
     {
         std::string_view name, typeName, tail;
-        std::variant<char, short, Id, uint> id;
+        std::variant<char, i16, Id, u32> id;
     };
 
     void DisplayDeletionMenu(DeletionInfo&& id);
 
-    glm::vec2 screenDims() const { return glm::vec2(screenWidth_, screenHeight_); }
+    vec2 screenDims() const { return vec2(screenWidth_, screenHeight_); }
 
 protected:
     void InnerDraw() override;
@@ -45,7 +45,7 @@ protected:
     void InnerShutdown() override;
     void InnerFrequentUpdate() override;
 
-    [[nodiscard]] uint GetShaderArchiveID() const override { return IDR_SHADERS; }
+    [[nodiscard]] u32 GetShaderArchiveID() const override { return IDR_SHADERS; }
     [[nodiscard]] const wchar_t* GetShaderDirectory() const override { return SHADERS_DIR; }
     [[nodiscard]] const wchar_t* GetGithubRepoSubUrl() const override { return L"Friendly0Fire/GW2Clarity"; }
 

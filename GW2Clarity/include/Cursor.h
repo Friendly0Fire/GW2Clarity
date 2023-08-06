@@ -24,7 +24,7 @@ public:
 
     const char* GetTabName() const override { return "Cursor"; }
 
-    enum class CursorType : int
+    enum class CursorType : i32
     {
         CIRCLE = 0,
         SQUARE = 1,
@@ -38,11 +38,11 @@ public:
     {
         std::string name;
 
-        glm::vec4 color1 { 1.f }, color2 { 1.f };
+        vec4 color1 { 1.f }, color2 { 1.f };
         bool invert = false;
-        glm::vec2 dims { 32.f };
+        vec2 dims { 32.f };
         bool fullscreen = false;
-        float edgeThickness = 1.f, secondaryThickness = 4.f, angle = 0.f;
+        f32 edgeThickness = 1.f, secondaryThickness = 4.f, angle = 0.f;
         CursorType type = CursorType::CIRCLE;
     };
 
@@ -52,10 +52,10 @@ protected:
 
     struct CursorData
     {
-        glm::vec4 dimensions;
-        glm::vec4 parameters;
-        glm::vec4 color1;
-        glm::vec4 color2;
+        vec4 dimensions;
+        vec4 parameters;
+        vec4 color1;
+        vec4 color2;
     };
     ConstantBufferSPtr<CursorData> cursorCB_;
     ShaderId screenSpaceVS_;

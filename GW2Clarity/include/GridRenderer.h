@@ -8,15 +8,15 @@ namespace GW2Clarity
 {
 struct GridInstanceData
 {
-    glm::vec4 posDims;
-    glm::vec2 uv;
-    glm::vec2 numberUV;
-    glm::vec4 tint;
-    glm::vec4 borderColor;
-    glm::vec4 glowColor;
-    glm::vec2 glowSize;
-    float borderThickness;
-    int showNumber;
+    vec4 posDims;
+    vec2 uv;
+    vec2 numberUV;
+    vec4 tint;
+    vec4 borderColor;
+    vec4 glowColor;
+    vec2 glowSize;
+    f32 borderThickness;
+    i32 showNumber;
 };
 
 class BaseGridRenderer
@@ -38,10 +38,10 @@ protected:
 
     struct GridConstants
     {
-        glm::vec4 screenSize;
-        glm::vec2 atlasUVSize;
-        glm::vec2 numbersUVSize;
-        float time;
+        vec4 screenSize;
+        vec2 atlasUVSize;
+        vec2 numbersUVSize;
+        f32 time;
     };
     ConstantBufferSPtr<GridConstants> gridCB_;
 
@@ -81,6 +81,6 @@ public:
 protected:
     static constexpr size_t instanceBufferSize_s = N;
     std::array<InstanceData, instanceBufferSize_s> instanceBufferSource_ {};
-    uint instanceBufferCount_ = 0;
+    u32 instanceBufferCount_ = 0;
 };
 } // namespace GW2Clarity

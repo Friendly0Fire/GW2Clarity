@@ -56,7 +56,7 @@ void Cursor::Draw(ComPtr<ID3D11DeviceContext>& ctx) {
     const auto& io = ImGui::GetIO();
     auto mp = FromImGui(io.MousePos) / Core::i().screenDims();
 
-    if(glm::any(glm::lessThan(mp, glm::vec2(0.f))) || glm::any(glm::greaterThan(mp, glm::vec2(1.f))))
+    if(glm::any(glm::lessThan(mp, vec2(0.f))) || glm::any(glm::greaterThan(mp, vec2(1.f))))
         return;
 
     for(auto& l : layers_) {
@@ -66,18 +66,18 @@ void Cursor::Draw(ComPtr<ID3D11DeviceContext>& ctx) {
             ctx->OMSetBlendState(defaultBlend_.Get(), nullptr, 0xffffffff);
 
         if(l.fullscreen)
-            l.dims = glm::vec2(float(std::max(Core::i().screenWidth(), Core::i().screenHeight())) * 2.f);
+            l.dims = vec2(f32(std::max(Core::i().screenWidth(), Core::i().screenHeight())) * 2.f);
 
         cb->color1 = l.color1;
         cb->color2 = l.color2;
-        float div = std::min(l.dims.x, l.dims.y);
-        cb->parameters = glm::vec4(l.edgeThickness * (l.type == CursorType::SMOOTH ? 1.f : 1.f / div), l.secondaryThickness / div,
-                                   l.angle / 180.f * M_PI, 0.f);
-        cb->dimensions = glm::vec4(mp, l.dims / Core::i().screenDims());
+        f32 div = std::min(l.dims.x, l.dims.y);
+        cb->parameters = vec4(l.edgeThickness * (l.type == CursorType::SMOOTH ? 1.f : 1.f / div), l.secondaryThickness / div,
+                              l.angle / 180.f * std::numbers::pi_v<f32>, 0.f);
+        cb->dimensions = vec4(mp, l.dims / Core::i().screenDims());
         cb.Update(ctx.Get());
 
         ShaderManager::i().SetConstantBuffers(ctx.Get(), cb);
-        ShaderManager::i().SetShaders(ctx.Get(), screenSpaceVS_, cursorPS_[int(l.type)]);
+        ShaderManager::i().SetShaders(ctx.Get(), screenSpaceVS_, cursorPS_[i32(l.type)]);
 
         DrawScreenQuad(ctx.Get());
     }
@@ -128,7 +128,7 @@ void Cursor::DrawMenu(Keybind** currentEditedKeybind) {
             ImGuiTitle("New Cursor Layer", 0.75f);
 
         saveCheck(ImGui::InputText("Name##NewLayer", &editLayer.name));
-        saveCheck(ImGui::Combo("Type", (int*)&editLayer.type, "Circle\0Square\0Cross\0Gaussian"));
+        saveCheck(ImGui::Combo("Type", (i32*)&editLayer.type, "Circle\0Square\0Cross\0Gaussian"));
 
         if(editLayer.type != CursorType::SMOOTH)
             saveCheck(ImGui::ColorEdit4("Border Color", glm::value_ptr(editLayer.color1),
@@ -157,7 +157,7 @@ void Cursor::DrawMenu(Keybind** currentEditedKeybind) {
 
         if(saveCheck(ImGui::Checkbox("Full screen", &editLayer.fullscreen)))
             if(!editLayer.fullscreen)
-                editLayer.dims = glm::vec2(32.f);
+                editLayer.dims = vec2(32.f);
 
         if(!editLayer.fullscreen)
             saveCheck(ImGui::DragFloat2("Cursor Size", glm::value_ptr(editLayer.dims), 0.2f, 1.f, ImGui::GetIO().DisplaySize.x * 2.f));
@@ -203,22 +203,22 @@ void Cursor::Load() {
     };
 
     auto getvec4 = [](const json& j) {
-        return glm::vec4(j[0].get<float>(), j[1].get<float>(), j[2].get<float>(), j[3].get<float>());
+        return vec4(j[0].get<f32>(), j[1].get<f32>(), j[2].get<f32>(), j[3].get<f32>());
     };
     auto getvec2 = [](const json& j) {
-        return glm::vec2(j[0].get<float>(), j[1].get<float>());
+        return vec2(j[0].get<f32>(), j[1].get<f32>());
     };
 
     const auto& layers = cfg.json()["cursor_layers"];
     for(const auto& lIn : layers) {
         Layer l {};
         l.name = lIn["name"];
-        l.color1 = maybe_at(lIn, "color1", glm::vec4(1.f), { getvec4 });
-        l.color2 = maybe_at(lIn, "color2", glm::vec4(1.f), { getvec4 });
+        l.color1 = maybe_at(lIn, "color1", vec4(1.f), { getvec4 });
+        l.color2 = maybe_at(lIn, "color2", vec4(1.f), { getvec4 });
         l.invert = maybe_at(lIn, "invert", false);
         l.fullscreen = maybe_at(lIn, "fullscreen", false);
         if(!l.fullscreen)
-            l.dims = maybe_at(lIn, "dims", glm::vec2(32.f), { getvec2 });
+            l.dims = maybe_at(lIn, "dims", vec2(32.f), { getvec2 });
         l.edgeThickness = maybe_at(lIn, "edge_thickness", 1.f);
         l.secondaryThickness = maybe_at(lIn, "secondary_thickness", 4.f);
         l.angle = maybe_at(lIn, "angle", 0.f);
@@ -247,7 +247,7 @@ void Cursor::Save() {
         layer["edge_thickness"] = l.edgeThickness;
         layer["secondary_thickness"] = l.secondaryThickness;
         layer["angle"] = l.angle;
-        layer["type"] = int(l.type);
+        layer["type"] = i32(l.type);
 
         layers.push_back(layer);
     }

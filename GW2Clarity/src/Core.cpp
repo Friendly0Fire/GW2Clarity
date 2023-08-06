@@ -40,7 +40,7 @@ void Core::InnerInitPreFontImGui() {
     fontCfg.FontDataOwnedByAtlas = false;
 
     if(const auto data = LoadResource(dllModule_, IDR_FONT_BLACK); data.data())
-        fontBuffCounter_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), int(data.size_bytes()), 128.f, &fontCfg);
+        fontBuffCounter_ = imio.Fonts->AddFontFromMemoryTTF(data.data(), i32(data.size_bytes()), 128.f, &fontCfg);
 }
 
 void Core::InnerInitPostImGui() {
@@ -112,7 +112,7 @@ void Core::InnerDraw() {
                 cursor_->Delete(std::get<char>(confirmDeletionInfo_.id));
                 break;
             case 1:
-                layouts_->Delete(std::get<short>(confirmDeletionInfo_.id));
+                layouts_->Delete(std::get<i16>(confirmDeletionInfo_.id));
                 break;
             case 2:
                 {
@@ -123,7 +123,7 @@ void Core::InnerDraw() {
                 }
             case 3:
                 {
-                    auto id = std::get<uint>(confirmDeletionInfo_.id);
+                    auto id = std::get<u32>(confirmDeletionInfo_.id);
                     grids_->StyleDeleted(id);
                     styles_->Delete(id);
                     break;

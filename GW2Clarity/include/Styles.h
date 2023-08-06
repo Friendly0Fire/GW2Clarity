@@ -25,7 +25,7 @@ public:
 
     const char* GetTabName() const override { return "Styles"; }
 
-    void Delete(uint id);
+    void Delete(u32 id);
 
 protected:
     void Load();
@@ -35,18 +35,18 @@ protected:
 public:
     struct Appearance
     {
-        glm::vec4 tint { 1, 1, 1, 1 };
-        glm::vec4 border { 0 };
-        glm::vec4 glow { 0 };
-        float borderThickness = 0.f;
-        float glowSize = 0.f;
-        glm::vec2 glowPulse { 0 };
+        vec4 tint { 1, 1, 1, 1 };
+        vec4 border { 0 };
+        vec4 glow { 0 };
+        f32 borderThickness = 0.f;
+        f32 glowSize = 0.f;
+        vec2 glowPulse { 0 };
     };
 
     struct Threshold
     {
-        uint thresholdMin = 0;
-        uint thresholdMax = 0;
+        u32 thresholdMin = 0;
+        u32 thresholdMax = 0;
 
         Appearance appearance {};
     };
@@ -59,57 +59,57 @@ public:
 
         operator Threshold() const { return t; }
 
-        S min(uint min) {
+        S min(u32 min) {
             t.thresholdMin = min;
             return *this;
         }
 
-        S max(uint max) {
+        S max(u32 max) {
             t.thresholdMax = max;
             return *this;
         }
 
-        S tint(float rgb, float a) {
-            t.appearance.tint = glm::vec4(rgb, rgb, rgb, a);
+        S tint(f32 rgb, f32 a) {
+            t.appearance.tint = vec4(rgb, rgb, rgb, a);
             return *this;
         }
 
-        S tint(float r, float g, float b, float a) {
-            t.appearance.tint = glm::vec4(r, g, b, a);
+        S tint(f32 r, f32 g, f32 b, f32 a) {
+            t.appearance.tint = vec4(r, g, b, a);
             return *this;
         }
 
-        S border(float rgb, float a) {
-            t.appearance.border = glm::vec4(rgb, rgb, rgb, a);
+        S border(f32 rgb, f32 a) {
+            t.appearance.border = vec4(rgb, rgb, rgb, a);
             return *this;
         }
 
-        S border(float r, float g, float b, float a) {
-            t.appearance.border = glm::vec4(r, g, b, a);
+        S border(f32 r, f32 g, f32 b, f32 a) {
+            t.appearance.border = vec4(r, g, b, a);
             return *this;
         }
 
-        S glow(float rgb, float a) {
-            t.appearance.glow = glm::vec4(rgb, rgb, rgb, a);
+        S glow(f32 rgb, f32 a) {
+            t.appearance.glow = vec4(rgb, rgb, rgb, a);
             return *this;
         }
 
-        S glow(float r, float g, float b, float a) {
-            t.appearance.glow = glm::vec4(r, g, b, a);
+        S glow(f32 r, f32 g, f32 b, f32 a) {
+            t.appearance.glow = vec4(r, g, b, a);
             return *this;
         }
 
-        S borderThickness(float borderThickness) {
+        S borderThickness(f32 borderThickness) {
             t.appearance.borderThickness = borderThickness;
             return *this;
         }
 
-        S glowSize(float glowSize) {
+        S glowSize(f32 glowSize) {
             t.appearance.glowSize = glowSize;
             return *this;
         }
 
-        S glowPulse(const glm::vec2& glowPulse) {
+        S glowPulse(const vec2& glowPulse) {
             t.appearance.glowPulse = glowPulse;
             return *this;
         }
@@ -168,7 +168,7 @@ public:
 
         inline static constexpr Appearance DefaultAppearance {};
 
-        std::pair<bool, const Appearance&> operator[](int count) const {
+        std::pair<bool, const Appearance&> operator[](i32 count) const {
             if(count < 0)
                 return { false, DefaultAppearance };
 
@@ -181,27 +181,27 @@ public:
 
     [[nodiscard]] const auto& styles() const { return styles_; }
 
-    [[nodiscard]] const Style& style(uint id) const { return id < styles_.size() ? styles_[id] : styles_[0]; }
+    [[nodiscard]] const Style& style(u32 id) const { return id < styles_.size() ? styles_[id] : styles_[0]; }
 
-    [[nodiscard]] uint FindStyle(const std::string& name) const {
+    [[nodiscard]] u32 FindStyle(const std::string& name) const {
         auto it = ranges::find_if(styles_, [&](const auto& s) { return s.name == name; });
         if(it != styles_.end())
-            return uint(std::distance(styles_.begin(), it));
+            return u32(std::distance(styles_.begin(), it));
         else
             return 0;
     }
 
-    void ApplyStyle(uint id, int count, GridInstanceData& out) const;
+    void ApplyStyle(u32 id, i32 count, GridInstanceData& out) const;
 
 protected:
-    static constexpr uint UnselectedId = std::numeric_limits<uint>::max();
+    static constexpr u32 UnselectedId = std::numeric_limits<u32>::max();
     const Buffs* buffs_;
     std::vector<Style> styles_;
-    uint selectedId_ = UnselectedId;
-    int selectedThresholdId_ = UnselectedId;
+    u32 selectedId_ = UnselectedId;
+    i32 selectedThresholdId_ = UnselectedId;
     mstime lastPreviewChoiceTime_ = 0;
     const Buff* previewBuff_ = nullptr;
-    int previewCount_ = 0;
+    i32 previewCount_ = 0;
     RenderTarget preview_;
     std::mt19937 previewRng_ { std::random_device {}() };
     GridRenderer<1> previewRenderer_;
@@ -210,6 +210,6 @@ protected:
     mstime lastSaveTime_ = 0;
     bool needsSaving_ = false;
     static inline constexpr mstime SaveDelay = 1000;
-    static inline constexpr int PreviewSize = 512;
+    static inline constexpr i32 PreviewSize = 512;
 };
 } // namespace GW2Clarity
