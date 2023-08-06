@@ -118,6 +118,8 @@ HMODULE LoadLocalDLL(LPCSTR name)
         return std::exchange(ultralightCoreMod, nullptr);
     if (StrCmpICA(name, "webcore.dll") == 0)
         return std::exchange(webCoreMod, nullptr);
+
+    return nullptr;
 }
 
 FARPROC WINAPI delayHook(unsigned dliNotify, PDelayLoadInfo pdli)

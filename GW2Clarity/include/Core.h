@@ -46,17 +46,21 @@ public:
         return glm::vec2(screenWidth_, screenHeight_);
     }
 
-protected:
-    void               InnerDraw() override;
-    void               InnerUpdate() override;
-    void               InnerInitPreImGui() override;
-    void               InnerInitPreFontImGui() override;
-    void               InnerInitPostImGui() override;
-    void               InnerInternalInit() override;
-    void               InnerShutdown() override;
-    void               InnerFrequentUpdate() override;
+    void PostResizeSwapChain(unsigned int w, unsigned int h) override;
 
-    [[nodiscard]] uint GetShaderArchiveID() const override
+protected:
+    void                   InnerDraw() override;
+    void                   InnerUpdate() override;
+    void                   InnerInitPreImGui() override;
+    void                   InnerInitPreFontImGui() override;
+    void                   InnerInitPostImGui() override;
+    void                   InnerInternalInit() override;
+    void                   InnerShutdown() override;
+    void                   InnerFrequentUpdate() override;
+
+    std::optional<LRESULT> OnInput(UINT msg, WPARAM& wParam, LPARAM& lParam) override;
+
+    [[nodiscard]] uint     GetShaderArchiveID() const override
     {
         return IDR_SHADERS;
     }
@@ -80,6 +84,10 @@ protected:
     Texture2D                                  ultex_;
     ConstantBufferSPtr<glm::vec4>              ulcb_;
     ShaderId                                   ulps_, ulvs_;
+    std::vector<std::byte>                     ulbuf_;
+    uint                                       ulupdmsg_;
+    uint                                       ulstride_ = 0, ulheight_ = 0;
+    bool                                       uldirty_ = false;
     ComPtr<ID3D11SamplerState>                 defaultSampler_;
     ComPtr<ID3D11BlendState>                   defaultBlend_;
     HMODULE                                    buffLib_                 = nullptr;

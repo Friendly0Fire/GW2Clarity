@@ -21,6 +21,7 @@
 
 #include <AppCore/Platform.h>
 #include <Ultralight/Ultralight.h>
+#include <windowsx.h>
 
 KeyCombo GetSettingsKeyCombo()
 {
@@ -79,7 +80,9 @@ void Core::InnerInitPostImGui()
         blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
         GW2_CHECKED_HRESULT(device_->CreateBlendState(&blendDesc, defaultBlend_.GetAddressOf()));
 
-        ultex_ = MakeTexture<ID3D11Texture2D>(device_, screenWidth(), screenHeight(), 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+        ultex_    = MakeTexture<ID3D11Texture2D>(device_, screenWidth(), screenHeight(), 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+
+        ulupdmsg_ = RegisterWindowMessage(TEXT("GW2ClarityUltralightPaint"));
     }
 }
 
@@ -125,7 +128,139 @@ void Core::InnerFrequentUpdate()
     if (getBuffs_)
         buffs_->UpdateBuffsTable(getBuffs_());
 
-    ulrenderer_->Update();
+    PostMessage(gameWindow(), ulupdmsg_, 0, 0);
+}
+
+std::optional<LRESULT> Core::OnInput(UINT msg, WPARAM& wParam, LPARAM& lParam)
+{
+    using namespace ultralight;
+
+    if (!ulview_)
+    {
+        HMODULE hModule;
+        GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCSTR)GetSettingsKeyCombo, &hModule);
+        char path[MAX_PATH];
+        GetModuleFileNameA(hModule, path, MAX_PATH);
+        std::filesystem::path dir(path);
+        dir = dir.parent_path() / "data";
+
+        Config config;
+
+        Platform::instance().set_config(config);
+        Platform::instance().set_font_loader(GetPlatformFontLoader());
+        Platform::instance().set_file_system(GetPlatformFileSystem(dir.string().c_str()));
+        Platform::instance().set_logger(GetDefaultLogger("ultralight.log"));
+        ulrenderer_ = Renderer::Create();
+
+        ViewConfig vc;
+        vc.is_accelerated = false;
+        vc.is_transparent = true;
+
+        ulview_           = ulrenderer_->CreateView(screenWidth(), screenHeight(), vc, nullptr);
+        ulview_->LoadHTML("<h1>Hello World!</h1><input type='text'></input>");
+    }
+
+    if (msg == ulupdmsg_)
+    {
+        if (ulview_->width() != screenWidth() || ulview_->height() != screenHeight())
+            ulview_->Resize(screenWidth(), screenHeight());
+        ulrenderer_->Update();
+        ulrenderer_->Render();
+
+        auto* surface = static_cast<BitmapSurface*>(ulview_->surface());
+        if (!surface->dirty_bounds().IsEmpty())
+        {
+            auto  bitmap = surface->bitmap();
+
+            auto* pixels = static_cast<std::byte*>(bitmap->LockPixels());
+
+            ulheight_    = bitmap->height();
+            ulstride_    = bitmap->row_bytes();
+            if (ulbuf_.size() != ulstride_ * ulheight_)
+                ulbuf_.resize(ulstride_ * ulheight_);
+            uldirty_ = true;
+
+            ulbuf_.assign(pixels, pixels + ulstride_ * ulheight_);
+
+            bitmap->UnlockPixels();
+
+            surface->ClearDirtyBounds();
+        }
+    }
+
+    bool down = false;
+    switch (msg)
+    {
+        case WM_MOUSEMOVE:
+        {
+            MouseEvent evt;
+            evt.button = MouseEvent::kButton_None;
+            evt.x      = (LONG)GET_X_LPARAM(lParam);
+            evt.y      = (LONG)GET_Y_LPARAM(lParam);
+            evt.type   = MouseEvent::kType_MouseMoved;
+            ulview_->FireMouseEvent(evt);
+            break;
+        }
+        case WM_LBUTTONDOWN:
+        case WM_RBUTTONDOWN:
+        case WM_MBUTTONDOWN:
+            down = true;
+            [[fallthrough]];
+        case WM_LBUTTONUP:
+        case WM_RBUTTONUP:
+        case WM_MBUTTONUP:
+        {
+            MouseEvent evt;
+            evt.x = (LONG)GET_X_LPARAM(lParam);
+            evt.y = (LONG)GET_Y_LPARAM(lParam);
+            if (msg == WM_LBUTTONDOWN || msg == WM_LBUTTONUP)
+                evt.button = MouseEvent::kButton_Left;
+            else if (msg == WM_RBUTTONDOWN || msg == WM_RBUTTONUP)
+                evt.button = MouseEvent::kButton_Right;
+            else
+                evt.button = MouseEvent::kButton_Middle;
+            evt.type = down ? MouseEvent::kType_MouseDown : MouseEvent::kType_MouseUp;
+            ulview_->FireMouseEvent(evt);
+            if (ulview_->HasInputFocus())
+                return 0;
+            break;
+        }
+        case WM_MOUSEWHEEL:
+        case WM_MOUSEHWHEEL:
+        {
+            ScrollEvent evt;
+            evt.delta_x = evt.delta_y                           = 0;
+            (msg == WM_MOUSEHWHEEL ? evt.delta_x : evt.delta_y) = GET_WHEEL_DELTA_WPARAM(wParam);
+            evt.type                                            = ScrollEvent::kType_ScrollByPixel;
+            ulview_->FireScrollEvent(evt);
+            if (ulview_->HasInputFocus())
+                return 0;
+            break;
+        }
+        case WM_KEYDOWN:
+        case WM_SYSKEYDOWN:
+            down = true;
+            [[fallthrough]];
+        case WM_KEYUP:
+        case WM_SYSKEYUP:
+        {
+            KeyEvent evt(down ? KeyEvent::kType_RawKeyDown : KeyEvent::kType_KeyUp, wParam, lParam, msg == WM_SYSKEYDOWN || msg == WM_SYSKEYUP);
+            ulview_->FireKeyEvent(evt);
+            if (ulview_->HasInputFocus())
+                return 0;
+            break;
+        }
+        case WM_CHAR:
+        {
+            KeyEvent evt(KeyEvent::kType_Char, wParam, lParam, false);
+            ulview_->FireKeyEvent(evt);
+            if (ulview_->HasInputFocus())
+                return 0;
+            break;
+        }
+    }
+
+    return std::nullopt;
 }
 
 void Core::InnerUpdate()
@@ -137,27 +272,15 @@ void Core::DisplayDeletionMenu(DeletionInfo&& info)
     ImGui::OpenPopup(confirmDeletionPopupID_);
 }
 
+void Core::PostResizeSwapChain(unsigned int w, unsigned int h)
+{
+    BaseCore::PostResizeSwapChain(w, h);
+
+    ultex_ = MakeTexture<ID3D11Texture2D>(device_, w, h, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+}
+
 void Core::InnerDraw()
 {
-    if (!ulrenderer_)
-    {
-        using namespace ultralight;
-
-        Config config;
-
-        Platform::instance().set_config(config);
-        Platform::instance().set_font_loader(GetPlatformFontLoader());
-        Platform::instance().set_file_system(GetPlatformFileSystem("./addons/gw2clarity"));
-        Platform::instance().set_logger(GetDefaultLogger("ultralight.log"));
-        ulrenderer_ = Renderer::Create();
-
-        ViewConfig vc;
-        vc.is_accelerated = false;
-
-        ulview_           = ulrenderer_->CreateView(screenWidth(), screenHeight(), vc, nullptr);
-        ulview_->LoadHTML("<h1>Hello World!</h1>");
-    }
-
     if (!confirmDeletionPopupID_)
         confirmDeletionPopupID_ = ImGui::GetID(ConfirmDeletionPopupName);
     if (ImGui::BeginPopupModal(ConfirmDeletionPopupName))
@@ -225,29 +348,10 @@ void Core::InnerDraw()
     cursor_->Draw(context_);
     styles_->Draw(context_);
 
-    if (false)
     {
-        using namespace ultralight;
-
-        ulrenderer_->Render();
-
-        auto* surface = static_cast<BitmapSurface*>(ulview_->surface());
-        if (!surface->dirty_bounds().IsEmpty())
-        {
-            auto     bitmap = surface->bitmap();
-
-            void*    pixels = bitmap->LockPixels();
-
-            uint32_t width  = bitmap->width();
-            uint32_t height = bitmap->height();
-            uint32_t stride = bitmap->row_bytes();
-
-            context_->UpdateSubresource(ultex_.texture.Get(), 0, nullptr, pixels, stride, stride * height);
-
-            bitmap->UnlockPixels();
-
-            surface->ClearDirtyBounds();
-        }
+        if (uldirty_)
+            context_->UpdateSubresource(ultex_.texture.Get(), 0, nullptr, ulbuf_.data(), ulstride_, ulstride_ * ulheight_);
+        uldirty_                         = false;
 
         ID3D11ShaderResourceView* srvs[] = { ultex_.srv.Get() };
         context_->PSSetShaderResources(0, 1, srvs);
