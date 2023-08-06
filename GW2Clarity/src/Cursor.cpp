@@ -1,13 +1,12 @@
-#define GLM_FORCE_SWIZZLE
-#include <glm/glm.hpp>
+#include "Cursor.h"
 
-#include <Core.h>
-#include <Cursor.h>
-#include <ImGuiExtensions.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
 #include <range/v3/all.hpp>
+
+#include "Core.h"
+#include "ImGuiExtensions.h"
 
 namespace GW2Clarity
 {
@@ -16,9 +15,9 @@ Cursor::Cursor(ComPtr<ID3D11Device>& dev) : activateCursor_("activate_cursor", "
     Load();
 
     activateCursor_.callback([&](Activated a) {
-        if(a)
+        if(a == Activated::Yes)
             visible_ = !visible_;
-        return true;
+        return PassToGame::Allow;
     });
 
     auto& sm = ShaderManager::i();

@@ -1,17 +1,12 @@
 #pragma once
 
-#include <ActivationKeybind.h>
-#include <ConfigurationFile.h>
-#include <Graphics.h>
-#include <Main.h>
-#include <SettingsMenu.h>
-#include <ShaderManager.h>
-#include <glm/glm.hpp>
 #include <imgui.h>
-#include <map>
-#include <mutex>
-#include <set>
-#include <span>
+
+#include "ActivationKeybind.h"
+#include "Graphics.h"
+#include "Main.h"
+#include "SettingsMenu.h"
+#include "ShaderManager.h"
 
 namespace GW2Clarity
 {
@@ -22,21 +17,18 @@ public:
     explicit Cursor(ComPtr<ID3D11Device>& dev);
     virtual ~Cursor();
 
-    void        Draw(ComPtr<ID3D11DeviceContext>& ctx);
-    void        DrawMenu(Keybind** currentEditedKeybind) override;
+    void Draw(ComPtr<ID3D11DeviceContext>& ctx);
+    void DrawMenu(Keybind** currentEditedKeybind) override;
 
-    void        Delete(char id);
+    void Delete(char id);
 
-    const char* GetTabName() const override
-    {
-        return "Cursor";
-    }
+    const char* GetTabName() const override { return "Cursor"; }
 
     enum class CursorType : int
     {
         CIRCLE = 0,
         SQUARE = 1,
-        CROSS  = 2,
+        CROSS = 2,
         SMOOTH = 3,
 
         COUNT
@@ -46,12 +38,12 @@ public:
     {
         std::string name;
 
-        glm::vec4   color1{ 1.f }, color2{ 1.f };
-        bool        invert = false;
-        glm::vec2   dims{ 32.f };
-        bool        fullscreen    = false;
-        float       edgeThickness = 1.f, secondaryThickness = 4.f, angle = 0.f;
-        CursorType  type = CursorType::CIRCLE;
+        glm::vec4 color1 { 1.f }, color2 { 1.f };
+        bool invert = false;
+        glm::vec2 dims { 32.f };
+        bool fullscreen = false;
+        float edgeThickness = 1.f, secondaryThickness = 4.f, angle = 0.f;
+        CursorType type = CursorType::CIRCLE;
     };
 
 protected:
@@ -65,22 +57,22 @@ protected:
         glm::vec4 color1;
         glm::vec4 color2;
     };
-    ConstantBufferSPtr<CursorData>                  cursorCB_;
-    ShaderId                                        screenSpaceVS_;
+    ConstantBufferSPtr<CursorData> cursorCB_;
+    ShaderId screenSpaceVS_;
     std::array<ShaderId, size_t(CursorType::COUNT)> cursorPS_;
 
-    ComPtr<ID3D11BlendState>                        defaultBlend_, invertBlend_;
+    ComPtr<ID3D11BlendState> defaultBlend_, invertBlend_;
 
-    std::vector<Layer>                              layers_;
+    std::vector<Layer> layers_;
 
-    char                                            currentHoveredLayer_ = UnselectedSubId;
-    char                                            selectedLayerId_     = UnselectedSubId;
+    char currentHoveredLayer_ = UnselectedSubId;
+    char selectedLayerId_ = UnselectedSubId;
 
-    mstime                                          lastSaveTime_        = 0;
-    bool                                            needsSaving_         = false;
-    static inline constexpr mstime                  SaveDelay            = 1000;
+    mstime lastSaveTime_ = 0;
+    bool needsSaving_ = false;
+    static inline constexpr mstime SaveDelay = 1000;
 
-    ActivationKeybind                               activateCursor_;
-    bool                                            visible_ = false;
+    ActivationKeybind activateCursor_;
+    bool visible_ = false;
 };
 } // namespace GW2Clarity
