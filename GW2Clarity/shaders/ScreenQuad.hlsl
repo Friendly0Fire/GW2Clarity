@@ -1,4 +1,3 @@
-#define CURSOR_HLSL
 #include "common.hlsli"
 
 struct VS_SCREEN

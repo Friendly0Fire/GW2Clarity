@@ -1,58 +1,61 @@
 ---
+Language: Cpp
+BasedOnStyle: Google
 AccessModifierOffset: -4
-AlignArrayOfStructures: Left
-AlignConsecutiveAssignments: AcrossEmptyLinesAndComments
-AlignConsecutiveDeclarations: AcrossEmptyLinesAndComments
-AlignConsecutiveMacros: AcrossEmptyLinesAndComments
-AlignOperands: AlignAfterOperator
-AlignTrailingComments: true
-AllowShortBlocksOnASingleLine: false
-AllowShortFunctionsOnASingleLine: None
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignOperands: true
+AlignTrailingComments: false
+AllowShortBlocksOnASingleLine: true
 AllowShortIfStatementsOnASingleLine: false
+AllowShortLambdasOnASingleLine: Inline
+AllowShortLoopsOnASingleLine: false
 AlwaysBreakAfterDefinitionReturnType: false
-AlwaysBreakTemplateDeclarations: Yes
-BasedOnStyle: LLVM
-BraceWrapping:
+BraceWrapping: 
   AfterCaseLabel: true
   AfterClass: true
-  AfterControlStatement: true
+  AfterControlStatement: false
   AfterEnum: true
-  AfterFunction: true
+  AfterFunction: false
   AfterNamespace: true
-  AfterObjCDeclaration: false
   AfterStruct: true
   AfterUnion: true
   AfterExternBlock: true
   BeforeCatch: true
   BeforeElse: true
-  IndentBraces: false
+  BeforeLambdaBody: false
+  BeforeWhile: true
   SplitEmptyFunction: false
   SplitEmptyRecord: false
   SplitEmptyNamespace: false
-  BeforeLambdaBody: true
-  BeforeWhile: true
 BreakBeforeBraces: Custom
 BreakConstructorInitializers: BeforeComma
-ColumnLimit: 180
+ColumnLimit: 140
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
 Cpp11BracedListStyle: false
-DerivePointerAlignment: false
-IncludeCategories:
-  - Regex: ^<.*
+IncludeBlocks: Preserve
+IncludeCategories: 
+  - Regex: '^<[^\.]+$'
     Priority: 1
-  - Regex: ^".*
+  - Regex: '^<.*'
     Priority: 2
-  - Regex: .*
+  - Regex: '^".*'
     Priority: 3
-IncludeIsMainRegex: ([-_](test|unittest))?$
-IndentCaseLabels: true
+  - Regex: '.*'
+    Priority: 4
+IncludeIsMainRegex: '([-_](test|unittest))?$'
+IndentCaseBlocks: true
+IndentCaseLabels: false
+IndentGotoLabels: false
 IndentWidth: 4
-Language: Cpp
-MaxEmptyLinesToKeep: 2
-PointerAlignment: Left
+MacroBlockBegin: ''
+MacroBlockEnd: ''
 SpaceAfterTemplateKeyword: false
+SpaceBeforeCpp11BracedList: true
+SpaceBeforeParens: Never
+SpaceInEmptyBlock: true
+SpacesBeforeTrailingComments: 1
+SpacesInAngles: false
+Standard: c++20
 TabWidth: 4
-UseTab: Never
----
-Language: Json
-BasedOnStyle: LLVM
 ...
