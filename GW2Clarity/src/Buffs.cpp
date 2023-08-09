@@ -37,9 +37,15 @@ std::vector<vec2> GenerateNumbersMap(vec2& uvSize) {
     return numbers;
 }
 
-Buffs::Buffs(ComPtr<ID3D11Device>& dev)
-    : buffs_(GenerateBuffsList(buffsAtlasUVSize_)), buffsMap_(GenerateBuffsMap(buffs_)), numbers_(GenerateNumbersMap(numbersAtlasUVSize_)) {
-    buffsAtlas_ = CreateTextureFromResource(dev.Get(), Core::i().dllModule(), IDR_BUFFS);
+Texture2D BuffDescription::LoadTexture(const std::string& tex) {
+    auto filePath = Core::i().addonDirectory() / "override" / (tex + ".png");
+    if(!std::filesystem::exists(filePath))
+        filePath = Core::i().addonDirectory() / "buffs.zip" / (tex + ".png");
+    return CreateTextureFromFile(Core::i().device().Get(), Core::i().context().Get(), filePath);
+}
+
+BuffsLibrary::BuffsLibrary(ComPtr<ID3D11Device>& dev)
+    : buffs_(GenerateBuffsList()), buffsMap_(GenerateBuffsMap(buffs_)), numbers_(GenerateNumbersMap(numbersAtlasUVSize_)) {
     numbersAtlas_ = CreateTextureFromResource(dev.Get(), Core::i().dllModule(), IDR_NUMBERS);
 
 #ifdef _DEBUG
@@ -50,7 +56,7 @@ Buffs::Buffs(ComPtr<ID3D11Device>& dev)
 }
 
 #ifdef _DEBUG
-void Buffs::LoadNames() {
+void BuffsLibrary::LoadNames() {
     buffNames_.clear();
 
     wchar_t fn[MAX_PATH];
@@ -79,7 +85,7 @@ void Buffs::LoadNames() {
     }
 }
 
-void Buffs::SaveNames() const {
+void BuffsLibrary::SaveNames() const {
     wchar_t fn[MAX_PATH];
     GetModuleFileName(GetBaseCore().dllModule(), fn, MAX_PATH);
 
@@ -94,7 +100,7 @@ void Buffs::SaveNames() const {
     }
 }
 
-void Buffs::DrawMenu(Keybind** currentEditedKeybind) {
+void BuffsLibrary::DrawMenu(Keybind**) {
     ImGui::InputInt("Say in Guild", &guildLogId_, 1);
     if(guildLogId_ < 0 || guildLogId_ > 5)
         guildLogId_ = 1;
@@ -216,7 +222,7 @@ void Buffs::DrawMenu(Keybind** currentEditedKeybind) {
 }
 #endif
 
-void Buffs::UpdateBuffsTable(StackedBuff* buffs) {
+void BuffsLibrary::UpdateBuffsTable(StackedBuff* buffs) {
 #ifdef _DEBUG
     for(auto& b : activeBuffs_)
         b.second = 0;
@@ -262,7 +268,7 @@ void Buffs::UpdateBuffsTable(StackedBuff* buffs) {
         activeBuffs_[buffs[i].id] = buffs[i].count;
 }
 
-bool Buffs::DrawBuffCombo(const char* name, const Buff*& selectedBuf, std::span<char> searchBuffer) const {
+bool BuffsLibrary::DrawBuffCombo(const char* name, const BuffDescription*& selectedBuf, std::span<char> searchBuffer) const {
     bool changed = false;
     if(ImGui::BeginCombo(name, selectedBuf ? selectedBuf->name.c_str() : "<none>")) {
         ImGui::InputText("Search...", searchBuffer.data(), searchBuffer.size());
@@ -272,8 +278,9 @@ bool Buffs::DrawBuffCombo(const char* name, const Buff*& selectedBuf, std::span<
             auto caseInsensitive = [](char l, char r) {
                 return std::tolower(l) == std::tolower(r);
             };
-            bool filtered = !bs.empty() && ranges::search(b.name, bs, caseInsensitive).empty() &&
-                            ranges::search(b.category, bs, caseInsensitive).empty();
+            bool filtered =
+                !bs.empty() && ranges::search(b.name, bs, caseInsensitive).empty() &&
+                ranges::any_of(*b.categories, [&](const auto& cat) { return ranges::search(cat, bs, caseInsensitive).empty(); });
 
             if(filtered)
                 continue;
@@ -288,7 +295,7 @@ bool Buffs::DrawBuffCombo(const char* name, const Buff*& selectedBuf, std::span<
 
             ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 20.f);
 
-            ImGui::Image(buffsAtlas_.srv.Get(), ImVec2(32, 32), ToImGui(b.uv.xy), ToImGui(b.uv.xy + buffsAtlasUVSize()));
+            ImGui::Image(b.icon.srv.Get(), ImVec2(32, 32));
             ImGui::SameLine();
             if(ImGui::Selectable(b.name.c_str(), false)) {
                 selectedBuf = &b;
@@ -303,14 +310,8 @@ bool Buffs::DrawBuffCombo(const char* name, const Buff*& selectedBuf, std::span<
 
 #include "BuffsList.inc"
 
-std::vector<Buff> Buffs::GenerateBuffsList(vec2& uvSize) {
-    const std::unordered_map<std::string, vec2> atlasElements {
-#include <assets/atlas.inc>
-    };
-
-    uvSize = atlasElements.at("");
-
-    std::vector<Buff> buffs;
+std::vector<BuffDescription> BuffsLibrary::GenerateBuffsList() {
+    std::vector<BuffDescription> buffs;
     buffs.assign(g_Buffs.begin(), g_Buffs.end());
 
 #ifdef _DEBUG
@@ -322,25 +323,13 @@ std::vector<Buff> Buffs::GenerateBuffsList(vec2& uvSize) {
     }
 #endif
 
-    std::string cat;
-    for(auto& b : buffs) {
-        if(b.id == 0xFFFFFFFF)
-            cat = b.name;
-        else
-            b.category = cat;
-
-        auto it = atlasElements.find(b.atlasEntry);
-        b.uv = it != atlasElements.end() ? it->second : vec4 { 0.f, 0.f, 0.f, 0.f };
-
-        if(b.id != 0xFFFFFFFF && it == atlasElements.end())
-            LogWarn("Buff {} ({}) has no atlas icon.", b.name, b.id);
-    }
+    ranges::remove_if(buffs, [](const auto& buff) { return buff.id == BuffDescription::InvalidId; });
 
     return buffs;
 }
 
-std::unordered_map<i32, const Buff*> Buffs::GenerateBuffsMap(const std::vector<Buff>& lst) {
-    std::unordered_map<i32, const Buff*> m;
+std::unordered_map<i32, const BuffDescription*> BuffsLibrary::GenerateBuffsMap(const std::vector<BuffDescription>& lst) {
+    std::unordered_map<i32, const BuffDescription*> m;
     for(auto& b : lst) {
         m[b.id] = &b;
     }
