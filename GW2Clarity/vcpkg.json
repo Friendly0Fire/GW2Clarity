@@ -13,6 +13,7 @@
     "cppcodec",
     "skyr-url",
     "range-v3",
-    "atomic-queue"
+    "atomic-queue",
+    "tl-generator"
   ]
 }

@@ -26,7 +26,7 @@ Cursor::Cursor(ComPtr<ID3D11Device>& dev) : activateCursor_("activate_cursor", "
     auto makePS = [&](const char* ep) {
         return sm.GetShader(L"Cursor.hlsl", D3D11_SHVER_PIXEL_SHADER, ep);
     };
-    cursorPS_ = { makePS("Circle"), makePS("Square"), makePS("Cross"), makePS("Smooth") };
+    cursorPS_ = { makePS("Circle"), makePS("Square"), makePS("Cross") };
 
     CD3D11_BLEND_DESC blendDesc(D3D11_DEFAULT);
     blendDesc.RenderTarget[0].BlendEnable = true;
@@ -85,25 +85,10 @@ void Cursor::Draw(ComPtr<ID3D11DeviceContext>& ctx) {
 
 void Cursor::DrawMenu(Keybind** currentEditedKeybind) {
     if(ImGui::BeginListBox("##LayersList", ImVec2(-FLT_MIN, 0.f))) {
-        char newCurrentHovered = currentHoveredLayer_;
         for(auto&& [lid, l] : layers_ | ranges::views::enumerate) {
             if(ImGui::Selectable(std::format("{}##Layer", l.name).c_str(), selectedLayerId_ == lid || currentHoveredLayer_ == lid,
                                  ImGuiSelectableFlags_AllowItemOverlap)) {
                 selectedLayerId_ = char(lid);
-            }
-
-            if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem) || ImGui::IsItemActive()) {
-                auto& style = ImGui::GetStyle();
-                auto orig = style.Colors[ImGuiCol_Button];
-                style.Colors[ImGuiCol_Button] *= ImVec4(0.5f, 0.5f, 0.5f, 1.f);
-                if(ImGuiClose(std::format("CloseLayer{}", lid).c_str(), 0.75f, false)) {
-                    selectedLayerId_ = char(lid);
-                    Core::i().DisplayDeletionMenu({ l.name, "cursor layer", "", selectedLayerId_ });
-                }
-                if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem))
-                    newCurrentHovered = char(lid);
-
-                style.Colors[ImGuiCol_Button] = orig;
             }
         }
         currentHoveredLayer_ = newCurrentHovered;
@@ -144,10 +129,10 @@ void Cursor::DrawMenu(Keybind** currentEditedKeybind) {
             saveCheck(ImGui::DragFloat("Falloff", &editLayer.edgeThickness, 0.01f, 0.f, 1.f));
 
         switch(editLayer.type) {
-        case CursorType::CIRCLE:
-        case CursorType::SQUARE:
+        case CursorType::Circle:
+        case CursorType::Square:
             break;
-        case CursorType::CROSS:
+        case CursorType::Cross:
             saveCheck(ImGui::DragFloat("Cross Thickness", &editLayer.secondaryThickness, 0.05f, 1.f,
                                        std::min(editLayer.dims.x, editLayer.dims.y)));
             saveCheck(ImGui::DragFloat("Cross Angle", &editLayer.angle, 0.1f, 0.f, 360.f));

@@ -5,7 +5,6 @@
 #include "ActivationKeybind.h"
 #include "ConfigurationFile.h"
 #include "Graphics.h"
-#include "Layouts.h"
 #include "Main.h"
 #include "SettingsMenu.h"
 

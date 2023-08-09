@@ -15,36 +15,40 @@ class Cursor : public SettingsMenu::Implementer
 {
 public:
     explicit Cursor(ComPtr<ID3D11Device>& dev);
-    virtual ~Cursor();
+    ~Cursor() override;
 
     void Draw(ComPtr<ID3D11DeviceContext>& ctx);
     void DrawMenu(Keybind** currentEditedKeybind) override;
 
     void Delete(char id);
 
-    const char* GetTabName() const override { return "Cursor"; }
-
-    enum class CursorType : i32
-    {
-        CIRCLE = 0,
-        SQUARE = 1,
-        CROSS = 2,
-        SMOOTH = 3,
-
-        COUNT
-    };
+    const char* GetTabName() const override { return "Custom Cursor"; }
 
     struct Layer
     {
         std::string name;
 
-        vec4 color1 { 1.f }, color2 { 1.f };
-        bool invert = false;
+        vec4 colorFill { 1.f }, colorBorder { 1.f };
+        float invertFill = 0.f, invertBorder = 0.f;
         vec2 dims { 32.f };
-        bool fullscreen = false;
-        f32 edgeThickness = 1.f, secondaryThickness = 4.f, angle = 0.f;
-        CursorType type = CursorType::CIRCLE;
+        f32 edgeThickness = 1.f;
+
+        struct Circle
+        { };
+        struct Square
+        {
+            f32 angle = 0.f;
+        };
+        struct Cross
+        {
+            f32 angle = 0.f;
+            f32 crossThickness = 4.f;
+            bool fullscreen = false;
+        };
+
+        std::variant<Circle, Square, Cross> type;
     };
+    using LayerType = decltype(Layer::type);
 
 protected:
     void Load();
@@ -59,14 +63,13 @@ protected:
     };
     ConstantBufferSPtr<CursorData> cursorCB_;
     ShaderId screenSpaceVS_;
-    std::array<ShaderId, size_t(CursorType::COUNT)> cursorPS_;
+    std::array<ShaderId, std::variant_size_v<LayerType>> cursorPS_;
 
     ComPtr<ID3D11BlendState> defaultBlend_, invertBlend_;
 
     std::vector<Layer> layers_;
 
-    char currentHoveredLayer_ = UnselectedSubId;
-    char selectedLayerId_ = UnselectedSubId;
+    i32 selectedId_ = UnselectedSubId;
 
     mstime lastSaveTime_ = 0;
     bool needsSaving_ = false;

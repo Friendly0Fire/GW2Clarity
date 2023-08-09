@@ -172,6 +172,7 @@ git describe --always --dirty --match "NOT A TAG" &gt;&gt; "$(ProjectDir)include
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\Layouts.cpp" />
     <ClCompile Include="src\Styles.cpp" />
+    <ClCompile Include="src\UIUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Buffs.h" />
@@ -185,6 +186,7 @@ git describe --always --dirty --match "NOT A TAG" &gt;&gt; "$(ProjectDir)include
     <ClInclude Include="include\Styles.h" />
     <ClInclude Include="include\Tag.h" />
     <ClInclude Include="include\Version.h" />
+    <ClInclude Include="src\UIUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="..\readme.md">

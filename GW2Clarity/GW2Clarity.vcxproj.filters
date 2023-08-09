@@ -43,6 +43,9 @@
     <ClCompile Include="src\Buffs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\UIUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Resource.h">
@@ -79,6 +82,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\BuffsList.inc">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UIUtils.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
