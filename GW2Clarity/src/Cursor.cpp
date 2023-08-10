@@ -46,9 +46,9 @@ Cursor::~Cursor() = default;
 
 void Cursor::Draw(ComPtr<ID3D11DeviceContext>& ctx) {
     if(!SettingsMenu::i().isVisible())
-        selectedLayerId_ = UnselectedSubId;
+        layerSelector_.Deselect();
 
-    if(!visible_ && selectedLayerId_ == UnselectedSubId)
+    if(!visible_ && !layerSelector_.selected())
         return;
 
     auto& cb = *cursorCB_;
@@ -71,8 +71,10 @@ void Cursor::Draw(ComPtr<ID3D11DeviceContext>& ctx) {
         cb->color1 = l.color1;
         cb->color2 = l.color2;
         f32 div = std::min(l.dims.x, l.dims.y);
-        cb->parameters = vec4(l.edgeThickness * (l.type == CursorType::SMOOTH ? 1.f : 1.f / div), l.secondaryThickness / div,
-                              l.angle / 180.f * std::numbers::pi_v<f32>, 0.f);
+        cb->parameters = vec4(l.edgeThickness * (l.type == CursorType::SMOOTH ? 1.f : 1.f / div),
+                              l.secondaryThickness / div,
+                              l.angle / 180.f * std::numbers::pi_v<f32>,
+                              0.f);
         cb->dimensions = vec4(mp, l.dims / Core::i().screenDims());
         cb.Update(ctx.Get());
 
@@ -84,133 +86,64 @@ void Cursor::Draw(ComPtr<ID3D11DeviceContext>& ctx) {
 }
 
 void Cursor::DrawMenu(Keybind** currentEditedKeybind) {
-    if(ImGui::BeginListBox("##LayersList", ImVec2(-FLT_MIN, 0.f))) {
-        for(auto&& [lid, l] : layers_ | ranges::views::enumerate) {
-            if(ImGui::Selectable(std::format("{}##Layer", l.name).c_str(), selectedLayerId_ == lid || currentHoveredLayer_ == lid,
-                                 ImGuiSelectableFlags_AllowItemOverlap)) {
-                selectedLayerId_ = char(lid);
-            }
-        }
-        currentHoveredLayer_ = newCurrentHovered;
-        ImGui::EndListBox();
-    }
-    if(ImGui::Button("New layer")) {
+    if(layerSelector_.Draw(layers_)) {
         layers_.emplace_back();
-        selectedLayerId_ = char(layers_.size()) - 1;
-        needsSaving_ = true;
+        save_();
     }
 
-    auto saveCheck = [this](bool changed) {
-        needsSaving_ = needsSaving_ || changed;
-        return changed;
-    };
-
-    if(selectedLayerId_ != UnselectedSubId) {
-        auto& editLayer = layers_[selectedLayerId_];
+    if(layerSelector_.selected()) {
+        auto& editLayer = layers_[layerSelector_.id()];
         if(!editLayer.name.empty())
             ImGuiTitle(std::format("Editing Cursor Layer '{}'", editLayer.name).c_str(), 0.75f);
         else
             ImGuiTitle("New Cursor Layer", 0.75f);
 
-        saveCheck(ImGui::InputText("Name##NewLayer", &editLayer.name));
-        saveCheck(ImGui::Combo("Type", (i32*)&editLayer.type, "Circle\0Square\0Cross\0Gaussian"));
+        save_(ImGui::InputText("Name##NewLayer", &editLayer.name));
+        save_(ImGui::Combo("Type", (i32*)&editLayer.type, "Circle\0Square\0Cross\0Gaussian"));
 
-        if(editLayer.type != CursorType::SMOOTH)
-            saveCheck(ImGui::ColorEdit4("Border Color", glm::value_ptr(editLayer.color1),
-                                        ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
+        save_(ImGui::ColorEdit4(
+            "Border Color", glm::value_ptr(editLayer.colorBorder), ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
 
-        saveCheck(
-            ImGui::ColorEdit4("Fill Color", glm::value_ptr(editLayer.color2), ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
-        saveCheck(ImGui::Checkbox("Invert Colors", &editLayer.invert));
+        save_(ImGui::ColorEdit4(
+            "Fill Color", glm::value_ptr(editLayer.colorFill), ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
 
-        if(editLayer.type != CursorType::SMOOTH)
-            saveCheck(ImGui::DragFloat("Border Thickness", &editLayer.edgeThickness, 0.05f, 0.f, 100.f));
-        else
-            saveCheck(ImGui::DragFloat("Falloff", &editLayer.edgeThickness, 0.01f, 0.f, 1.f));
+        save_(ImGui::DragFloat("Border Thickness", &editLayer.edgeThickness, 0.05f, 0.f, 100.f));
 
-        switch(editLayer.type) {
-        case CursorType::Circle:
-        case CursorType::Square:
-            break;
-        case CursorType::Cross:
-            saveCheck(ImGui::DragFloat("Cross Thickness", &editLayer.secondaryThickness, 0.05f, 1.f,
-                                       std::min(editLayer.dims.x, editLayer.dims.y)));
-            saveCheck(ImGui::DragFloat("Cross Angle", &editLayer.angle, 0.1f, 0.f, 360.f));
-            break;
-        default:;
-        }
+        std::visit(Overloaded { [](Layer::Circle&) {},
+                                [this](Layer::Square& s) { save_(ImGui::DragFloat("Angle", &s.angle, 0.1f, 0.f, 360.f)); },
+                                [this, &editLayer](Layer::Cross& c) {
+                                    save_(ImGui::DragFloat("Angle", &c.angle, 0.1f, 0.f, 360.f));
+                                    save_(ImGui::DragFloat(
+                                        "Cross Thickness", &c.crossThickness, 0.05f, 1.f, std::min(editLayer.dims.x, editLayer.dims.y)));
+                                    if(save_(ImGui::Checkbox("Full screen", &c.fullscreen)))
+                                        if(!c.fullscreen)
+                                            editLayer.dims = vec2(32.f);
+                                } },
+                   editLayer.type);
 
-        if(saveCheck(ImGui::Checkbox("Full screen", &editLayer.fullscreen)))
-            if(!editLayer.fullscreen)
-                editLayer.dims = vec2(32.f);
-
-        if(!editLayer.fullscreen)
-            saveCheck(ImGui::DragFloat2("Cursor Size", glm::value_ptr(editLayer.dims), 0.2f, 1.f, ImGui::GetIO().DisplaySize.x * 2.f));
+        if(!std::holds_alternative<Layer::Cross>(editLayer.type) || !std::get<Layer::Cross>(editLayer.type).fullscreen)
+            save_(ImGui::DragFloat2("Cursor Size", glm::value_ptr(editLayer.dims), 0.2f, 1.f, ImGui::GetIO().DisplaySize.x * 2.f));
     }
 
     ImGui::Separator();
 
     ImGuiKeybindInput(activateCursor_, currentEditedKeybind, "Toggles cursor layers visibility.");
 
-    mstime currentTime = TimeInMilliseconds();
-    if(needsSaving_ && lastSaveTime_ + SaveDelay <= currentTime)
+    if(save_.ShouldSave())
         Save();
-}
-
-void Cursor::Delete(char id) {
-    if(selectedLayerId_ == id)
-        selectedLayerId_ = UnselectedSubId;
-    else if(selectedLayerId_ > id)
-        selectedLayerId_--;
-
-    layers_.erase(layers_.begin() + id);
-
-    needsSaving_ = true;
 }
 
 void Cursor::Load() {
     using namespace nlohmann;
     layers_.clear();
-    selectedLayerId_ = UnselectedSubId;
+    layerSelector_.Deselect();
 
     auto& cfg = JSONConfigurationFile::i();
     cfg.Reload();
 
-    auto maybe_at = []<typename D>(const json& j, const char* n, const D& def,
-                                   const std::variant<std::monostate, std::function<D(const json&)>>& cvt = {}) {
-        auto it = j.find(n);
-        if(it == j.end())
-            return def;
-        if(cvt.index() == 0)
-            return static_cast<D>(*it);
-        else
-            return std::get<1>(cvt)(*it);
-    };
-
-    auto getvec4 = [](const json& j) {
-        return vec4(j[0].get<f32>(), j[1].get<f32>(), j[2].get<f32>(), j[3].get<f32>());
-    };
-    auto getvec2 = [](const json& j) {
-        return vec2(j[0].get<f32>(), j[1].get<f32>());
-    };
-
     const auto& layers = cfg.json()["cursor_layers"];
-    for(const auto& lIn : layers) {
-        Layer l {};
-        l.name = lIn["name"];
-        l.color1 = maybe_at(lIn, "color1", vec4(1.f), { getvec4 });
-        l.color2 = maybe_at(lIn, "color2", vec4(1.f), { getvec4 });
-        l.invert = maybe_at(lIn, "invert", false);
-        l.fullscreen = maybe_at(lIn, "fullscreen", false);
-        if(!l.fullscreen)
-            l.dims = maybe_at(lIn, "dims", vec2(32.f), { getvec2 });
-        l.edgeThickness = maybe_at(lIn, "edge_thickness", 1.f);
-        l.secondaryThickness = maybe_at(lIn, "secondary_thickness", 4.f);
-        l.angle = maybe_at(lIn, "angle", 0.f);
-        l.type = CursorType(maybe_at(lIn, "type", 0));
-
-        layers_.push_back(l);
-    }
+    for(const auto& l : layers)
+        layers_.push_back(l.get<Layer>());
 }
 
 void Cursor::Save() {
@@ -220,27 +153,11 @@ void Cursor::Save() {
 
     auto& layers = cfg.json()["cursor_layers"];
     layers = json::array();
-    for(const auto& l : layers_) {
-        json layer;
-        layer["name"] = l.name;
-        layer["color1"] = { l.color1.x, l.color1.y, l.color1.z, l.color1.w };
-        layer["color2"] = { l.color2.x, l.color2.y, l.color2.z, l.color2.w };
-        layer["invert"] = l.invert;
-        if(!l.fullscreen)
-            layer["dims"] = { l.dims.x, l.dims.y };
-        layer["fullscreen"] = l.fullscreen;
-        layer["edge_thickness"] = l.edgeThickness;
-        layer["secondary_thickness"] = l.secondaryThickness;
-        layer["angle"] = l.angle;
-        layer["type"] = i32(l.type);
-
-        layers.push_back(layer);
-    }
+    for(const auto& l : layers_)
+        layers.push_back(l);
 
     cfg.Save();
-
-    needsSaving_ = false;
-    lastSaveTime_ = TimeInMilliseconds();
+    save_.Saved();
 }
 
 } // namespace GW2Clarity

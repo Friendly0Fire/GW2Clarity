@@ -21,7 +21,9 @@
 #include "Utility.h"
 #include "Version.h"
 
-KeyCombo GetSettingsKeyCombo() { return { GetScanCodeFromVirtualKey('P'), Modifier::Shift | Modifier::Alt }; }
+KeyCombo GetSettingsKeyCombo() {
+    return { GetScanCodeFromVirtualKey('P'), Modifier::Shift | Modifier::Alt };
+}
 
 namespace GW2Clarity
 {
@@ -29,10 +31,13 @@ namespace GW2Clarity
 class ClarityMiscTab : public ::MiscTab
 {
 public:
-    void AdditionalGUI() override { }
+    void AdditionalGUI() override {
+    }
 };
 
-void Core::InnerInitPreImGui() { ClarityMiscTab::init<ClarityMiscTab>(); }
+void Core::InnerInitPreImGui() {
+    ClarityMiscTab::init<ClarityMiscTab>();
+}
 
 void Core::InnerInitPreFontImGui() {
     auto& imio = ImGui::GetIO();
@@ -46,10 +51,10 @@ void Core::InnerInitPreFontImGui() {
 void Core::InnerInitPostImGui() {
     firstMessageShown_ = std::make_unique<ConfigurationOption<bool>>("", "first_message_shown_v1", "Core", false);
 
-    buffs_ = std::make_unique<Buffs>(device_);
-    styles_ = std::make_unique<Styles>(device_, buffs_.get());
-    grids_ = std::make_unique<Grids>(device_, buffs_.get(), styles_.get());
-    layouts_ = std::make_unique<Layouts>(device_, grids_.get());
+    // buffs_ = std::make_unique<Buffs>(device_);
+    // styles_ = std::make_unique<Styles>(device_, buffs_.get());
+    // grids_ = std::make_unique<Grids>(device_, buffs_.get(), styles_.get());
+    // layouts_ = std::make_unique<Layouts>(device_, grids_.get());
     cursor_ = std::make_unique<Cursor>(device_);
 }
 
@@ -88,58 +93,14 @@ void Core::InnerShutdown() {
 }
 
 void Core::InnerFrequentUpdate() {
-    if(getBuffs_)
-        buffs_->UpdateBuffsTable(getBuffs_());
+    // if(getBuffs_)
+    //     buffs_->UpdateBuffsTable(getBuffs_());
 }
 
-void Core::InnerUpdate() { }
-
-void Core::DisplayDeletionMenu(DeletionInfo&& info) {
-    confirmDeletionInfo_ = std::move(info);
-    ImGui::OpenPopup(confirmDeletionPopupID_);
+void Core::InnerUpdate() {
 }
 
 void Core::InnerDraw() {
-    if(!confirmDeletionPopupID_)
-        confirmDeletionPopupID_ = ImGui::GetID(ConfirmDeletionPopupName);
-    if(ImGui::BeginPopupModal(ConfirmDeletionPopupName)) {
-        ImGui::TextUnformatted(std::format("Are you sure you want to delete {} '{}'{}?", confirmDeletionInfo_.typeName,
-                                           confirmDeletionInfo_.name, confirmDeletionInfo_.tail)
-                                   .c_str());
-        if(ImGui::Button("Yes")) {
-            switch(confirmDeletionInfo_.id.index()) {
-            case 0:
-                cursor_->Delete(std::get<char>(confirmDeletionInfo_.id));
-                break;
-            case 1:
-                layouts_->Delete(std::get<i16>(confirmDeletionInfo_.id));
-                break;
-            case 2:
-                {
-                    auto id = std::get<Id>(confirmDeletionInfo_.id);
-                    layouts_->GridDeleted(id);
-                    grids_->Delete(id);
-                    break;
-                }
-            case 3:
-                {
-                    auto id = std::get<u32>(confirmDeletionInfo_.id);
-                    grids_->StyleDeleted(id);
-                    styles_->Delete(id);
-                    break;
-                }
-            }
-
-            confirmDeletionInfo_ = {};
-            ImGui::CloseCurrentPopup();
-        }
-        ImGui::SameLine();
-        if(ImGui::Button("No"))
-            ImGui::CloseCurrentPopup();
-
-        ImGui::EndPopup();
-    }
-
     if(!firstMessageShown_->value())
         ImGuiPopup("Welcome to GW2Clarity!")
             .Position({ 0.5f, 0.45f })
@@ -162,10 +123,10 @@ void Core::InnerDraw() {
                 },
                 [&]() { firstMessageShown_->value(true); });
 
-    grids_->Draw(context_, layouts_->currentLayout(), layouts_->enableDefaultLayout());
-    layouts_->Draw(context_);
+    // grids_->Draw(context_, layouts_->currentLayout(), layouts_->enableDefaultLayout());
+    // layouts_->Draw(context_);
     cursor_->Draw(context_);
-    styles_->Draw(context_);
+    // styles_->Draw(context_);
 }
 
 } // namespace GW2Clarity

@@ -6,12 +6,15 @@ AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
 AlignOperands: true
 AlignTrailingComments: false
-AllowShortBlocksOnASingleLine: true
+AllowShortBlocksOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLambdasOnASingleLine: Inline
 AllowShortLoopsOnASingleLine: false
 AlwaysBreakAfterDefinitionReturnType: false
-BraceWrapping:
+BinPackArguments: false
+BinPackParameters: false
+BraceWrapping: 
   AfterCaseLabel: true
   AfterClass: true
   AfterControlStatement: false
@@ -21,10 +24,10 @@ BraceWrapping:
   AfterStruct: true
   AfterUnion: true
   AfterExternBlock: true
-  BeforeCatch: true
-  BeforeElse: true
+  BeforeCatch: false
+  BeforeElse: false
   BeforeLambdaBody: false
-  BeforeWhile: true
+  BeforeWhile: false
   SplitEmptyFunction: false
   SplitEmptyRecord: false
   SplitEmptyNamespace: false
@@ -33,8 +36,7 @@ BreakConstructorInitializers: BeforeComma
 ColumnLimit: 140
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 Cpp11BracedListStyle: false
-IncludeBlocks: Regroup
-IncludeCategories:
+IncludeCategories: 
   - Regex: '^<[^\.]+$'
     Priority: 1
   - Regex: '^<.*'
@@ -58,5 +60,4 @@ SpacesBeforeTrailingComments: 1
 SpacesInAngles: false
 Standard: c++20
 TabWidth: 4
-UseTab: Never
 ...
