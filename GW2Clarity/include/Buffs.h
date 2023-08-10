@@ -36,6 +36,8 @@ struct BuffDescription
             currentCategories_s = std::make_shared<BuffCategories>(std::initializer_list<std::string> { std::forward<Args>(cats)... });
         else
             currentCategories_s = nullptr;
+
+        name = currentCategories_s ? currentCategories_s->at(0) : "<undefined>";
     }
 
     BuffDescription(u32 i, std::string&& n, i32 m = std::numeric_limits<i32>::max())
@@ -86,7 +88,7 @@ public:
 
     void UpdateBuffsTable(StackedBuff* buffs);
 
-    static inline const BuffDescription UnknownBuff { BuffDescription::InvalidId, "Unknown", 1 };
+    static inline const BuffDescription UnknownBuff { "Unknown" };
 
     [[nodiscard]] auto buffs() const {
         return std::span { buffs_ };

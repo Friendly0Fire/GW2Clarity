@@ -1,4 +1,4 @@
-const auto g_Buffs = std::to_array<BuffDescription>({
+std::vector<BuffDescription> buffs({
     // https://github.com/baaron4/GW2-Elite-Insights-Parser/blob/8e8ebd252eda839f3fa407d347e67a6065c8da74/GW2EIEvtcParser/ParserHelpers/SkillIDs.cs
     // Common Buffs
     { "Buffs" },

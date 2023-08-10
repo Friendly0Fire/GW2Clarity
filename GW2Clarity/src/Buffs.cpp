@@ -210,11 +210,14 @@ void BuffsLibrary::DrawMenu(Keybind**) {
             }
             ImGui::SameLine();
             if(ImGui::Button(("Wiki##" + chatCodeStr).c_str())) {
-                ShellExecute(0, 0,
+                ShellExecute(0,
+                             0,
                              std::format(L"https://wiki.guildwars2.com/index.php?title=Special:Search&search={}",
                                          utf8_decode(skyr::percent_encode(chatCodeStr)))
                                  .c_str(),
-                             0, 0, SW_SHOW);
+                             0,
+                             0,
+                             SW_SHOW);
             }
         }
         ImGui::EndTable();
@@ -308,11 +311,8 @@ bool BuffsLibrary::DrawBuffCombo(const char* name, const BuffDescription*& selec
     return changed;
 }
 
-#include "BuffsList.inc"
-
 std::vector<BuffDescription> BuffsLibrary::GenerateBuffsList() {
-    std::vector<BuffDescription> buffs;
-    buffs.assign(g_Buffs.begin(), g_Buffs.end());
+#include "BuffsList.inc"
 
 #ifdef _DEBUG
     std::set<std::string> buffNames;
@@ -323,7 +323,8 @@ std::vector<BuffDescription> BuffsLibrary::GenerateBuffsList() {
     }
 #endif
 
-    ranges::remove_if(buffs, [](const auto& buff) { return buff.id == BuffDescription::InvalidId; });
+    const auto& first = ranges::remove_if(buffs, [](const auto& buff) { return buff.id == BuffDescription::InvalidId; });
+    buffs.erase(first, buffs.end());
 
     return buffs;
 }

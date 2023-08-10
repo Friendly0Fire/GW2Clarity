@@ -31,11 +31,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Zip", "Zip", "{88C0C950-DD9
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AtlasTool", "AtlasTool\AtlasTool.csproj", "{C0EF6C70-CA9C-4F0B-9D40-AF0B45609740}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GW2Mock", "GW2Mock\GW2Mock.vcxproj", "{B41E0C86-7B36-470B-9FA2-C69BE549845D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
+		Mock Debug|Any CPU = Mock Debug|Any CPU
+		Mock Debug|x64 = Mock Debug|x64
+		Mock Debug|x86 = Mock Debug|x86
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
@@ -47,6 +52,12 @@ Global
 		{7EFE6DCC-544A-4116-9EF2-13C0431356E6}.Debug|x64.Build.0 = Debug|x64
 		{7EFE6DCC-544A-4116-9EF2-13C0431356E6}.Debug|x86.ActiveCfg = Debug|x64
 		{7EFE6DCC-544A-4116-9EF2-13C0431356E6}.Debug|x86.Build.0 = Debug|x64
+		{7EFE6DCC-544A-4116-9EF2-13C0431356E6}.Mock Debug|Any CPU.ActiveCfg = Mock Debug|x64
+		{7EFE6DCC-544A-4116-9EF2-13C0431356E6}.Mock Debug|Any CPU.Build.0 = Mock Debug|x64
+		{7EFE6DCC-544A-4116-9EF2-13C0431356E6}.Mock Debug|x64.ActiveCfg = Mock Debug|x64
+		{7EFE6DCC-544A-4116-9EF2-13C0431356E6}.Mock Debug|x64.Build.0 = Mock Debug|x64
+		{7EFE6DCC-544A-4116-9EF2-13C0431356E6}.Mock Debug|x86.ActiveCfg = Mock Debug|x64
+		{7EFE6DCC-544A-4116-9EF2-13C0431356E6}.Mock Debug|x86.Build.0 = Mock Debug|x64
 		{7EFE6DCC-544A-4116-9EF2-13C0431356E6}.Release|Any CPU.ActiveCfg = Release|x64
 		{7EFE6DCC-544A-4116-9EF2-13C0431356E6}.Release|Any CPU.Build.0 = Release|x64
 		{7EFE6DCC-544A-4116-9EF2-13C0431356E6}.Release|x64.ActiveCfg = Release|x64
@@ -58,6 +69,12 @@ Global
 		{1AD7929B-FE1E-4FA2-BE57-DF9B0FC1526D}.Debug|x64.ActiveCfg = Debug|x64
 		{1AD7929B-FE1E-4FA2-BE57-DF9B0FC1526D}.Debug|x64.Build.0 = Debug|x64
 		{1AD7929B-FE1E-4FA2-BE57-DF9B0FC1526D}.Debug|x86.ActiveCfg = Debug|x64
+		{1AD7929B-FE1E-4FA2-BE57-DF9B0FC1526D}.Mock Debug|Any CPU.ActiveCfg = Mock Debug|x64
+		{1AD7929B-FE1E-4FA2-BE57-DF9B0FC1526D}.Mock Debug|Any CPU.Build.0 = Mock Debug|x64
+		{1AD7929B-FE1E-4FA2-BE57-DF9B0FC1526D}.Mock Debug|x64.ActiveCfg = Debug|x64
+		{1AD7929B-FE1E-4FA2-BE57-DF9B0FC1526D}.Mock Debug|x64.Build.0 = Debug|x64
+		{1AD7929B-FE1E-4FA2-BE57-DF9B0FC1526D}.Mock Debug|x86.ActiveCfg = Mock Debug|x64
+		{1AD7929B-FE1E-4FA2-BE57-DF9B0FC1526D}.Mock Debug|x86.Build.0 = Mock Debug|x64
 		{1AD7929B-FE1E-4FA2-BE57-DF9B0FC1526D}.Release|Any CPU.ActiveCfg = Release|x64
 		{1AD7929B-FE1E-4FA2-BE57-DF9B0FC1526D}.Release|Any CPU.Build.0 = Release|x64
 		{1AD7929B-FE1E-4FA2-BE57-DF9B0FC1526D}.Release|x64.ActiveCfg = Release|x64
@@ -69,6 +86,11 @@ Global
 		{5C9FD859-DDF9-4510-8397-B329B0AE8C48}.Debug|x64.Build.0 = Debug|x64
 		{5C9FD859-DDF9-4510-8397-B329B0AE8C48}.Debug|x86.ActiveCfg = Debug|Win32
 		{5C9FD859-DDF9-4510-8397-B329B0AE8C48}.Debug|x86.Build.0 = Debug|Win32
+		{5C9FD859-DDF9-4510-8397-B329B0AE8C48}.Mock Debug|Any CPU.ActiveCfg = Mock Debug|x64
+		{5C9FD859-DDF9-4510-8397-B329B0AE8C48}.Mock Debug|Any CPU.Build.0 = Mock Debug|x64
+		{5C9FD859-DDF9-4510-8397-B329B0AE8C48}.Mock Debug|x64.ActiveCfg = Debug|x64
+		{5C9FD859-DDF9-4510-8397-B329B0AE8C48}.Mock Debug|x64.Build.0 = Debug|x64
+		{5C9FD859-DDF9-4510-8397-B329B0AE8C48}.Mock Debug|x86.ActiveCfg = Mock Debug|x64
 		{5C9FD859-DDF9-4510-8397-B329B0AE8C48}.Release|Any CPU.ActiveCfg = Release|x64
 		{5C9FD859-DDF9-4510-8397-B329B0AE8C48}.Release|Any CPU.Build.0 = Release|x64
 		{5C9FD859-DDF9-4510-8397-B329B0AE8C48}.Release|x64.ActiveCfg = Release|x64
@@ -81,6 +103,11 @@ Global
 		{DBBF348D-C221-4F2E-8A0D-24EFA0D98E71}.Debug|x64.Build.0 = Debug|x64
 		{DBBF348D-C221-4F2E-8A0D-24EFA0D98E71}.Debug|x86.ActiveCfg = Debug|Win32
 		{DBBF348D-C221-4F2E-8A0D-24EFA0D98E71}.Debug|x86.Build.0 = Debug|Win32
+		{DBBF348D-C221-4F2E-8A0D-24EFA0D98E71}.Mock Debug|Any CPU.ActiveCfg = Mock Debug|x64
+		{DBBF348D-C221-4F2E-8A0D-24EFA0D98E71}.Mock Debug|Any CPU.Build.0 = Mock Debug|x64
+		{DBBF348D-C221-4F2E-8A0D-24EFA0D98E71}.Mock Debug|x64.ActiveCfg = Debug|x64
+		{DBBF348D-C221-4F2E-8A0D-24EFA0D98E71}.Mock Debug|x64.Build.0 = Debug|x64
+		{DBBF348D-C221-4F2E-8A0D-24EFA0D98E71}.Mock Debug|x86.ActiveCfg = Mock Debug|x64
 		{DBBF348D-C221-4F2E-8A0D-24EFA0D98E71}.Release|Any CPU.ActiveCfg = Release|x64
 		{DBBF348D-C221-4F2E-8A0D-24EFA0D98E71}.Release|Any CPU.Build.0 = Release|x64
 		{DBBF348D-C221-4F2E-8A0D-24EFA0D98E71}.Release|x64.ActiveCfg = Release|x64
@@ -93,6 +120,11 @@ Global
 		{7EAD1358-3E72-4FB6-A212-25D462B5C1E9}.Debug|x64.Build.0 = Debug|x64
 		{7EAD1358-3E72-4FB6-A212-25D462B5C1E9}.Debug|x86.ActiveCfg = Debug|Win32
 		{7EAD1358-3E72-4FB6-A212-25D462B5C1E9}.Debug|x86.Build.0 = Debug|Win32
+		{7EAD1358-3E72-4FB6-A212-25D462B5C1E9}.Mock Debug|Any CPU.ActiveCfg = Mock Debug|x64
+		{7EAD1358-3E72-4FB6-A212-25D462B5C1E9}.Mock Debug|Any CPU.Build.0 = Mock Debug|x64
+		{7EAD1358-3E72-4FB6-A212-25D462B5C1E9}.Mock Debug|x64.ActiveCfg = Debug|x64
+		{7EAD1358-3E72-4FB6-A212-25D462B5C1E9}.Mock Debug|x64.Build.0 = Debug|x64
+		{7EAD1358-3E72-4FB6-A212-25D462B5C1E9}.Mock Debug|x86.ActiveCfg = Mock Debug|x64
 		{7EAD1358-3E72-4FB6-A212-25D462B5C1E9}.Release|Any CPU.ActiveCfg = Release|x64
 		{7EAD1358-3E72-4FB6-A212-25D462B5C1E9}.Release|Any CPU.Build.0 = Release|x64
 		{7EAD1358-3E72-4FB6-A212-25D462B5C1E9}.Release|x64.ActiveCfg = Release|x64
@@ -105,6 +137,11 @@ Global
 		{BAEB16B3-DB4C-432F-9E6A-2ACADEA0691D}.Debug|x64.Build.0 = Debug|x64
 		{BAEB16B3-DB4C-432F-9E6A-2ACADEA0691D}.Debug|x86.ActiveCfg = Debug|Win32
 		{BAEB16B3-DB4C-432F-9E6A-2ACADEA0691D}.Debug|x86.Build.0 = Debug|Win32
+		{BAEB16B3-DB4C-432F-9E6A-2ACADEA0691D}.Mock Debug|Any CPU.ActiveCfg = Mock Debug|x64
+		{BAEB16B3-DB4C-432F-9E6A-2ACADEA0691D}.Mock Debug|Any CPU.Build.0 = Mock Debug|x64
+		{BAEB16B3-DB4C-432F-9E6A-2ACADEA0691D}.Mock Debug|x64.ActiveCfg = Debug|x64
+		{BAEB16B3-DB4C-432F-9E6A-2ACADEA0691D}.Mock Debug|x64.Build.0 = Debug|x64
+		{BAEB16B3-DB4C-432F-9E6A-2ACADEA0691D}.Mock Debug|x86.ActiveCfg = Mock Debug|x64
 		{BAEB16B3-DB4C-432F-9E6A-2ACADEA0691D}.Release|Any CPU.ActiveCfg = Release|x64
 		{BAEB16B3-DB4C-432F-9E6A-2ACADEA0691D}.Release|Any CPU.Build.0 = Release|x64
 		{BAEB16B3-DB4C-432F-9E6A-2ACADEA0691D}.Release|x64.ActiveCfg = Release|x64
@@ -117,12 +154,27 @@ Global
 		{C0EF6C70-CA9C-4F0B-9D40-AF0B45609740}.Debug|x64.Build.0 = Debug|Any CPU
 		{C0EF6C70-CA9C-4F0B-9D40-AF0B45609740}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{C0EF6C70-CA9C-4F0B-9D40-AF0B45609740}.Debug|x86.Build.0 = Debug|Any CPU
+		{C0EF6C70-CA9C-4F0B-9D40-AF0B45609740}.Mock Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0EF6C70-CA9C-4F0B-9D40-AF0B45609740}.Mock Debug|x64.ActiveCfg = Debug|Any CPU
+		{C0EF6C70-CA9C-4F0B-9D40-AF0B45609740}.Mock Debug|x86.ActiveCfg = Debug|Any CPU
 		{C0EF6C70-CA9C-4F0B-9D40-AF0B45609740}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C0EF6C70-CA9C-4F0B-9D40-AF0B45609740}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C0EF6C70-CA9C-4F0B-9D40-AF0B45609740}.Release|x64.ActiveCfg = Release|Any CPU
 		{C0EF6C70-CA9C-4F0B-9D40-AF0B45609740}.Release|x64.Build.0 = Release|Any CPU
 		{C0EF6C70-CA9C-4F0B-9D40-AF0B45609740}.Release|x86.ActiveCfg = Release|Any CPU
 		{C0EF6C70-CA9C-4F0B-9D40-AF0B45609740}.Release|x86.Build.0 = Release|Any CPU
+		{B41E0C86-7B36-470B-9FA2-C69BE549845D}.Debug|Any CPU.ActiveCfg = Mock Debug|x64
+		{B41E0C86-7B36-470B-9FA2-C69BE549845D}.Debug|x64.ActiveCfg = Mock Debug|x64
+		{B41E0C86-7B36-470B-9FA2-C69BE549845D}.Debug|x86.ActiveCfg = Mock Debug|Win32
+		{B41E0C86-7B36-470B-9FA2-C69BE549845D}.Mock Debug|Any CPU.ActiveCfg = Mock Debug|x64
+		{B41E0C86-7B36-470B-9FA2-C69BE549845D}.Mock Debug|Any CPU.Build.0 = Mock Debug|x64
+		{B41E0C86-7B36-470B-9FA2-C69BE549845D}.Mock Debug|x64.ActiveCfg = Mock Debug|x64
+		{B41E0C86-7B36-470B-9FA2-C69BE549845D}.Mock Debug|x64.Build.0 = Mock Debug|x64
+		{B41E0C86-7B36-470B-9FA2-C69BE549845D}.Mock Debug|x86.ActiveCfg = Mock Debug|Win32
+		{B41E0C86-7B36-470B-9FA2-C69BE549845D}.Mock Debug|x86.Build.0 = Mock Debug|Win32
+		{B41E0C86-7B36-470B-9FA2-C69BE549845D}.Release|Any CPU.ActiveCfg = Mock Debug|x64
+		{B41E0C86-7B36-470B-9FA2-C69BE549845D}.Release|x64.ActiveCfg = Mock Debug|x64
+		{B41E0C86-7B36-470B-9FA2-C69BE549845D}.Release|x86.ActiveCfg = Mock Debug|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
