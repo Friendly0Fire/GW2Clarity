@@ -111,8 +111,8 @@ protected:
     {
         vec4 dimensions;
         vec4 parameters;
-        vec4 color1;
-        vec4 color2;
+        vec4 colorFill;
+        vec4 colorBorder;
     };
     ConstantBufferSPtr<CursorData> cursorCB_;
     ShaderId screenSpaceVS_;

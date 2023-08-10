@@ -1,19 +1,19 @@
 {
-  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
-  "name": "gw2clarity",
-  "version": "0.0.1",
-  "dependencies": [
-    "glm",
-    "directxtk",
-    "nlohmann-json",
-    "simpleini",
-    "tinyxml2",
-    "xxhash",
-    "neargye-semver",
-    "cppcodec",
-    "skyr-url",
-    "range-v3",
-    "atomic-queue",
-    "tl-generator"
-  ]
+    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+    "name": "gw2clarity",
+    "version": "0.0.1",
+    "dependencies": [
+        "glm",
+        "directxtk",
+        "nlohmann-json",
+        "simpleini",
+        "tinyxml2",
+        "xxhash",
+        "neargye-semver",
+        "range-v3",
+        "atomic-queue",
+        "freetype",
+        "cppcodec",
+        "skyr-url"
+    ]
 }

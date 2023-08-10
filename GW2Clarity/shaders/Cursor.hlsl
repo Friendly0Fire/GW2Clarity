@@ -5,9 +5,9 @@ float4 ColorFromDist(float l, float t) {
 	if(l > t)
 		discard;
 	if(l < t - parameters.x)
-		return color2;
+		return colorFill;
 
-	return color1;
+	return colorBorder;
 }
 
 float4 Circle(PS_INPUT In) : SV_Target

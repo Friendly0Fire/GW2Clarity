@@ -7,8 +7,8 @@ cbuffer Cursor : register(b0)
 {
 	float4 dimensions;
 	float4 parameters;
-	float4 color1;
-	float4 color2;
+	float4 colorFill;
+	float4 colorBorder;
 };
 #endif
 

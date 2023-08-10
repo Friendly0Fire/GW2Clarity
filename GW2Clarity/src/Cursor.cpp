@@ -26,7 +26,13 @@ Cursor::Cursor(ComPtr<ID3D11Device>& dev) : activateCursor_("activate_cursor", "
     auto makePS = [&](const char* ep) {
         return sm.GetShader(L"Cursor.hlsl", D3D11_SHVER_PIXEL_SHADER, ep);
     };
-    cursorPS_ = { makePS("Circle"), makePS("Square"), makePS("Cross") };
+
+    const auto circlePS = makePS("Circle");
+    const auto squarePS = makePS("Square");
+    const auto crossPS = makePS("Cross");
+    cursorPS_[get_index<Layer::Circle, decltype(Layer::type)>()] = circlePS;
+    cursorPS_[get_index<Layer::Square, decltype(Layer::type)>()] = squarePS;
+    cursorPS_[get_index<Layer::Cross, decltype(Layer::type)>()] = crossPS;
 
     CD3D11_BLEND_DESC blendDesc(D3D11_DEFAULT);
     blendDesc.RenderTarget[0].BlendEnable = true;
@@ -60,33 +66,39 @@ void Cursor::Draw(ComPtr<ID3D11DeviceContext>& ctx) {
         return;
 
     for(auto& l : layers_) {
-        if(l.invert)
-            ctx->OMSetBlendState(invertBlend_.Get(), nullptr, 0xffffffff);
-        else
-            ctx->OMSetBlendState(defaultBlend_.Get(), nullptr, 0xffffffff);
+        // if(l.invert)
+        //     ctx->OMSetBlendState(invertBlend_.Get(), nullptr, 0xffffffff);
+        // else
+        //     ctx->OMSetBlendState(defaultBlend_.Get(), nullptr, 0xffffffff);
 
-        if(l.fullscreen)
+        if(const auto* c = std::get_if<Layer::Cross>(&l.type); c && c->fullscreen)
             l.dims = vec2(f32(std::max(Core::i().screenWidth(), Core::i().screenHeight())) * 2.f);
 
-        cb->color1 = l.color1;
-        cb->color2 = l.color2;
+        cb->colorFill = l.colorFill;
+        cb->colorBorder = l.colorBorder;
         f32 div = std::min(l.dims.x, l.dims.y);
-        cb->parameters = vec4(l.edgeThickness * (l.type == CursorType::SMOOTH ? 1.f : 1.f / div),
-                              l.secondaryThickness / div,
-                              l.angle / 180.f * std::numbers::pi_v<f32>,
-                              0.f);
+        cb->parameters = vec4(l.edgeThickness * 1.f / div, 0.f, 0.f, 0.f);
+        std::visit(Overloaded { [&](const Layer::Circle&) {},
+                                [&](const Layer::Cross& c) {
+                                    cb->parameters.y = c.crossThickness / div;
+                                    cb->parameters.z = c.angle / 180.f * std::numbers::pi_v<f32>;
+                                },
+                                [&](const Layer::Square& s) {
+                                    cb->parameters.z = s.angle / 180.f * std::numbers::pi_v<f32>;
+                                } },
+                   l.type);
         cb->dimensions = vec4(mp, l.dims / Core::i().screenDims());
         cb.Update(ctx.Get());
 
         ShaderManager::i().SetConstantBuffers(ctx.Get(), cb);
-        ShaderManager::i().SetShaders(ctx.Get(), screenSpaceVS_, cursorPS_[i32(l.type)]);
+        ShaderManager::i().SetShaders(ctx.Get(), screenSpaceVS_, cursorPS_[l.type.index()]);
 
         DrawScreenQuad(ctx.Get());
     }
 }
 
 void Cursor::DrawMenu(Keybind** currentEditedKeybind) {
-    if(layerSelector_.Draw(layers_)) {
+    if(layerSelector_.Draw(layers_ | ranges::views::transform(&Layer::name))) {
         layers_.emplace_back();
         save_();
     }

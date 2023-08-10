@@ -25,11 +25,13 @@ struct BuffDescription
 
     inline static constexpr u32 InvalidId = std::numeric_limits<u32>::max();
 
-    static std::string NameToTextureName(const std::string& name) { return ReplaceChars(ToLower(name), { { ' ', '_' }, { '\"', '_' } }); }
+    static std::string NameToTextureName(const std::string& name) {
+        return ReplaceChars(ToLower(name), { { ' ', '_' }, { '\"', '_' } });
+    }
     static Texture2D LoadTexture(const std::string& tex);
 
-    template<std::same_as<std::string>... Args>
-    explicit BuffDescription(Args&&... cats) : id(InvalidId), maxStacks(std::numeric_limits<i32>::max()) {
+    template<std::convertible_to<const char*>... Args>
+    implicit BuffDescription(Args&&... cats) : id(InvalidId), maxStacks(std::numeric_limits<i32>::max()) {
         if constexpr(sizeof...(cats) > 0)
             currentCategories_s = std::make_shared<BuffCategories>(std::initializer_list<std::string> { std::forward<Args>(cats)... });
         else
@@ -37,10 +39,12 @@ struct BuffDescription
     }
 
     BuffDescription(u32 i, std::string&& n, i32 m = std::numeric_limits<i32>::max())
-        : id(i), maxStacks(m), name(std::move(n)), icon(LoadTexture(NameToTextureName(name))), categories(currentCategories_s) { }
+        : id(i), maxStacks(m), name(std::move(n)), icon(LoadTexture(NameToTextureName(name))), categories(currentCategories_s) {
+    }
 
     BuffDescription(u32 i, std::string&& n, std::string&& t, i32 m = std::numeric_limits<i32>::max())
-        : id(i), maxStacks(m), name(std::move(n)), icon(LoadTexture(NameToTextureName(t))), categories(currentCategories_s) { }
+        : id(i), maxStacks(m), name(std::move(n)), icon(LoadTexture(NameToTextureName(t))), categories(currentCategories_s) {
+    }
 
     BuffDescription(std::initializer_list<u32> is, std::string&& n, i32 m = std::numeric_limits<i32>::max())
         : id(*is.begin()), maxStacks(m), name(std::move(n)), icon(LoadTexture(NameToTextureName(name))), categories(currentCategories_s) {
@@ -56,7 +60,9 @@ struct BuffDescription
         return std::accumulate(extraIds.begin(), extraIds.end(), activeBuffs[id], [&](i32 a, u32 b) { return a + activeBuffs[b]; });
     }
 
-    [[nodiscard]] bool ShowNumber(i32 count) const { return maxStacks > 1 && count > 1; }
+    [[nodiscard]] bool ShowNumber(i32 count) const {
+        return maxStacks > 1 && count > 1;
+    }
 
 private:
     inline static BuffCategoriesPtr currentCategories_s = nullptr;
@@ -73,25 +79,37 @@ public:
 #ifdef _DEBUG
     void DrawMenu(Keybind** currentEditedKeybind) override;
 
-    [[nodiscard]] const char* GetTabName() const override { return "Buffs Analyzer"; }
+    [[nodiscard]] const char* GetTabName() const override {
+        return "Buffs Analyzer";
+    }
 #endif
 
     void UpdateBuffsTable(StackedBuff* buffs);
 
     static inline const BuffDescription UnknownBuff { BuffDescription::InvalidId, "Unknown", 1 };
 
-    [[nodiscard]] auto buffs() const { return std::span { buffs_ }; }
+    [[nodiscard]] auto buffs() const {
+        return std::span { buffs_ };
+    }
     [[nodiscard]] vec2 numberUV(i32 n) const {
         // 0 and 1 are not in the array, so 2 is at index 0
         n -= 2;
         return n < 0 ? vec2 {} : n < static_cast<i32>(numbers_.size()) ? numbers_[n] : numbers_.back();
     }
-    [[nodiscard]] const auto& buffsMap() const { return buffsMap_; }
-    [[nodiscard]] auto& activeBuffs() const { return activeBuffs_; }
+    [[nodiscard]] const auto& buffsMap() const {
+        return buffsMap_;
+    }
+    [[nodiscard]] auto& activeBuffs() const {
+        return activeBuffs_;
+    }
 
-    [[nodiscard]] const auto& numbersAtlasUVSize() const { return numbersAtlasUVSize_; }
+    [[nodiscard]] const auto& numbersAtlasUVSize() const {
+        return numbersAtlasUVSize_;
+    }
 
-    [[nodiscard]] const Texture2D& numbersAtlas() const { return numbersAtlas_; }
+    [[nodiscard]] const Texture2D& numbersAtlas() const {
+        return numbersAtlas_;
+    }
 
     bool DrawBuffCombo(const char* name, const BuffDescription*& selectedBuf, std::span<char> searchBuffer) const;
 
