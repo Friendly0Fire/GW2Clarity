@@ -98,26 +98,52 @@ void Cursor::Draw(ComPtr<ID3D11DeviceContext>& ctx) {
 }
 
 void Cursor::DrawMenu(Keybind** currentEditedKeybind) {
-    if(layerSelector_.Draw(layers_ | ranges::views::transform(&Layer::name))) {
+    if(layerSelector_.Draw()) {
         layers_.emplace_back();
         save_();
     }
 
-    if(layerSelector_.selected()) {
-        auto& editLayer = layers_[layerSelector_.id()];
+    if(auto* i = layerSelector_.selectedItem()) {
+        auto& editLayer = *i;
         if(!editLayer.name.empty())
             ImGuiTitle(std::format("Editing Cursor Layer '{}'", editLayer.name).c_str(), 0.75f);
         else
             ImGuiTitle("New Cursor Layer", 0.75f);
 
         save_(ImGui::InputText("Name##NewLayer", &editLayer.name));
-        save_(ImGui::Combo("Type", (i32*)&editLayer.type, "Circle\0Square\0Cross\0Gaussian"));
 
-        save_(ImGui::ColorEdit4(
-            "Border Color", glm::value_ptr(editLayer.colorBorder), ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
+        auto currTypeName = std::visit(Overloaded { [](const Layer::Circle&) { return "Circle"; },
+                                                    [](const Layer::Square&) { return "Square"; },
+                                                    [](const Layer::Cross&) {
+                                                        return "Cross";
+                                                    } },
+                                       editLayer.type);
 
-        save_(ImGui::ColorEdit4(
-            "Fill Color", glm::value_ptr(editLayer.colorFill), ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs));
+        if(auto _ = UI::Scoped::Combo("Type", currTypeName)) {
+            const auto currIndex = editLayer.type.index();
+            const auto isCircle = get_index<Layer::Circle, decltype(editLayer.type)>() == currIndex;
+            const auto isSquare = get_index<Layer::Square, decltype(editLayer.type)>() == currIndex;
+            const auto isCross = get_index<Layer::Cross, decltype(editLayer.type)>() == currIndex;
+            if(save_(ImGui::Selectable("Circle", isCircle) && !isCircle)) {
+                editLayer.type = Layer::Circle {};
+            }
+
+            if(save_(ImGui::Selectable("Square", isSquare) && !isSquare)) {
+                editLayer.type = Layer::Square {};
+            }
+
+            if(save_(ImGui::Selectable("Cross", isCross) && !isCross)) {
+                editLayer.type = Layer::Cross {};
+            }
+        }
+
+        save_(ImGui::ColorEdit4("Border Color & Transparency",
+                                glm::value_ptr(editLayer.colorBorder),
+                                ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaPreview));
+
+        save_(ImGui::ColorEdit4("Fill Color & Transparency",
+                                glm::value_ptr(editLayer.colorFill),
+                                ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaPreview));
 
         save_(ImGui::DragFloat("Border Thickness", &editLayer.edgeThickness, 0.05f, 0.f, 100.f));
 

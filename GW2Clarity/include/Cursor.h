@@ -70,7 +70,6 @@ public:
         }
 
         friend void from_json(const nlohmann::json& j, Layer& l) {
-            glm::from_json(j, l.colorBorder);
             j.at("name").get_to(l.name);
             j.at("color_fill").get_to(l.colorFill);
             j.at("color_border").get_to(l.colorBorder);
@@ -122,7 +121,11 @@ protected:
 
     std::vector<Layer> layers_;
 
-    UI::SelectableListBox layerSelector_ { "Layer", "Cursor Layers", "Drag and drop layers to reorder. Layers are drawn top to bottom." };
+    UI::SelectableListBox<Layer> layerSelector_ { layers_,
+                                                  "Layer",
+                                                  "Cursor Layers",
+                                                  "Drag and drop layers to reorder. Layers are drawn top to bottom.",
+                                                  UI::SelectableListBox<Layer>::Flags::DragReorder };
 
     UI::SaveTracker save_;
 
