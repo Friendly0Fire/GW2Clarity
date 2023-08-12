@@ -105,7 +105,7 @@ void Cursor::Draw(ComPtr<ID3D11DeviceContext>& ctx) {
     if(glm::any(glm::lessThan(mp, vec2(0.f))) || glm::any(glm::greaterThan(mp, vec2(1.f))))
         return;
 
-    for(auto& l : layers_)
+    for(auto& l : layers_ | ranges::views::reverse)
         DrawLayer(ctx.Get(), l, mp, Core::i().screenDims());
 }
 
@@ -146,6 +146,12 @@ void Cursor::DrawMenu(Keybind** currentEditedKeybind) {
         }
 
         save << ImGui::Checkbox("Invert Colors", &editLayer.invert);
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + UI::GetSize<ImGui::Checkbox>().x + ImGui::GetStyle().ItemInnerSpacing.x);
+        SCOPE(FontScale(0.8f)) {
+            ImGui::TextWrapped(
+                "Color inversion will affect all layers underneath the current layer as well as the game's output, inverting every color "
+                "(black becomes white and so on).");
+        }
 
         save << ImGui::ColorEdit4("Border Color & Transparency",
                                   glm::value_ptr(editLayer.colorBorder),

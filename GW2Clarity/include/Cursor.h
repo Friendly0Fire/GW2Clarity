@@ -122,13 +122,13 @@ protected:
     UI::ListEditor<Layer> editor_ { { layers_,
                                       "Layer",
                                       "Cursor Layers",
-                                      "Drag and drop layers to reorder. Layers are drawn top to bottom.",
+                                      "Drag and drop layers to reorder. Layers are drawn bottom to top.",
                                       [&] {
                                           layers_.emplace_back();
                                           return layers_.size() - 1;
                                       },
                                       [&] { Save(); },
-                                      UI::SelectableListBox<Layer>::Flags::DragReorder } };
+                                      UI::ListEditorFlags::DragReorder | UI::ListEditorFlags::Default } };
 
     ActivationKeybind activateCursor_;
     bool visible_ = false;
