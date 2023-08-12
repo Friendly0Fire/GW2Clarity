@@ -28,7 +28,7 @@ Texture2D<float4> Numbers : register(t2);
 
 struct VS_OUT
 {
-	float4 Position    : SV_Position;
+    float4 Position    : SV_Position;
     float4 UV          : TEXCOORD0;
 
     nointerpolation float4 TexUVs      : TEXCOORD1;
@@ -48,13 +48,13 @@ VS_OUT Base_VS(in uint instance, in uint id, in bool expand)
 
     float2 glowSize = data.glowSize * 50000.f * screenSize.z;
 
-	float2 expandedDims = data.posDims.zw + 2.f * glowSize.xx * screenSize.zw;
+    float2 expandedDims = data.posDims.zw + 2.f * glowSize.xx * screenSize.zw;
     float2 dimsRatio = expandedDims / data.posDims.zw;
     float2 dimsExpansion = dimsRatio - 1.f;
 
     if(!expand)
     {
-	    float2 maxExpandedDims = data.posDims.zw + 2.f * glowSize.yy * screenSize.zw;
+        float2 maxExpandedDims = data.posDims.zw + 2.f * glowSize.yy * screenSize.zw;
         float2 maxDimsRatio = maxExpandedDims / data.posDims.zw;
         expandedDims /= maxDimsRatio;
     }
@@ -62,7 +62,7 @@ VS_OUT Base_VS(in uint instance, in uint id, in bool expand)
     Out.UV.xy = UV * dimsRatio.xy - 0.5f * dimsExpansion.xy;
     Out.UV.zw = UV;
     Out.Position = float4((UV * 2 - 1) * expandedDims.xy + data.posDims.xy * 2 - 1, 0.5f, 1.f);
-	Out.Position.y *= -1;
+    Out.Position.y *= -1;
 
     Out.TexUVs = float4(data.uv, data.numberUV);
     Out.Tint = data.tint;

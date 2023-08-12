@@ -98,7 +98,7 @@
     <None Include="shaders\Cursor.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
-    <None Include="shaders\ScreenQuad.hlsl">
+    <None Include="shaders\ScreenQuad.hlsli">
       <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="vcpkg.json">
@@ -108,6 +108,9 @@
       <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="shaders\perlin.hlsli">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\Copy.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
   </ItemGroup>
@@ -129,6 +132,9 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="assets\numbers.dds">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="assets\test_image.dds">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

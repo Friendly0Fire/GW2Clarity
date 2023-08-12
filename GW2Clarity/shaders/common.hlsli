@@ -1,16 +1,13 @@
+#ifndef common_include
+#define common_include
+
+#ifdef INJECTED_CODE
+INJECTED_CODE
+#endif
+
 #define PI 3.14159f
 #define SQRT2 1.4142136f
 #define ONE_OVER_SQRT2 0.707107f
-
-#ifdef CURSOR_HLSL
-cbuffer Cursor : register(b0)
-{
-	float4 dimensions;
-	float4 parameters;
-	float4 colorFill;
-	float4 colorBorder;
-};
-#endif
 
 SamplerState MainSampler : register(s0);
 SamplerState SecondarySampler : register(s1);
@@ -169,3 +166,4 @@ float hash_FractSin(float2 p)
 {
 	return frac(sin(dot(p, float2(12.9898, 78.233))) * 43758.5453);   
 }
+#endif // common_include

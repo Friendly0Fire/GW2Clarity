@@ -303,7 +303,7 @@ git describe --always --dirty --match "NOT A TAG" &gt;&gt; "$(ProjectDir)include
     <None Include="shaders\Cursor.hlsl">
       <FileType>Document</FileType>
     </None>
-    <None Include="shaders\ScreenQuad.hlsl">
+    <None Include="shaders\ScreenQuad.hlsli">
       <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DisableOptimizations>
       <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Mock Debug|x64'">false</DisableOptimizations>
       <EnableDebuggingInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</EnableDebuggingInformation>
@@ -331,6 +331,7 @@ git describe --always --dirty --match "NOT A TAG" &gt;&gt; "$(ProjectDir)include
   <ItemGroup>
     <Image Include="assets\boons.dds" />
     <Image Include="assets\numbers.dds" />
+    <Image Include="assets\test_image.dds" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\Grids.hlsl">
@@ -339,6 +340,11 @@ git describe --always --dirty --match "NOT A TAG" &gt;&gt; "$(ProjectDir)include
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\perlin.hlsli">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\Copy.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

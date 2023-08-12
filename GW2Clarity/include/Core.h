@@ -29,6 +29,10 @@ public:
         return vec2(screenWidth_, screenHeight_);
     }
 
+    const Texture2D& testImage() const {
+        return testImage_;
+    }
+
 protected:
     void InnerDraw() override;
     void InnerUpdate() override;
@@ -60,5 +64,7 @@ protected:
     GetBuffsCallback getBuffs_ = nullptr;
 
     ImFont* fontBuffCounter_ = nullptr;
+
+    Texture2D testImage_;
 };
 } // namespace GW2Clarity

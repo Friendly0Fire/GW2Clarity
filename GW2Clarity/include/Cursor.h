@@ -103,8 +103,11 @@ public:
     using LayerType = decltype(Layer::type);
 
 protected:
+    void DrawLayer(ID3D11DeviceContext* ctx, const Layer& l, const vec2& mousePos, const vec2& targetDims);
     void Load();
     void Save();
+
+    ShaderId copyVS_, copyPS_;
 
     struct CursorData
     {
@@ -114,7 +117,7 @@ protected:
         vec4 colorBorder;
     };
     ConstantBufferSPtr<CursorData> cursorCB_;
-    ShaderId screenSpaceVS_;
+    ShaderId cursorVS_;
     std::array<ShaderId, std::variant_size_v<LayerType>> cursorPS_;
 
     ComPtr<ID3D11BlendState> defaultBlend_, invertBlend_;
@@ -134,5 +137,7 @@ protected:
 
     ActivationKeybind activateCursor_;
     bool visible_ = false;
+
+    RenderTarget previewImage_;
 };
 } // namespace GW2Clarity

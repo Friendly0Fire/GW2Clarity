@@ -50,6 +50,7 @@ void Core::InnerInitPreFontImGui() {
 
 void Core::InnerInitPostImGui() {
     firstMessageShown_ = std::make_unique<ConfigurationOption<bool>>("", "first_message_shown_v1", "Core", false);
+    testImage_ = CreateTextureFromResource(device_.Get(), dllModule(), IDR_TEST_IMAGE);
 
     // buffs_ = std::make_unique<Buffs>(device_);
     // styles_ = std::make_unique<Styles>(device_, buffs_.get());
