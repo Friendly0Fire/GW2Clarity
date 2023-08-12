@@ -110,13 +110,13 @@ void Cursor::Draw(ComPtr<ID3D11DeviceContext>& ctx) {
 }
 
 void Cursor::DrawMenu(Keybind** currentEditedKeybind) {
-    editor_.Draw([&](auto& editLayer, auto& save) {
+    editor_.Draw([&](Layer& editLayer, UI::SaveTracker& save) {
         if(!editLayer.name.empty())
-            ImGuiTitle(std::format("Editing Cursor Layer '{}'", editLayer.name).c_str(), 0.75f);
+            UI::Title(std::format("Editing Cursor Layer '{}'", editLayer.name));
         else
-            ImGuiTitle("New Cursor Layer", 0.75f);
+            UI::Title("New Cursor Layer");
 
-        save(ImGui::InputText("Name##NewLayer", &editLayer.name));
+        save << ImGui::InputText("Name##NewLayer", &editLayer.name);
 
         ImGui::Image(previewImage_.srv.Get(), ImVec2(80.f, 80.f));
 
@@ -132,43 +132,45 @@ void Cursor::DrawMenu(Keybind** currentEditedKeybind) {
             const auto isCircle = get_index<Layer::Circle, decltype(editLayer.type)>() == currIndex;
             const auto isSquare = get_index<Layer::Square, decltype(editLayer.type)>() == currIndex;
             const auto isCross = get_index<Layer::Cross, decltype(editLayer.type)>() == currIndex;
-            if(save(ImGui::Selectable("Circle", isCircle) && !isCircle)) {
+            if(save << ImGui::Selectable("Circle", isCircle) && !isCircle) {
                 editLayer.type = Layer::Circle {};
             }
 
-            if(save(ImGui::Selectable("Square", isSquare) && !isSquare)) {
+            if(save << ImGui::Selectable("Square", isSquare) && !isSquare) {
                 editLayer.type = Layer::Square {};
             }
 
-            if(save(ImGui::Selectable("Cross", isCross) && !isCross)) {
+            if(save << ImGui::Selectable("Cross", isCross) && !isCross) {
                 editLayer.type = Layer::Cross {};
             }
         }
 
-        save(ImGui::ColorEdit4("Border Color & Transparency",
-                               glm::value_ptr(editLayer.colorBorder),
-                               ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaPreview));
+        save << ImGui::Checkbox("Invert Colors", &editLayer.invert);
 
-        save(ImGui::ColorEdit4("Fill Color & Transparency",
-                               glm::value_ptr(editLayer.colorFill),
-                               ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaPreview));
+        save << ImGui::ColorEdit4("Border Color & Transparency",
+                                  glm::value_ptr(editLayer.colorBorder),
+                                  ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaPreview);
 
-        save(ImGui::DragFloat("Border Thickness", &editLayer.edgeThickness, 0.05f, 0.f, 100.f));
+        save << ImGui::ColorEdit4("Fill Color & Transparency",
+                                  glm::value_ptr(editLayer.colorFill),
+                                  ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaPreview);
+
+        save << ImGui::DragFloat("Border Thickness", &editLayer.edgeThickness, 0.05f, 0.f, 100.f);
 
         std::visit(
-            PartialOverloaded { [&save](Layer::Square& s) { save(ImGui::DragFloat("Angle", &s.angle, 0.1f, 0.f, 360.f)); },
+            PartialOverloaded { [&save](Layer::Square& s) { save << ImGui::DragFloat("Angle", &s.angle, 0.1f, 0.f, 360.f); },
                                 [&save, &editLayer](Layer::Cross& c) {
-                                    save(ImGui::DragFloat("Angle", &c.angle, 0.1f, 0.f, 360.f));
-                                    save(ImGui::DragFloat(
-                                        "Cross Thickness", &c.crossThickness, 0.05f, 1.f, std::min(editLayer.dims.x, editLayer.dims.y)));
-                                    if(save(ImGui::Checkbox("Full screen", &c.fullscreen)))
+                                    save << ImGui::DragFloat("Angle", &c.angle, 0.1f, 0.f, 360.f);
+                                    save << ImGui::DragFloat(
+                                        "Cross Thickness", &c.crossThickness, 0.05f, 1.f, std::min(editLayer.dims.x, editLayer.dims.y));
+                                    if(save << ImGui::Checkbox("Full screen", &c.fullscreen))
                                         if(!c.fullscreen)
                                             editLayer.dims = vec2(32.f);
                                 } },
             editLayer.type);
 
         if(!std::holds_alternative<Layer::Cross>(editLayer.type) || !std::get<Layer::Cross>(editLayer.type).fullscreen)
-            save(ImGui::DragFloat2("Cursor Size", glm::value_ptr(editLayer.dims), 0.2f, 1.f, ImGui::GetIO().DisplaySize.x * 2.f));
+            save << ImGui::DragFloat2("Cursor Size", glm::value_ptr(editLayer.dims), 0.2f, 1.f, ImGui::GetIO().DisplaySize.x * 2.f);
     });
 
     ImGui::Separator();
@@ -181,10 +183,10 @@ void Cursor::DrawMenu(Keybind** currentEditedKeybind) {
 void Cursor::DrawLayer(ID3D11DeviceContext* ctx, const Layer& l, const vec2& mousePos, const vec2& targetDims) {
     auto& cb = *cursorCB_;
 
-    // if(l.invert)
-    //     ctx->OMSetBlendState(invertBlend_.Get(), nullptr, 0xffffffff);
-    // else
-    //     ctx->OMSetBlendState(defaultBlend_.Get(), nullptr, 0xffffffff);
+    if(l.invert)
+        ctx->OMSetBlendState(invertBlend_.Get(), nullptr, 0xffffffff);
+    else
+        ctx->OMSetBlendState(defaultBlend_.Get(), nullptr, 0xffffffff);
 
     vec2 dims = l.dims;
     if(const auto* c = std::get_if<Layer::Cross>(&l.type); c && c->fullscreen)

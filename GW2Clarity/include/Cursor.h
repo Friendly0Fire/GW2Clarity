@@ -31,7 +31,7 @@ public:
         std::string name;
 
         vec4 colorFill { 1.f }, colorBorder { 1.f };
-        float invertFill = 0.f, invertBorder = 0.f;
+        bool invert = false;
         vec2 dims { 32.f };
         f32 edgeThickness = 1.f;
 
@@ -51,14 +51,10 @@ public:
         std::variant<Circle, Square, Cross> type;
 
         friend void to_json(nlohmann::json& j, const Layer& l) {
-            j = nlohmann::json { { "name", l.name },
-                                 { "color_fill", l.colorFill },
-                                 { "color_border", l.colorBorder },
-                                 { "invert_fill", l.invertFill },
-                                 { "invert_border", l.invertBorder },
-                                 { "dims", l.dims },
-                                 { "edge_thickness", l.edgeThickness },
-                                 { "type", l.type.index() } };
+            j = nlohmann::json {
+                { "name", l.name }, { "color_fill", l.colorFill },         { "color_border", l.colorBorder }, { "invert", l.invert },
+                { "dims", l.dims }, { "edge_thickness", l.edgeThickness }, { "type", l.type.index() }
+            };
             std::visit(Overloaded { [&](const Circle&) {},
                                     [&](const Square& s) { j["angle"] = s.angle; },
                                     [&](const Cross& c) {
@@ -73,8 +69,7 @@ public:
             j.at("name").get_to(l.name);
             j.at("color_fill").get_to(l.colorFill);
             j.at("color_border").get_to(l.colorBorder);
-            j.at("invert_fill").get_to(l.invertFill);
-            j.at("invert_border").get_to(l.invertBorder);
+            j.at("invert").get_to(l.invert);
             j.at("dims").get_to(l.dims);
             j.at("edge_thickness").get_to(l.edgeThickness);
             switch(j.at("type").get<u32>()) {
