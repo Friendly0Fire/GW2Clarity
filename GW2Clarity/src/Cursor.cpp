@@ -51,10 +51,10 @@ Cursor::Cursor(ComPtr<ID3D11Device>& dev) : activateCursor_("activate_cursor", "
 Cursor::~Cursor() = default;
 
 void Cursor::Draw(ComPtr<ID3D11DeviceContext>& ctx) {
-    if(!SettingsMenu::i().isVisible())
-        layerSelector_.Deselect();
+    if(!SettingsMenu::i().isVisible() && editor_.Editing())
+        editor_.StopEditing();
 
-    if(!visible_ && !layerSelector_.selected())
+    if(!visible_ && !editor_.Editing())
         return;
 
     auto& cb = *cursorCB_;
@@ -78,14 +78,13 @@ void Cursor::Draw(ComPtr<ID3D11DeviceContext>& ctx) {
         cb->colorBorder = l.colorBorder;
         f32 div = std::min(l.dims.x, l.dims.y);
         cb->parameters = vec4(l.edgeThickness * 1.f / div, 0.f, 0.f, 0.f);
-        std::visit(Overloaded { [&](const Layer::Circle&) {},
-                                [&](const Layer::Cross& c) {
-                                    cb->parameters.y = c.crossThickness / div;
-                                    cb->parameters.z = c.angle / 180.f * std::numbers::pi_v<f32>;
-                                },
-                                [&](const Layer::Square& s) {
-                                    cb->parameters.z = s.angle / 180.f * std::numbers::pi_v<f32>;
-                                } },
+        std::visit(PartialOverloaded { [&](const Layer::Cross& c) {
+                                          cb->parameters.y = c.crossThickness / div;
+                                          cb->parameters.z = c.angle / 180.f * std::numbers::pi_v<f32>;
+                                      },
+                                       [&](const Layer::Square& s) {
+                                           cb->parameters.z = s.angle / 180.f * std::numbers::pi_v<f32>;
+                                       } },
                    l.type);
         cb->dimensions = vec4(mp, l.dims / Core::i().screenDims());
         cb.Update(ctx.Get());
@@ -98,19 +97,13 @@ void Cursor::Draw(ComPtr<ID3D11DeviceContext>& ctx) {
 }
 
 void Cursor::DrawMenu(Keybind** currentEditedKeybind) {
-    if(layerSelector_.Draw()) {
-        layers_.emplace_back();
-        save_();
-    }
-
-    if(auto* i = layerSelector_.selectedItem()) {
-        auto& editLayer = *i;
+    editor_.Draw([&](auto& editLayer, auto& save) {
         if(!editLayer.name.empty())
             ImGuiTitle(std::format("Editing Cursor Layer '{}'", editLayer.name).c_str(), 0.75f);
         else
             ImGuiTitle("New Cursor Layer", 0.75f);
 
-        save_(ImGui::InputText("Name##NewLayer", &editLayer.name));
+        save(ImGui::InputText("Name##NewLayer", &editLayer.name));
 
         auto currTypeName = std::visit(Overloaded { [](const Layer::Circle&) { return "Circle"; },
                                                     [](const Layer::Square&) { return "Square"; },
@@ -119,62 +112,60 @@ void Cursor::DrawMenu(Keybind** currentEditedKeybind) {
                                                     } },
                                        editLayer.type);
 
-        if(auto _ = UI::Scoped::Combo("Type", currTypeName)) {
+        SCOPE(Combo("Shape", currTypeName)) {
             const auto currIndex = editLayer.type.index();
             const auto isCircle = get_index<Layer::Circle, decltype(editLayer.type)>() == currIndex;
             const auto isSquare = get_index<Layer::Square, decltype(editLayer.type)>() == currIndex;
             const auto isCross = get_index<Layer::Cross, decltype(editLayer.type)>() == currIndex;
-            if(save_(ImGui::Selectable("Circle", isCircle) && !isCircle)) {
+            if(save(ImGui::Selectable("Circle", isCircle) && !isCircle)) {
                 editLayer.type = Layer::Circle {};
             }
 
-            if(save_(ImGui::Selectable("Square", isSquare) && !isSquare)) {
+            if(save(ImGui::Selectable("Square", isSquare) && !isSquare)) {
                 editLayer.type = Layer::Square {};
             }
 
-            if(save_(ImGui::Selectable("Cross", isCross) && !isCross)) {
+            if(save(ImGui::Selectable("Cross", isCross) && !isCross)) {
                 editLayer.type = Layer::Cross {};
             }
         }
 
-        save_(ImGui::ColorEdit4("Border Color & Transparency",
-                                glm::value_ptr(editLayer.colorBorder),
-                                ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaPreview));
+        save(ImGui::ColorEdit4("Border Color & Transparency",
+                               glm::value_ptr(editLayer.colorBorder),
+                               ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaPreview));
 
-        save_(ImGui::ColorEdit4("Fill Color & Transparency",
-                                glm::value_ptr(editLayer.colorFill),
-                                ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaPreview));
+        save(ImGui::ColorEdit4("Fill Color & Transparency",
+                               glm::value_ptr(editLayer.colorFill),
+                               ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaPreview));
 
-        save_(ImGui::DragFloat("Border Thickness", &editLayer.edgeThickness, 0.05f, 0.f, 100.f));
+        save(ImGui::DragFloat("Border Thickness", &editLayer.edgeThickness, 0.05f, 0.f, 100.f));
 
-        std::visit(Overloaded { [](Layer::Circle&) {},
-                                [this](Layer::Square& s) { save_(ImGui::DragFloat("Angle", &s.angle, 0.1f, 0.f, 360.f)); },
-                                [this, &editLayer](Layer::Cross& c) {
-                                    save_(ImGui::DragFloat("Angle", &c.angle, 0.1f, 0.f, 360.f));
-                                    save_(ImGui::DragFloat(
+        std::visit(
+            PartialOverloaded { [&save](Layer::Square& s) { save(ImGui::DragFloat("Angle", &s.angle, 0.1f, 0.f, 360.f)); },
+                                [&save, &editLayer](Layer::Cross& c) {
+                                    save(ImGui::DragFloat("Angle", &c.angle, 0.1f, 0.f, 360.f));
+                                    save(ImGui::DragFloat(
                                         "Cross Thickness", &c.crossThickness, 0.05f, 1.f, std::min(editLayer.dims.x, editLayer.dims.y)));
-                                    if(save_(ImGui::Checkbox("Full screen", &c.fullscreen)))
+                                    if(save(ImGui::Checkbox("Full screen", &c.fullscreen)))
                                         if(!c.fullscreen)
                                             editLayer.dims = vec2(32.f);
                                 } },
-                   editLayer.type);
+            editLayer.type);
 
         if(!std::holds_alternative<Layer::Cross>(editLayer.type) || !std::get<Layer::Cross>(editLayer.type).fullscreen)
-            save_(ImGui::DragFloat2("Cursor Size", glm::value_ptr(editLayer.dims), 0.2f, 1.f, ImGui::GetIO().DisplaySize.x * 2.f));
-    }
+            save(ImGui::DragFloat2("Cursor Size", glm::value_ptr(editLayer.dims), 0.2f, 1.f, ImGui::GetIO().DisplaySize.x * 2.f));
+    });
 
     ImGui::Separator();
 
     ImGuiKeybindInput(activateCursor_, currentEditedKeybind, "Toggles cursor layers visibility.");
 
-    if(save_.ShouldSave())
-        Save();
+    editor_.MaybeSave();
 }
 
 void Cursor::Load() {
     using namespace nlohmann;
     layers_.clear();
-    layerSelector_.Deselect();
 
     auto& cfg = JSONConfigurationFile::i();
     cfg.Reload();
@@ -182,6 +173,8 @@ void Cursor::Load() {
     const auto& layers = cfg.json()["cursor_layers"];
     for(const auto& l : layers)
         layers_.push_back(l.get<Layer>());
+
+    editor_.Loaded();
 }
 
 void Cursor::Save() {
@@ -195,7 +188,6 @@ void Cursor::Save() {
         layers.push_back(l);
 
     cfg.Save();
-    save_.Saved();
 }
 
 } // namespace GW2Clarity

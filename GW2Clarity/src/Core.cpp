@@ -97,6 +97,10 @@ void Core::InnerFrequentUpdate() {
     //     buffs_->UpdateBuffsTable(getBuffs_());
 }
 
+void Core::MockInit() {
+    SettingsMenu::i().MakeVisible();
+}
+
 void Core::InnerUpdate() {
 }
 

@@ -38,6 +38,7 @@ protected:
     void InnerInternalInit() override;
     void InnerShutdown() override;
     void InnerFrequentUpdate() override;
+    void MockInit() override;
 
     [[nodiscard]] u32 GetShaderArchiveID() const override {
         return IDR_SHADERS;

@@ -8,6 +8,7 @@ extern "C"
     __declspec(dllimport) void Direct3D11Loader_PostCreateSwapChain(HWND hwnd, ID3D11Device* dev, IDXGISwapChain* swc);
     __declspec(dllimport) void Direct3D11Loader_PreResizeSwapChain();
     __declspec(dllimport) void Direct3D11Loader_PostResizeSwapChain(std::uint32_t w, std::uint32_t h);
+    __declspec(dllimport) void BaseCore_MockInit();
 }
 
 const wchar_t* g_windowClass = L"GW2MockClass";
@@ -43,6 +44,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
         return 0;
     }
 
+    bool init = false;
+
     // Main message loop
     MSG msg {};
     while(WM_QUIT != msg.message) {
@@ -50,6 +53,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         } else {
+            if(!init) {
+                init = true;
+                BaseCore_MockInit();
+            }
             Render();
         }
     }

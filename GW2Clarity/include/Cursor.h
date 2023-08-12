@@ -121,13 +121,16 @@ protected:
 
     std::vector<Layer> layers_;
 
-    UI::SelectableListBox<Layer> layerSelector_ { layers_,
-                                                  "Layer",
-                                                  "Cursor Layers",
-                                                  "Drag and drop layers to reorder. Layers are drawn top to bottom.",
-                                                  UI::SelectableListBox<Layer>::Flags::DragReorder };
-
-    UI::SaveTracker save_;
+    UI::ListEditor<Layer> editor_ { { layers_,
+                                      "Layer",
+                                      "Cursor Layers",
+                                      "Drag and drop layers to reorder. Layers are drawn top to bottom.",
+                                      [&] {
+                                          layers_.emplace_back();
+                                          return layers_.size() - 1;
+                                      },
+                                      [&] { Save(); },
+                                      UI::SelectableListBox<Layer>::Flags::DragReorder } };
 
     ActivationKeybind activateCursor_;
     bool visible_ = false;
