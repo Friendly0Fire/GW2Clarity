@@ -157,10 +157,23 @@ void Cursor::DrawMenu(Keybind** currentEditedKeybind) {
 
         save << ImGui::DragFloat("Border Thickness", &editLayer.edgeThickness, 0.05f, 0.f, 100.f);
 
+        auto angleKnob = [&save](float& a) {
+            save << ImGuiKnobs::Knob("Angle",
+                                     &a,
+                                     -180.f,
+                                     180.f,
+                                     0,
+                                     nullptr,
+                                     ImGuiKnobVariant_Stepped,
+                                     0,
+                                     ImGuiKnobFlags_RotateAbsolute,
+                                     9,
+                                     ImVec2(0, 2.f * std::numbers::pi_v<f32>));
+        };
         std::visit(
-            PartialOverloaded { [&save](Layer::Square& s) { save << ImGui::DragFloat("Angle", &s.angle, 0.1f, 0.f, 360.f); },
-                                [&save, &editLayer](Layer::Cross& c) {
-                                    save << ImGui::DragFloat("Angle", &c.angle, 0.1f, 0.f, 360.f);
+            PartialOverloaded { [&](Layer::Square& s) { angleKnob(s.angle); },
+                                [&](Layer::Cross& c) {
+                                    angleKnob(c.angle);
                                     save << ImGui::DragFloat(
                                         "Cross Thickness", &c.crossThickness, 0.05f, 1.f, std::min(editLayer.dims.x, editLayer.dims.y));
                                     if(save << ImGui::Checkbox("Full screen", &c.fullscreen))
