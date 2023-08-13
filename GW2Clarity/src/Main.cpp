@@ -5,19 +5,30 @@
 #include <Version.h>
 #include <gw2al_api.h>
 #include <gw2al_d3d9_wrapper.h>
-#include <imgui.h>
 
-const char* GetAddonName() { return "GW2Clarity"; }
-const wchar_t* GetAddonNameW() { return L"GW2Clarity"; }
-const char* GetAddonVersionString() { return GW2CLARITY_VER; }
-const semver::version& GetAddonVersion() { return CurrentVersion; }
-BaseCore& GetBaseCore() { return GW2Clarity::Core::i(); }
+const char* GetAddonName() {
+    return "GW2Clarity";
+}
+const wchar_t* GetAddonNameW() {
+    return L"GW2Clarity";
+}
+const char* GetAddonVersionString() {
+    return GW2CLARITY_VER;
+}
+const semver::version& GetAddonVersion() {
+    return CurrentVersion;
+}
+BaseCore& GetBaseCore() {
+    return GW2Clarity::Core::i();
+}
 
 gw2al_addon_dsc gAddonDeps[] = { GW2AL_CORE_DEP_ENTRY, D3D_WRAPPER_DEP_ENTRY, { 0, 0, 0, 0, 0, 0 } };
 
 gw2al_addon_dsc gAddonDsc = { L"gw2clarity", L"GUI customization overlay", 2, 2, 1, gAddonDeps };
 
-gw2al_addon_dsc* gw2addon_get_description() { return &gAddonDsc; }
+gw2al_addon_dsc* gw2addon_get_description() {
+    return &gAddonDsc;
+}
 
 gw2al_api_ret gw2addon_load(gw2al_core_vtable* core_api) {
     Direct3D11Loader::reset();
@@ -25,7 +36,9 @@ gw2al_api_ret gw2addon_load(gw2al_core_vtable* core_api) {
     return GW2AL_OK;
 }
 
-gw2al_api_ret gw2addon_unload(i32 gameExiting) { return GW2AL_OK; }
+gw2al_api_ret gw2addon_unload(i32 gameExiting) {
+    return GW2AL_OK;
+}
 
 std::ofstream g_logStream;
 

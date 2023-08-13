@@ -1,7 +1,5 @@
 #pragma once
 
-#include <imgui.h>
-
 #include "ActivationKeybind.h"
 #include "ConfigurationFile.h"
 #include "Graphics.h"

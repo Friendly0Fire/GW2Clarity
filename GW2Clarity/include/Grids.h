@@ -1,7 +1,5 @@
 #pragma once
 
-#include <imgui.h>
-
 #include "ActivationKeybind.h"
 #include "Buffs.h"
 #include "GridRenderer.h"
@@ -27,7 +25,9 @@ public:
     void Draw(ComPtr<ID3D11DeviceContext>& ctx, const Layouts::Layout* layout, bool shouldIgnoreLayout);
     void DrawMenu(Keybind** currentEditedKeybind) override;
 
-    [[nodiscard]] const char* GetTabName() const override { return "Grids"; }
+    [[nodiscard]] const char* GetTabName() const override {
+        return "Grids";
+    }
 
     void Delete(Id id);
     void StyleDeleted(u32 id);
@@ -87,7 +87,9 @@ public:
         }
     };
 
-    [[nodiscard]] const std::vector<Grid>& grids() const { return grids_; }
+    [[nodiscard]] const std::vector<Grid>& grids() const {
+        return grids_;
+    }
 
     [[nodiscard]] inline Grid& grid(Id id) {
         if(id.grid == UnselectedSubId)

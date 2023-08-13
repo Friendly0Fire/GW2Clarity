@@ -2,13 +2,11 @@
 
 #include <cppcodec/base64_rfc4648.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
 #include <range/v3/all.hpp>
 
 #include "Core.h"
 #include "Grids.h"
-#include "ImGuiExtensions.h"
 
 namespace GW2Clarity
 {
@@ -136,12 +134,17 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind) {
                 previewCount_ = tooltipNum - 1;
                 f32 d = ImGuiGetWindowContentRegionWidth() * 0.15f;
                 ImGui::SetNextWindowPos(tooltipLocation, ImGuiCond_Always, ImVec2(0.5f, 1.f));
-                if(ImGui::Begin("##TimelineTooltip", nullptr,
+                if(ImGui::Begin("##TimelineTooltip",
+                                nullptr,
                                 ImGuiWindowFlags_Tooltip | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar |
                                     ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings |
                                     ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDocking)) {
                     ImGui::Text("%d stacks", previewCount_);
-                    ImGui::Image(preview_.srv.Get(), ImVec2(d, d), ImVec2(0.f, 0.f), ImVec2(1.f, 1.f), ImVec4(1.f, 1.f, 1.f, 1.f),
+                    ImGui::Image(preview_.srv.Get(),
+                                 ImVec2(d, d),
+                                 ImVec2(0.f, 0.f),
+                                 ImVec2(1.f, 1.f),
+                                 ImVec4(1.f, 1.f, 1.f, 1.f),
                                  ImVec4(1.f, 1.f, 1.f, 1.f));
                 }
                 ImGui::End();
@@ -158,8 +161,7 @@ void Styles::DrawMenu(Keybind** currentEditedKeybind) {
             if(selectedThresholdId_ != UnselectedId) {
                 if(selectedThresholdId_ >= s.thresholds.size()) {
                     selectedThresholdId_ = UnselectedId;
-                }
-                else {
+                } else {
                     auto& th = s.thresholds[selectedThresholdId_];
                     if(th.thresholdMin == th.thresholdMax)
                         ImGui::TextUnformatted(std::format("At {} stacks:", th.thresholdMin).c_str());
@@ -229,8 +231,7 @@ void Styles::Draw(ComPtr<ID3D11DeviceContext>& ctx) {
         i32 attempts = 100;
         do {
             previewBuff_ = &buffs_->buffs()[dist(previewRng_)];
-        }
-        while(--attempts > 0 && (previewBuff_->id == 0xFFFFFFFF || previewBuff_->maxStacks < previewCount_));
+        } while(--attempts > 0 && (previewBuff_->id == 0xFFFFFFFF || previewBuff_->maxStacks < previewCount_));
 
         if(attempts == 0)
             previewBuff_ = nullptr;
@@ -260,7 +261,8 @@ void Styles::Load() {
     styles_.emplace_back("Simple On/Off (hidden)"sv, ThresholdBuilder().tint(0.f, 0.f), ThresholdBuilder().min(1).max(99));
     styles_.emplace_back("Simple On/Off (faded)"sv, ThresholdBuilder().tint(0.75f, 0.25f), ThresholdBuilder().min(1).max(99));
     styles_.emplace_back("Simple On/Off (red faded)"sv, ThresholdBuilder().tint(1.f, 0.f, 0.f, 0.25f), ThresholdBuilder().min(1).max(99));
-    styles_.emplace_back("0/5/20 Stacks (green)"sv, ThresholdBuilder().min(0).max(4).tint(0.75f, 0.25f),
+    styles_.emplace_back("0/5/20 Stacks (green)"sv,
+                         ThresholdBuilder().min(0).max(4).tint(0.75f, 0.25f),
                          ThresholdBuilder().min(5).max(19).tint(0.75f, 0.65f),
                          ThresholdBuilder().min(20).max(100).tint(0.25f, 1.f, 0.25f, 1.f));
 
@@ -273,15 +275,16 @@ void Styles::Load() {
     auto getvec2 = [](const json& j) {
         return vec2(j[0].get<f32>(), j[1].get<f32>());
     };
-    auto maybe_at = []<typename D>(const json& j, const char* n, const D& def,
-                                   const std::variant<std::monostate, std::function<D(const json&)>>& cvt = {}) {
-        auto it = j.find(n);
-        if(it == j.end())
-            return def;
-        if(cvt.index() == 0)
-            return static_cast<D>(*it);
-        return std::get<1>(cvt)(*it);
-    };
+    auto maybe_at =
+        []<typename D>(
+            const json& j, const char* n, const D& def, const std::variant<std::monostate, std::function<D(const json&)>>& cvt = {}) {
+            auto it = j.find(n);
+            if(it == j.end())
+                return def;
+            if(cvt.index() == 0)
+                return static_cast<D>(*it);
+            return std::get<1>(cvt)(*it);
+        };
 
     const auto& sets = cfg.json()["styles"];
     for(const auto& sIn : sets) {
@@ -356,7 +359,8 @@ void Styles::BuildCache() {
         // Reverse iteration order so low priority appearance is set first and overwritten by high priority ones
         for(const auto& th : s.thresholds | ranges::views::reverse)
             ranges::fill(s.appearanceCache.begin() + th.thresholdMin,
-                         s.appearanceCache.begin() + std::min(th.thresholdMax + 1, u32(s.appearanceCache.size())), th.appearance);
+                         s.appearanceCache.begin() + std::min(th.thresholdMax + 1, u32(s.appearanceCache.size())),
+                         th.appearance);
 
         // Normal iteration order to find first threshold at 100, if any
         for(const auto& th : s.thresholds)
@@ -379,8 +383,7 @@ void Styles::ApplyStyle(u32 id, i32 count, GridInstanceData& out) const {
             f32 x = sinf(static_cast<f32>(currentTime) / 1000.f * 2.f * std::numbers::pi_v<f32> * app.glowPulse.y) * 0.5f + 0.5f;
             out.glowSize.x = glm::mix(1.f - app.glowPulse.x, 1.f, x) * app.glowSize;
             out.glowSize.y = app.glowSize;
-        }
-        else
+        } else
             out.glowSize = vec2(app.glowSize);
         out.borderColor = app.border;
         out.borderThickness = app.borderThickness;

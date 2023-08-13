@@ -7,7 +7,6 @@
 #include <skyr/percent_encoding/percent_encode.hpp>
 
 #include "Core.h"
-#include "ImGuiExtensions.h"
 #include "Resource.h"
 
 namespace GW2Clarity

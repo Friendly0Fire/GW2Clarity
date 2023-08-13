@@ -1,11 +1,8 @@
 #pragma once
 
-#include <imgui.h>
-
 #include "ActivationKeybind.h"
 #include "Common.h"
 #include "Graphics.h"
-#include "ImGuiExtensions.h"
 #include "Main.h"
 #include "SettingsMenu.h"
 #include "ShaderManager.h"

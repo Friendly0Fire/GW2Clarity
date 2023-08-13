@@ -6,7 +6,6 @@
 #include <range/v3/all.hpp>
 
 #include "Core.h"
-#include "ImGuiExtensions.h"
 
 namespace GW2Clarity
 {
@@ -54,8 +53,7 @@ void Layouts::GridDeleted(Id id) {
             if(gid > id.grid) {
                 it = s.grids.erase(it);
                 toadd.push_back(gid - 1);
-            }
-            else
+            } else
                 ++it;
         }
 
@@ -80,7 +78,8 @@ void Layouts::DrawMenu(Keybind** currentEditedKeybind) {
     if(ImGui::BeginListBox("##LayoutsList", ImVec2(-FLT_MIN, 0.f))) {
         i16 newCurrentHovered = currentHoveredLayout_;
         for(auto&& [sid, s] : layouts_ | ranges::views::enumerate) {
-            if(ImGui::Selectable(std::format("{}##Layout", s.name).c_str(), selectedLayoutId_ == sid || currentHoveredLayout_ == sid,
+            if(ImGui::Selectable(std::format("{}##Layout", s.name).c_str(),
+                                 selectedLayoutId_ == sid || currentHoveredLayout_ == sid,
                                  ImGuiSelectableFlags_AllowItemOverlap)) {
                 selectedLayoutId_ = i16(sid);
             }
@@ -149,8 +148,8 @@ void Layouts::Draw(ComPtr<ID3D11DeviceContext>& ctx) {
     }
 
     if(showLayoutSelector_ || firstDraw_) {
-        if(ImGui::Begin(ChangeLayoutPopupName, nullptr,
-                        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove)) {
+        if(ImGui::Begin(
+               ChangeLayoutPopupName, nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove)) {
             if(layouts_.empty())
                 showLayoutSelector_ = false;
 
@@ -189,16 +188,17 @@ void Layouts::Load(size_t gridCount) {
     auto& cfg = JSONConfigurationFile::i();
     cfg.Reload();
 
-    auto maybe_at = []<typename D>(const json& j, const char* n, const D& def,
-                                   const std::variant<std::monostate, std::function<D(const json&)>>& cvt = {}) {
-        auto it = j.find(n);
-        if(it == j.end())
-            return def;
-        if(cvt.index() == 0)
-            return static_cast<D>(*it);
-        else
-            return std::get<1>(cvt)(*it);
-    };
+    auto maybe_at =
+        []<typename D>(
+            const json& j, const char* n, const D& def, const std::variant<std::monostate, std::function<D(const json&)>>& cvt = {}) {
+            auto it = j.find(n);
+            if(it == j.end())
+                return def;
+            if(cvt.index() == 0)
+                return static_cast<D>(*it);
+            else
+                return std::get<1>(cvt)(*it);
+        };
 
     auto getivec2 = [](const json& j) {
         return ivec2(j[0].get<i32>(), j[1].get<i32>());

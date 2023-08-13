@@ -1,12 +1,11 @@
 #include "Cursor.h"
 
 #include <glm/gtc/type_ptr.hpp>
-#include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
 #include <range/v3/all.hpp>
 
 #include "Core.h"
-#include "ImGuiExtensions.h"
+#include "Keybind.h"
 
 namespace GW2Clarity
 {
@@ -116,7 +115,7 @@ void Cursor::DrawMenu(Keybind** currentEditedKeybind) {
         ImGui::SameLine();
         SCOPE(Group()) {
             save << ImGui::Checkbox("Invert Colors", &editLayer.invert);
-            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + UI::GetSize<ImGui::Checkbox>().x + ImGui::GetStyle().ItemInnerSpacing.x);
+            ImGui::MoveCursorPosX(ImGui::GetSize<ImGui::Checkbox>().x + ImGui::GetInnerSpacing().x);
             SCOPE(FontScale(0.8f)) {
                 ImGui::TextWrapped(
                     "Color inversion will affect all layers underneath the current layer as well as the game's output, inverting every "
@@ -184,7 +183,7 @@ void Cursor::DrawMenu(Keybind** currentEditedKeybind) {
 
     ImGui::Separator();
 
-    ImGuiKeybindInput(activateCursor_, currentEditedKeybind, "Toggles cursor layers visibility.");
+    ImGui::KeybindInput(activateCursor_, currentEditedKeybind, "Toggles cursor layers visibility.");
 
     editor_.MaybeSave();
 }

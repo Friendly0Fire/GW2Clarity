@@ -8,7 +8,6 @@
 #include <range/v3/all.hpp>
 
 #include "Core.h"
-#include "ImGuiExtensions.h"
 
 namespace GW2Clarity
 {
@@ -115,7 +114,8 @@ void Grids::DrawGridList() {
 
                 auto u = Unselected(gid);
                 if(ImGui::Selectable(std::format("{} ({}x{})##{}", g.name, g.spacing.x, g.spacing.y, gid).c_str(),
-                                     selectedId_ == u || currentHovered_ == u, ImGuiSelectableFlags_AllowItemOverlap)) {
+                                     selectedId_ == u || currentHovered_ == u,
+                                     ImGuiSelectableFlags_AllowItemOverlap)) {
                     selectedId_ = u;
                 }
 
@@ -178,8 +178,7 @@ void Grids::DrawGridList() {
                 if(ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
                     selectedId_ = Unselected(gid);
                 }
-            }
-            else
+            } else
                 ImGui::TextUnformatted("<no grid selected>");
             ImGui::EndListBox();
         }
@@ -258,9 +257,10 @@ void Grids::DrawItems(ComPtr<ID3D11DeviceContext>& ctx, const Layouts::Layout* l
                     if(editing)
                         count = editingItemFakeCount_;
                     else if(i.buff)
-                        count =
-                            std::accumulate(i.additionalBuffs.begin(), i.additionalBuffs.end(), i.buff->GetStacks(buffs_->activeBuffs()),
-                                            [&](i32 a, const Buff* b) { return a + b->GetStacks(buffs_->activeBuffs()); });
+                        count = std::accumulate(i.additionalBuffs.begin(),
+                                                i.additionalBuffs.end(),
+                                                i.buff->GetStacks(buffs_->activeBuffs()),
+                                                [&](i32 a, const Buff* b) { return a + b->GetStacks(buffs_->activeBuffs()); });
 
                     drawItem(g.spacing, i, gridOrigin, count, editing);
                 }
@@ -342,8 +342,7 @@ void Grids::Delete(Id id) {
             selectedId_ = Unselected(id.grid);
 
         needsSaving_ = true;
-    }
-    else {
+    } else {
         grids_.erase(grids_.begin() + id.grid);
 
         if(id == selectedId_)
@@ -371,17 +370,18 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind) {
         auto pos = ivec2(glm::floor(vec2(mouse.x, mouse.y) / vec2(sp)));
 
         ImGui::SetNextWindowPos(ToImGui(vec2(pos * sp) - vec2(0.f, sp.y * 0.2f) + FromImGui(ImGui::GetIO().DisplaySize * 0.5f)),
-                                ImGuiCond_Always, ImVec2(0.5f, 1.f));
+                                ImGuiCond_Always,
+                                ImVec2(0.5f, 1.f));
         if(ImGui::Begin(
-               "##GridElementTooltip", nullptr,
+               "##GridElementTooltip",
+               nullptr,
                ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_AlwaysAutoResize)) {
             auto it = ranges::find_if(grid().items, [&](const auto& i) { return i.pos.x == pos.x && i.pos.y == pos.y; });
 
             if(it != grid().items.end()) {
                 ImGui::TextUnformatted(it->buff->name.c_str());
                 ImGui::Text("(%d, %d)", it->pos.x, it->pos.y);
-            }
-            else {
+            } else {
                 ImGui::TextUnformatted("<no buff>");
                 ImGui::Text("(%d, %d)", pos.x, pos.y);
             }
@@ -425,7 +425,10 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind) {
             if(editGrid.square)
                 editGrid.spacing.y = editGrid.spacing.x;
 
-            saveCheck(ImGui::DragInt2("Grid Offset", glm::value_ptr(editGrid.offset), 0.1f, -i32(ImGui::GetIO().DisplaySize.x) / 2,
+            saveCheck(ImGui::DragInt2("Grid Offset",
+                                      glm::value_ptr(editGrid.offset),
+                                      0.1f,
+                                      -i32(ImGui::GetIO().DisplaySize.x) / 2,
                                       i32(ImGui::GetIO().DisplaySize.x) / 2));
 
             saveCheck(ImGui::Checkbox("Attached to Mouse", &editGrid.attached));
@@ -450,8 +453,7 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind) {
                 if(showMouseClip && !lastShowMouseClip) {
                     editGrid.mouseClipMin = ivec2 { 0 };
                     editGrid.mouseClipMax = ivec2(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y);
-                }
-                else if(!showMouseClip && lastShowMouseClip) {
+                } else if(!showMouseClip && lastShowMouseClip) {
                     editGrid.mouseClipMin = ivec2 { std::numeric_limits<i32>::max() };
                     editGrid.mouseClipMax = ivec2 { std::numeric_limits<i32>::min() };
                 }
@@ -479,8 +481,7 @@ void Grids::DrawMenu(Keybind** currentEditedKeybind) {
 
                 ImGui::Unindent();
             }
-        }
-        else if(editingItem) {
+        } else if(editingItem) {
             auto& editItem = item();
             ImGuiTitle(std::format("Editing Item '{}' of '{}'", editItem.buff->name, grid().name).c_str(), 0.75f);
 
@@ -551,16 +552,17 @@ void Grids::Load() {
     auto& cfg = JSONConfigurationFile::i();
     cfg.Reload();
 
-    auto maybeAt = []<typename D>(const json& j, const char* n, const D& def,
-                                  const std::variant<std::monostate, std::function<D(const json&)>>& cvt = {}) {
-        auto it = j.find(n);
-        if(it == j.end())
-            return def;
-        if(cvt.index() == 0)
-            return static_cast<D>(*it);
-        else
-            return std::get<1>(cvt)(*it);
-    };
+    auto maybeAt =
+        []<typename D>(
+            const json& j, const char* n, const D& def, const std::variant<std::monostate, std::function<D(const json&)>>& cvt = {}) {
+            auto it = j.find(n);
+            if(it == j.end())
+                return def;
+            if(cvt.index() == 0)
+                return static_cast<D>(*it);
+            else
+                return std::get<1>(cvt)(*it);
+        };
 
     auto getivec2 = [](const json& j) {
         return ivec2(j[0].get<i32>(), j[1].get<i32>());
@@ -609,7 +611,10 @@ void Grids::Load() {
 
             if(!i.buff) {
                 i.buff = &Buffs::UnknownBuff;
-                LogWarn("Configuration has unknown buff: Grid '{}', location ({}, {}), buff ID '{}'.", g.name, i.pos.x, i.pos.y,
+                LogWarn("Configuration has unknown buff: Grid '{}', location ({}, {}), buff ID '{}'.",
+                        g.name,
+                        i.pos.x,
+                        i.pos.y,
                         static_cast<std::string>(iIn["buff_id"]));
             }
 
