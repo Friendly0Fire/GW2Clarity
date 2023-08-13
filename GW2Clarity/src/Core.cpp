@@ -40,6 +40,7 @@ void Core::InnerInitPreImGui() {
 }
 
 void Core::InnerInitPreFontImGui() {
+    ImGui::SetColorEditOptions(ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaPreview);
     auto& imio = ImGui::GetIO();
     auto fontCfg = ImFontConfig();
     fontCfg.FontDataOwnedByAtlas = false;

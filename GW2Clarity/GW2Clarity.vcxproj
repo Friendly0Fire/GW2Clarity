@@ -169,15 +169,8 @@ if exist "$(GW2CLARITY_TARGET_DIR)" (
       <ShaderModel>3.0</ShaderModel>
     </FxCompile>
     <PreBuildEvent>
-      <Command>mkdir "$(ProjectDir)int"
-del "$(ProjectDir)int\Shaders.zip"
-cd "$(ProjectDir)shaders"
-"$(SolutionDir)tools\zip.exe" "$(ProjectDir)int\Shaders.zip"  *.*
-
-echo | set /p dummyName="#define GIT_HASH " &gt; "$(ProjectDir)include\git.h"
-git describe --always --dirty --match "NOT A TAG" &gt;&gt; "$(ProjectDir)include\git.h"
-
-"$(SolutionDir)AtlasTool\bin\$(Configuration)\net6.0-windows7.0\AtlasTool.exe" --directory "$(SolutionDir)GW2Clarity/assets/atlas" --output "$(SolutionDir)GW2Clarity/assets/atlas.dds" --verbose --border 2</Command>
+      <Command>
+      </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

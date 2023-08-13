@@ -110,86 +110,76 @@ void Cursor::Draw(ComPtr<ID3D11DeviceContext>& ctx) {
 }
 
 void Cursor::DrawMenu(Keybind** currentEditedKeybind) {
-    editor_.Draw([&](Layer& editLayer, UI::SaveTracker& save) {
-        if(!editLayer.name.empty())
-            UI::Title(std::format("Editing Cursor Layer '{}'", editLayer.name));
-        else
-            UI::Title("New Cursor Layer");
-
-        save << ImGui::InputText("Name##NewLayer", &editLayer.name);
-
-        ImGui::Image(previewImage_.srv.Get(), ImVec2(80.f, 80.f));
-
-        auto currTypeName = std::visit(Overloaded { [](const Layer::Circle&) { return "Circle"; },
-                                                    [](const Layer::Square&) { return "Square"; },
-                                                    [](const Layer::Cross&) {
-                                                        return "Cross";
-                                                    } },
-                                       editLayer.type);
-
-        SCOPE(Combo("Shape", currTypeName)) {
-            const auto currIndex = editLayer.type.index();
-            const auto isCircle = get_index<Layer::Circle, decltype(editLayer.type)>() == currIndex;
-            const auto isSquare = get_index<Layer::Square, decltype(editLayer.type)>() == currIndex;
-            const auto isCross = get_index<Layer::Cross, decltype(editLayer.type)>() == currIndex;
-            if(save << ImGui::Selectable("Circle", isCircle) && !isCircle) {
-                editLayer.type = Layer::Circle {};
+    editor_.Draw([&](Layer& editLayer, UI::SaveTracker& save, f32 availableWidth) {
+        f32 imageSize = Clamp(40.f + availableWidth * 0.2f, 60.f, 160.f);
+        ImGui::Image(previewImage_.srv.Get(), ImVec2(imageSize, imageSize));
+        ImGui::SameLine();
+        SCOPE(Group()) {
+            save << ImGui::Checkbox("Invert Colors", &editLayer.invert);
+            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + UI::GetSize<ImGui::Checkbox>().x + ImGui::GetStyle().ItemInnerSpacing.x);
+            SCOPE(FontScale(0.8f)) {
+                ImGui::TextWrapped(
+                    "Color inversion will affect all layers underneath the current layer as well as the game's output, inverting every "
+                    "color "
+                    "(black becomes white and so on).");
             }
 
-            if(save << ImGui::Selectable("Square", isSquare) && !isSquare) {
-                editLayer.type = Layer::Square {};
-            }
+            save << ImGui::ColorEdit4("Border Color & Transparency", glm::value_ptr(editLayer.colorBorder));
 
-            if(save << ImGui::Selectable("Cross", isCross) && !isCross) {
-                editLayer.type = Layer::Cross {};
-            }
+            UI::MaybeSameLine((availableWidth - imageSize) * 0.5f);
+            // ImGui::SameLine();
+
+            save << ImGui::ColorEdit4("Fill Color & Transparency", glm::value_ptr(editLayer.colorFill));
         }
 
-        save << ImGui::Checkbox("Invert Colors", &editLayer.invert);
-        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + UI::GetSize<ImGui::Checkbox>().x + ImGui::GetStyle().ItemInnerSpacing.x);
-        SCOPE(FontScale(0.8f)) {
-            ImGui::TextWrapped(
-                "Color inversion will affect all layers underneath the current layer as well as the game's output, inverting every color "
-                "(black becomes white and so on).");
+        SCOPE(GroupPanelTitle()) {
+            ImGui::Text("Shape:");
+            ImGui::SameLine();
+            auto type = [&]<typename T>(const char* name, T) {
+                auto idx = get_index<T, decltype(editLayer.type)>();
+                if(save << (ImGui::RadioButton(name, idx == editLayer.type.index()) && editLayer.type.index() != idx))
+                    editLayer.type = T();
+            };
+
+            type("Circle", Layer::Circle {});
+            ImGui::SameLine(availableWidth * 0.33f);
+            type("Square", Layer::Square {});
+            ImGui::SameLine(availableWidth * 0.67f);
+            type("Cross", Layer::Cross {});
         }
 
-        save << ImGui::ColorEdit4("Border Color & Transparency",
-                                  glm::value_ptr(editLayer.colorBorder),
-                                  ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaPreview);
+        SCOPE(GroupPanel(availableWidth)) {
+            SCOPE(Disable(std::holds_alternative<Layer::Cross>(editLayer.type) && std::get<Layer::Cross>(editLayer.type).fullscreen)) {
+                save << ImGui::DragFloat2("Dimensions", glm::value_ptr(editLayer.dims), 0.2f, 1.f, ImGui::GetIO().DisplaySize.x * 2.f);
+            }
 
-        save << ImGui::ColorEdit4("Fill Color & Transparency",
-                                  glm::value_ptr(editLayer.colorFill),
-                                  ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaPreview);
+            save << ImGui::DragFloat("Border Thickness", &editLayer.edgeThickness, 0.05f, 0.f, 100.f);
 
-        save << ImGui::DragFloat("Border Thickness", &editLayer.edgeThickness, 0.05f, 0.f, 100.f);
-
-        auto angleKnob = [&save](float& a) {
-            save << ImGuiKnobs::Knob("Angle",
-                                     &a,
-                                     -180.f,
-                                     180.f,
-                                     0,
-                                     nullptr,
-                                     ImGuiKnobVariant_Stepped,
-                                     0,
-                                     ImGuiKnobFlags_RotateAbsolute,
-                                     9,
-                                     ImVec2(0, 2.f * std::numbers::pi_v<f32>));
-        };
-        std::visit(
-            PartialOverloaded { [&](Layer::Square& s) { angleKnob(s.angle); },
-                                [&](Layer::Cross& c) {
-                                    angleKnob(c.angle);
-                                    save << ImGui::DragFloat(
-                                        "Cross Thickness", &c.crossThickness, 0.05f, 1.f, std::min(editLayer.dims.x, editLayer.dims.y));
-                                    if(save << ImGui::Checkbox("Full screen", &c.fullscreen))
-                                        if(!c.fullscreen)
-                                            editLayer.dims = vec2(32.f);
-                                } },
-            editLayer.type);
-
-        if(!std::holds_alternative<Layer::Cross>(editLayer.type) || !std::get<Layer::Cross>(editLayer.type).fullscreen)
-            save << ImGui::DragFloat2("Cursor Size", glm::value_ptr(editLayer.dims), 0.2f, 1.f, ImGui::GetIO().DisplaySize.x * 2.f);
+            auto angleKnob = [&save](float& a) {
+                save << ImGuiKnobs::Knob("Angle",
+                                         &a,
+                                         -180.f,
+                                         180.f,
+                                         0,
+                                         nullptr,
+                                         ImGuiKnobVariant_Stepped,
+                                         0,
+                                         ImGuiKnobFlags_RotateAbsolute,
+                                         9,
+                                         ImVec2(0, 2.f * std::numbers::pi_v<f32>));
+            };
+            std::visit(
+                PartialOverloaded { [&](Layer::Square& s) { angleKnob(s.angle); },
+                                    [&](Layer::Cross& c) {
+                                        angleKnob(c.angle);
+                                        save << ImGui::DragFloat(
+                                            "Cross Thickness", &c.crossThickness, 0.05f, 1.f, std::min(editLayer.dims.x, editLayer.dims.y));
+                                        if(save << ImGui::Checkbox("Full screen", &c.fullscreen))
+                                            if(!c.fullscreen)
+                                                editLayer.dims = vec2(32.f);
+                                    } },
+                editLayer.type);
+        }
     });
 
     ImGui::Separator();
