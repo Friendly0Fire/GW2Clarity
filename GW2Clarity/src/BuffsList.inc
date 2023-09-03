@@ -317,6 +317,7 @@ const auto g_Buffs = std::to_array<Buff>({
     { 63284, "Perilous Gift" }, // https://wiki.guildwars2.com/wiki/Perilous_Gift_(effect)
     { 63240, "Forest's Fortification" }, // https://wiki.guildwars2.com/wiki/Forest%27s_Fortification_(effect)
     { 63191, "Ferocious Symbiosis" }, // https://wiki.guildwars2.com/wiki/Ferocious_Symbiosis_(effect)
+    { 63404, "Unleashed Power" }, // https://wiki.guildwars2.com/wiki/Unleashed_Power
 
     //// Revenant
     { "Revenant" },
