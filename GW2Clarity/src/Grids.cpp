@@ -610,7 +610,7 @@ void Grids::Load() {
             if(!i.buff) {
                 i.buff = &Buffs::UnknownBuff;
                 LogWarn("Configuration has unknown buff: Grid '{}', location ({}, {}), buff ID '{}'.", g.name, i.pos.x, i.pos.y,
-                        static_cast<std::string>(iIn["buff_id"]));
+                        static_cast<i32>(iIn["buff_id"]));
             }
 
             if(!i.buff && !i.additionalBuffs.empty()) {
