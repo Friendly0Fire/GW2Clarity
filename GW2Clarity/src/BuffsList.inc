@@ -523,9 +523,9 @@ const auto g_Buffs = std::to_array<Buff>({
     { "Relics" },
     { 69855, "Relic of Fireworks" }, // https://wiki.guildwars2.com/wiki/Relic_of_Fireworks
     { 69992, "Relic of Mabon" }, // https://wiki.guildwars2.com/wiki/Relic_of_Mabon
-    { 69620, "Mabon's Strength", "relic_of_mabon" 10 }, // https://wiki.guildwars2.com/wiki/Mabon%27s_Strength
+    { 69620, "Mabon's Strength", "relic_of_mabon", 10 }, // https://wiki.guildwars2.com/wiki/Mabon%27s_Strength
     { 71431, "Relic of Nourys" }, // https://wiki.guildwars2.com/wiki/Relic_of_Nourys
-    { 71711, "Nourys's Hunger", "relic_of_nourys" 10 }, // https://wiki.guildwars2.com/wiki/Nourys%27s_Hunger_(stack)
+    { 71711, "Nourys's Hunger", "relic_of_nourys", 10 }, // https://wiki.guildwars2.com/wiki/Nourys%27s_Hunger_(stack)
     { 69795, "Relic of the Aristocracy", 5 }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Aristocracy
     { 71134, "Relic of the Astral Ward" }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Astral_Ward
     { 70913, "Relic of the Brawler" }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Brawler
