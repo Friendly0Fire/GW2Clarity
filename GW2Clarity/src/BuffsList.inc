@@ -90,6 +90,7 @@ const auto g_Buffs = std::to_array<Buff>({
     { 31337, "\"Rebound\"" },
     { 31487, "Static Charge" },
     { 31353, "Transcendent Tempest" },
+    { 69427, "Tempestuous Aria" }, // https://wiki.guildwars2.com/wiki/Tempestuous_Aria_(effect)
 
     { "Elementalist/Weaver" },
     { 43586, "Molten Armor" },
@@ -251,6 +252,7 @@ const auto g_Buffs = std::to_array<Buff>({
     { { 10610, 40583 }, "Signet of Undeath" }, // https://wiki.guildwars2.com/wiki/Signet_of_Undeath
     { 30845, "Death's Carapace" }, // https://wiki.guildwars2.com/wiki/Death's_Carapace
     { 30285, "Vampiric Aura" }, // https://wiki.guildwars2.com/wiki/Vampiric_Aura
+    { 53489, "Soul Barbs" }, // https://wiki.guildwars2.com/wiki/Soul_Barbs_(effect)
 
     { "Necromancer/Reaper" },
     { 29446, "Reaper's Shroud" }, // https://wiki.guildwars2.com/wiki/Reaper%27s_Shroud
@@ -280,7 +282,7 @@ const auto g_Buffs = std::to_array<Buff>({
     { 12536, "Sharpening Stone" }, // https://wiki.guildwars2.com/wiki/Sharpening_Stone_(effect)
     { 12554, "Strength of the Pack" }, // https://wiki.guildwars2.com/wiki/Strength_of_the_Pack_(effect)
     { 34281, "\"Guard!\"" }, // https://wiki.guildwars2.com/wiki/%22Guard!%22_(effect)
-
+    { 31865, "Clarion Bond" }, // https://wiki.guildwars2.com/wiki/Clarion_Bond_(effect)
     { 13988, "Opening Strike" }, // https://wiki.guildwars2.com/wiki/Opening_Strike_(effect)
     { 29703, "Quick Draw" }, // https://wiki.guildwars2.com/wiki/Quick_Draw_(effect)
     { 30673, "Light on your Feet" }, // https://wiki.guildwars2.com/wiki/Light_on_your_Feet_(effect)
@@ -290,6 +292,7 @@ const auto g_Buffs = std::to_array<Buff>({
     { 31508, "Celestial Avatar" }, // https://wiki.guildwars2.com/wiki/Celestial_Avatar_(effect)
     { 30449, "Natural Healing" }, // https://wiki.guildwars2.com/wiki/Natural_Healing_(effect)
     { 32248, "Lingering Light" }, // https://wiki.guildwars2.com/wiki/Lingering_Light_(effect)
+    { 69314, "Natural Balance" }, // https://wiki.guildwars2.com/wiki/Natural_Balance_(effect)
     { 31556, "Glyph of Unity (CA)" }, // https://wiki.guildwars2.com/wiki/Glyph_of_Unity_(Celestial_Avatar_effect)
     { 55048, "Glyph of the Stars (normal)" }, // https://wiki.guildwars2.com/wiki/Glyph_of_the_Stars_(non-celestial)_(effect)
     { 55026, "Glyph of the Stars (CA)" }, // https://wiki.guildwars2.com/wiki/Glyph_of_the_Stars_(Celestial_Avatar)_(effect)
@@ -345,6 +348,7 @@ const auto g_Buffs = std::to_array<Buff>({
     { 51704, "Facet of Nature-Demon" },             // https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Demon
     { 51677, "Facet of Nature-Dwarf" },             // https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Dwarf
     { 51674, "Facet of Nature-Dragon" },            // https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Dragon
+    { 51653, "Burst of Strength" },                 // https://wiki.guildwars2.com/wiki/Burst_of_Strength_(effect)
 
     { "Revenant/Renegade" },
     { { 42883, 45614 }, "Kalla's Fervor", 5 },      // https://wiki.guildwars2.com/wiki/Kalla%27s_Fervor
