@@ -523,6 +523,26 @@ const auto g_Buffs = std::to_array<Buff>({
     //{ 47288, "Mistlock Instability: Toxic Sickness" }, // https://wiki.guildwars2.com/images/6/6f/Mistlock_Instability_Toxic_Sickness.png
     //
 
+    //// Relics
+    { "Relics" },
+    { 69855, "Relic of Fireworks" }, // https://wiki.guildwars2.com/wiki/Relic_of_Fireworks
+    { 69992, "Relic of Mabon" }, // https://wiki.guildwars2.com/wiki/Relic_of_Mabon
+    { 69620, "Mabon's Strength", "relic_of_mabon", 10 }, // https://wiki.guildwars2.com/wiki/Mabon%27s_Strength
+    { 71431, "Relic of Nourys" }, // https://wiki.guildwars2.com/wiki/Relic_of_Nourys
+    { 71711, "Nourys's Hunger", "relic_of_nourys", 10 }, // https://wiki.guildwars2.com/wiki/Nourys%27s_Hunger_(stack)
+    { 69795, "Relic of the Aristocracy", 5 }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Aristocracy
+    { 71134, "Relic of the Astral Ward" }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Astral_Ward
+    { 70913, "Relic of the Brawler" }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Brawler
+    { 70839, "Relic of the Daredevil" }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Daredevil
+    { 70282, "Relic of the Deadeye" }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Deadeye
+    { 71217, "Relic of the Firebrand" }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Firebrand
+    { 69606, "Relic of the Herald", 10 }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Herald
+    { 71132, "Relic of the Monk", 10 }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Monk
+    { 70975, "Relic of the Scourge", 10 }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Scourge
+    { 70767, "Relic of the Thief" }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Thief
+    { 70390, "Relic of the Weaver" }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Weaver
+    { 69961, "Relic of Vass", 25 }, // https://wiki.guildwars2.com/wiki/Relic_of_Vass
+
     //// Boosters
     { "Boosters, Banners, Map Buffs" },
     { 33106, "Guild Experience Boost", "guild_tavern" }, //  https://wiki.guildwars2.com/index.php?title=Guild_Experience_Boost
