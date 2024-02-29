@@ -122,6 +122,12 @@ const auto g_Buffs = std::to_array<Buff>({
     { 62939, "Empowering Auras", 5 },
     { 62986, "Hardened Auras", 5 },
 
+    { "Elementalist/Pistol" },
+    { 71936, "Fire Bullet" },
+    { 71862, "Ice Bullet" },
+    { 71848, "Air Bullet" },
+    { 71881, "Earth Bullet" },
+
     //// Engineer
     { "Engineer" },
     { 6056, "Absorb" }, // https://wiki.guildwars2.com/wiki/Absorb_(shield_effect)
