@@ -45,12 +45,23 @@ jobs:
 
       - run: nuget restore "${env:GITHUB_WORKSPACE}\GW2Clarity.sln"
 
+      - name: Export GitHub Actions cache environment variables
+        uses: actions/github-script@v6
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
       - name: Build Release
         if: startsWith(github.ref, 'refs/tags/v')
         run: msbuild.exe "${env:GITHUB_WORKSPACE}\GW2Clarity.sln" /t:Build /p:Configuration=Release /p:Platform=x64 /p:GitHubDefs=USE_GITHUB_VER
+        env:
+          VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
 
       - name: Build Debug
         run: msbuild.exe "${env:GITHUB_WORKSPACE}\GW2Clarity.sln" /t:Build /p:Configuration=Debug /p:Platform=x64 /p:GitHubDefs=USE_GITHUB_VER
+        env:
+          VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
 
       - name: Save nightly build from master
         uses: actions/upload-artifact@v3
