@@ -47,6 +47,7 @@ jobs:
         uses: lukka/run-vcpkg@v11
         with:
           runVcpkgInstall: true
+          vcpkgJsonGlob: '**/GW2Clarity/vcpkg.json'
 
       - run: nuget restore "${env:GITHUB_WORKSPACE}\GW2Clarity.sln"
 
