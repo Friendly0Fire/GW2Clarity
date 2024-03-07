@@ -123,6 +123,15 @@ const auto g_Buffs = std::to_array<Buff>({
     { 62939, "Empowering Auras", 5 },
     { 62986, "Hardened Auras", 5 },
 
+    { "Elementalist/Pistol" },
+    { 71936, "Fire Bullet" },
+    { 71862, "Ice Bullet" },
+    { 71848, "Air Bullet" },
+    { 71881, "Earth Bullet" },
+    { 71811, "Raging Ricochet" }, // https://wiki.guildwars2.com/wiki/Raging_Ricochet_(effect)
+    { 72069, "Dazing Discharge" }, // https://wiki.guildwars2.com/wiki/Dazing_Discharge_(effect)
+    { 72046, "Shattering Stone" }, // https://wiki.guildwars2.com/wiki/Shattering_Stone_(effect)
+
     //// Engineer
     { "Engineer" },
     { 6056, "Absorb" }, // https://wiki.guildwars2.com/wiki/Absorb_(shield_effect)
@@ -288,6 +297,10 @@ const auto g_Buffs = std::to_array<Buff>({
     { 30673, "Light on your Feet" }, // https://wiki.guildwars2.com/wiki/Light_on_your_Feet_(effect)
     { 24371, "Poison Master" }, // https://wiki.guildwars2.com/wiki/Poison_Master_(effect)
 
+    { 71976, "Nature's Strength" }, // https://wiki.guildwars2.com/wiki/Nature%27s_Strength
+    { 12579, "Force of Nature" }, // https://wiki.guildwars2.com/wiki/Force_of_Nature
+    { 71979, "Tapped Out" }, // https://wiki.guildwars2.com/wiki/Tapped_Out
+
     { "Ranger/Druid" },
     { 31508, "Celestial Avatar" }, // https://wiki.guildwars2.com/wiki/Celestial_Avatar_(effect)
     { 30449, "Natural Healing" }, // https://wiki.guildwars2.com/wiki/Natural_Healing_(effect)
@@ -383,6 +396,7 @@ const auto g_Buffs = std::to_array<Buff>({
     { 50489, "Hooked Spear" },                    // https://wiki.guildwars2.com/wiki/Hooked_Spear
     { { 16435, 16437, 57031 }, "Shadow Portal" }, // https://wiki.guildwars2.com/wiki/Prepare_Shadow_Portal
     { 34659, "Lead Attacks" },                    // https://wiki.guildwars2.com/wiki/Lead_Attacks
+    { 71815, "Axe Counter" }, // https://wiki.guildwars2.com/wiki/Axe_Counter
 
     { "Thief/Daredevil" },
     { { 30313, 34081 }, "Weakening Strikes" },               // https://wiki.guildwars2.com/wiki/Weakening_Strikes
