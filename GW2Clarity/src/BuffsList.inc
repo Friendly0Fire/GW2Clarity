@@ -537,6 +537,21 @@ const auto g_Buffs = std::to_array<Buff>({
     //{ 47288, "Mistlock Instability: Toxic Sickness" }, // https://wiki.guildwars2.com/images/6/6f/Mistlock_Instability_Toxic_Sickness.png
     //
 
+    //// Sigils
+    { "Sigils" },
+    { 9398, "Sigil of Benevolence", 25 }, // https://wiki.guildwars2.com/wiki/Superior_Sigil_of_Benevolence
+    { 9286, "Sigil of Bloodlust", 25 }, // https://wiki.guildwars2.com/wiki/Superior_Sigil_of_Bloodlust
+    { 38588, "Sigil of Bounty", 25 }, // https://wiki.guildwars2.com/wiki/Superior_Sigil_of_Bounty
+    { 9374, "Sigil of Corruption", 25 }, // https://wiki.guildwars2.com/wiki/Superior_Sigil_of_Corruption
+    { 9441, "Sigil of Doom" }, // https://wiki.guildwars2.com/wiki/Superior_Sigil_of_Doom
+    { 9416, "Sigil of Leeching" }, // https://wiki.guildwars2.com/wiki/Superior_Sigil_of_Leeching
+    { 9386, "Sigil of Life", 25 }, // https://wiki.guildwars2.com/wiki/Superior_Sigil_of_Life
+    { 22144, "Sigil of Momentum", 25 }, // https://wiki.guildwars2.com/wiki/Superior_Sigil_of_Momentum
+    { 9385, "Sigil of Perception", 25 }, // https://wiki.guildwars2.com/wiki/Superior_Sigil_of_Perception
+    { 43930, "Sigil of Severance" }, // https://wiki.guildwars2.com/wiki/Superior_Sigil_of_Severance
+    { 46953, "Sigil of the Stars", 25 }, // https://wiki.guildwars2.com/wiki/Superior_Sigil_of_the_Stars
+    { 9422, "Sigil of Vision" }, // https://wiki.guildwars2.com/wiki/Superior_Sigil_of_Vision
+
     //// Relics
     { "Relics" },
     { 69855, "Relic of Fireworks" }, // https://wiki.guildwars2.com/wiki/Relic_of_Fireworks
