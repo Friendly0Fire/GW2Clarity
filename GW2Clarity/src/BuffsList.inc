@@ -914,9 +914,9 @@ const auto g_Buffs = std::to_array<Buff>({
     { 54073, "Social Awkwardness Immunity", "activate_yellow" }, // https://wiki.guildwars2.com/wiki/Social_Awkwardness_Immunity
 
     { "Fractals/Nightmare" },
-    { 36998, "Fixated (Hallucination)" }, // https://wiki.guildwars2.com/wiki/Fixated_(Nightmare)
+    { 36998, "Fixated (Hallucination)", "fixated" }, // https://wiki.guildwars2.com/wiki/Fixated_(Nightmare)
 
-    { "Fractals/Shattered Observatory" }
+    { "Fractals/Shattered Observatory" },
     { 39531, "Skorvald's Ire", "fixated" }, // https://wiki.guildwars2.com/wiki/Skorvald%27s_Ire
     { 38880, "Corporeal Reassignment" }, // https://wiki.guildwars2.com/wiki/Corporeal_Reassignment
     { { 39131, 39928, 39558, 38985 }, "Fixated (Bloom)", "fixated" }, // https://wiki.guildwars2.com/wiki/Fixated
