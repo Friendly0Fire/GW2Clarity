@@ -565,8 +565,6 @@ const auto g_Buffs = std::to_array<Buff>({
     //// Generic
     { "Generic Mechanics" },
     { 38077, "Spectral Agony" }, // https://wiki.guildwars2.com/images/7/70/Spectral_Agony.png
-    { 15773, "Agony" },          // https://wiki.guildwars2.com/images/b/be/Agony.png
-    { 47856, "Hamstrung" },      // https://wiki.guildwars2.com/images/b/b9/Unseen_Burden.png
     //{ 18711, "Enraged (?)" }, // https://wiki.guildwars2.com/images/7/78/Vengeance_%28Mordrem%29.png
     //{ 23235, "Enraged (??)" }, // https://wiki.guildwars2.com/images/7/78/Vengeance_%28Mordrem%29.png
     //{ 50070, "Enraged 1 (100%)" }, // https://wiki.guildwars2.com/images/7/78/Vengeance_%28Mordrem%29.png
@@ -842,45 +840,6 @@ const auto g_Buffs = std::to_array<Buff>({
     //{ 56264, "Flare-Up" }, // https://wiki.guildwars2.com/images/8/8b/Magic_Aura.png
     //{ 56467, "Unbridled Chaos" }, // https://wiki.guildwars2.com/images/4/42/Exposed_%28Statue_of_Darkness%29.png
     ////////////////////////////////////////////////
-    //// Fractals
-    { 33652, "Rigorous Certainty" }, // https://wiki.guildwars2.com/images/6/60/Desert_Carapace.png
-    //{ 47248, "Fractal Savant" }, // https://wiki.guildwars2.com/images/c/cb/Malign_9_Agony_Infusion.png
-    //{ 48191, "Fractal Prodigy" }, // https://wiki.guildwars2.com/images/1/11/Mighty_9_Agony_Infusion.png
-    //{ 48414, "Fractal Champion" }, // https://wiki.guildwars2.com/images/3/3d/Precise_9_Agony_Infusion.png
-    //{ 47222, "Fractal God" }, // https://wiki.guildwars2.com/images/2/22/Healing_9_Agony_Infusion.png
-    //// Siax
-    //{ 36998, "Fixated (Nightmare)" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
-    //// Ensolyss
-    //{ 37498, "Determination (Ensolyss)" }, // https://wiki.guildwars2.com/images/4/41/Gambit_Exhausted.png
-    //// Artsariiv
-    { "Artsariiv" },
-    //{ 36498, "Enraged (Fractal)" }, // https://wiki.guildwars2.com/images/7/78/Vengeance_%28Mordrem%29.png
-    { 38880, "Corporeal Reassignment" }, // https://wiki.guildwars2.com/images/9/94/Redirect_Anomaly.png
-    //{ 39442, "Blinding Radiance" }, // https://wiki.guildwars2.com/images/5/5f/Monster_Skill.png
-    //{ 38841, "Determination (Viirastra)" }, // https://wiki.guildwars2.com/images/4/41/Gambit_Exhausted.png
-    //// Arkk
-    { "Arkk" },
-    //{ 39558, "Fixated (Bloom 3)" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
-    //{ 39928, "Fixated (Bloom 2)" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
-    //{ 39131, "Fixated (Bloom 1)" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
-    //{ 38985, "Fixated (Bloom 4)" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
-    { 39268, "Cosmic Meteor", "monster" }, // https://wiki.guildwars2.com/images/5/5f/Monster_Skill.png
-    //{ 39111, "Diaphanous Shielding" }, // https://wiki.guildwars2.com/images/5/57/Diaphanous_Shielding.png
-    //{ 33750, "Electrocuted" }, // https://wiki.guildwars2.com/images/9/91/Air_Attunement.png
-    //// Ai, Keeper of the Peak
-    { "Ai, Keeper of the Peak" },
-    //{ 61402, "Tidal Barrier" }, // https://wiki.guildwars2.com/images/b/b1/Primed_Bottle.png
-    //{ 61224, "Whirlwind Shield" }, // https://wiki.guildwars2.com/images/b/b1/Primed_Bottle.png
-    //{ 61220, "Resilient Form" }, // https://wiki.guildwars2.com/images/1/13/Crowd_Favor.png
-    //{ 61435, "Cacophonous Mind" }, // https://wiki.guildwars2.com/images/1/13/Crowd_Favor.png
-    //{ 61208, "Crushing Guilt" }, // https://wiki.guildwars2.com/images/1/13/Crowd_Favor.png
-    //{ 61304, "Fixated (Fear 3)" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
-    //{ 61306, "Fixated (Fear 2)" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
-    //{ 61503, "Fixated (Fear 1)" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
-    //{ 61566, "Fixated (Fear 4)" }, // https://wiki.guildwars2.com/images/6/66/Fixated.png
-    { 61444, "Charged Leap" },                 // https://wiki.guildwars2.com/images/1/13/Crowd_Favor.png
-    { 61512, "Tidal Bargain", "waterlogged" }, // https://wiki.guildwars2.com/images/1/13/Crowd_Favor.png
-    ////////////////////////////////////////////////
     //// Icebrood
     //{ 57969, "Hypothermia" }, // https://wiki.guildwars2.com/images/d/d5/Hypothermia_%28story_effect%29.png
     //// Fraenir of Jormag
@@ -940,4 +899,36 @@ const auto g_Buffs = std::to_array<Buff>({
     //{ 63605, "Aerial Defense" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
     //{ 66800, "Void Immunity" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
     //{ 65563, "Void Shell" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
+
+    //// Fractals
+    { "Fractals" },
+    { 32473, "Fractal Offensive", 5 }, // https://wiki.guildwars2.com/wiki/Fractal_Offensive
+    { 33024, "Fractal Mobility", 5 }, // https://wiki.guildwars2.com/wiki/Fractal_Mobility
+    { 32134, "Fractal Defensive", 5 }, // https://wiki.guildwars2.com/wiki/Fractal_Defensive
+    { 15773, "Agony", 25 }, // https://wiki.guildwars2.com/wiki/Agony
+    { 33652, "Rigorous Certainty" }, // https://wiki.guildwars2.com/wiki/Rigorous_Certainty
+    { 47856, "Hamstrung", 99 }, // https://wiki.guildwars2.com/wiki/Hamstrung
+    { 68170, "Debilitated (Toxic Sickness)", "debilitated" }, // https://wiki.guildwars2.com/wiki/Debilitated_(Toxic_Sickness)
+    { 54604, "Sticking Together", "activate_green" }, // https://wiki.guildwars2.com/wiki/Sticking_Together
+    { 54378, "Not Sticking Together", "activate_red" }, // https://wiki.guildwars2.com/wiki/Not_Sticking_Together
+    { 54073, "Social Awkwardness Immunity", "activate_yellow" }, // https://wiki.guildwars2.com/wiki/Social_Awkwardness_Immunity
+
+    { "Fractals/Nightmare" },
+    { 36998, "Fixated (Hallucination)" }, // https://wiki.guildwars2.com/wiki/Fixated_(Nightmare)
+
+    { "Fractals/Shattered Observatory" }
+    { 39531, "Skorvald's Ire", "fixated" }, // https://wiki.guildwars2.com/wiki/Skorvald%27s_Ire
+    { 38880, "Corporeal Reassignment" }, // https://wiki.guildwars2.com/wiki/Corporeal_Reassignment
+    { { 39131, 39928, 39558, 38985 }, "Fixated (Bloom)", "fixated" }, // https://wiki.guildwars2.com/wiki/Fixated
+    { 39268, "Cosmic Meteor", "monster" }, // https://wiki.guildwars2.com/wiki/Cosmic_Meteor
+    { 33750, "Electrocuted", "air_attunement" }, // https://wiki.guildwars2.com/wiki/Electrocuted
+
+    { "Fractals/Sunqua Peak" },
+    { 61444, "Charged Leap", 10 }, // https://wiki.guildwars2.com/wiki/Charged_Leap
+    { 61512, "Tidal Bargain", "waterlogged", 10 }, // https://wiki.guildwars2.com/wiki/Tidal_Bargain
+    { { 61503, 61306, 61304, 61566 }, "Fixated (Fear)", "fixated" }, // https://wiki.guildwars2.com/wiki/Fixated
+    { 61208, "Crushing Guilt", 10 }, // https://wiki.guildwars2.com/wiki/Crushing_Guilt_(Sunqua_Peak)
+
+    { "Fractals/Silent Surf" },
+    { 69206, "Phantasmagoria" }, // https://wiki.guildwars2.com/wiki/Phantasmagoria
 });
