@@ -436,7 +436,7 @@ const auto g_Buffs = std::to_array<Buff>({
     { 63207, "Shrouded Ally" },    // https://wiki.guildwars2.com/wiki/Shrouded_Ally
     { 63168, "Rot Wallow Venom" }, // https://wiki.guildwars2.com/wiki/Rot_Wallow_Venom
 
-    { "Thief/Spear" }.
+    { "Thief/Spear" },
     { 73119, "Distracting Throw"}, // https://wiki.guildwars2.com/wiki/Distracting_Throw_(effect)
 
     //// Warrior
