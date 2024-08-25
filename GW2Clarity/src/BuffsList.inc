@@ -174,7 +174,7 @@ const auto g_Buffs = std::to_array<Buff>({
 
     { "Engineer/Spear" },
     { 74447, "Focused" }, // https://wiki.guildwars2.com/wiki/Focused
-    { 73129, "Lighning Rod Charges" }, // https://wiki.guildwars2.com/wiki/Lightning_Rod_Charges
+    { 73129, "Lightning Rod Charges" }, // https://wiki.guildwars2.com/wiki/Lightning_Rod_Charges
 
     //// Guardian
     { "Guardian" },
