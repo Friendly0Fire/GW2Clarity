@@ -132,6 +132,12 @@ const auto g_Buffs = std::to_array<Buff>({
     { 72069, "Dazing Discharge" }, // https://wiki.guildwars2.com/wiki/Dazing_Discharge_(effect)
     { 72046, "Shattering Stone" }, // https://wiki.guildwars2.com/wiki/Shattering_Stone_(effect)
 
+    { "Elementalist/Spear" },
+    { 73011, "Seethe" }, // https://wiki.guildwars2.com/wiki/Seethe
+    { 73117, "Ripple" }, // https://wiki.guildwars2.com/wiki/Ripple
+    { 73071, "Energize" }, // https://wiki.guildwars2.com/wiki/Energize
+    { 72963, "Harden" }, // https://wiki.guildwars2.com/wiki/Harden
+
     //// Engineer
     { "Engineer" },
     { 6056, "Absorb" }, // https://wiki.guildwars2.com/wiki/Absorb_(shield_effect)
@@ -168,6 +174,7 @@ const auto g_Buffs = std::to_array<Buff>({
 
     { "Engineer/Spear" },
     { 74447, "Focused" }, // https://wiki.guildwars2.com/wiki/Focused
+    { 73129, "Lighning Rod Charges" }, // https://wiki.guildwars2.com/wiki/Lightning_Rod_Charges
 
     //// Guardian
     { "Guardian" },
@@ -217,6 +224,7 @@ const auto g_Buffs = std::to_array<Buff>({
 
     { "Guardian/Spear" },
     { 73101, "Illuminated" }, // https://wiki.guildwars2.com/wiki/Illuminated
+    { 73025, "Symbol of Luminance" }, // https://wiki.guildwars2.com/wiki/Symbol_of_Luminance_(effect)
 
     //// Mesmer
     { "Mesmer" },
@@ -427,6 +435,9 @@ const auto g_Buffs = std::to_array<Buff>({
     { "Thief/Specter" },
     { 63207, "Shrouded Ally" },    // https://wiki.guildwars2.com/wiki/Shrouded_Ally
     { 63168, "Rot Wallow Venom" }, // https://wiki.guildwars2.com/wiki/Rot_Wallow_Venom
+
+    { "Thief/Spear" }.
+    { 73119, "Distracting Throw"}, // https://wiki.guildwars2.com/wiki/Distracting_Throw_(effect)
 
     //// Warrior
     { "Warrior" },
