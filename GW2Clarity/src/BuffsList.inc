@@ -132,6 +132,12 @@ const auto g_Buffs = std::to_array<Buff>({
     { 72069, "Dazing Discharge" }, // https://wiki.guildwars2.com/wiki/Dazing_Discharge_(effect)
     { 72046, "Shattering Stone" }, // https://wiki.guildwars2.com/wiki/Shattering_Stone_(effect)
 
+    { "Elementalist/Spear" },
+    { 73011, "Seethe" }, // https://wiki.guildwars2.com/wiki/Seethe
+    { 73117, "Ripple" }, // https://wiki.guildwars2.com/wiki/Ripple
+    { 73071, "Energize" }, // https://wiki.guildwars2.com/wiki/Energize
+    { 72963, "Harden" }, // https://wiki.guildwars2.com/wiki/Harden
+
     //// Engineer
     { "Engineer" },
     { 6056, "Absorb" }, // https://wiki.guildwars2.com/wiki/Absorb_(shield_effect)
@@ -165,6 +171,10 @@ const auto g_Buffs = std::to_array<Buff>({
     { 63243, "Force Signet" }, // https://wiki.guildwars2.com/wiki/Force_Signet_(effect)
     { 63322, "Superconducting Signet" }, // https://wiki.guildwars2.com/wiki/Superconducting_Signet_(effect)
     { { 63059, 63378 }, "Overclock Signet" }, // https://wiki.guildwars2.com/wiki/Overclock_Signet_(effect)
+
+    { "Engineer/Spear" },
+    { 74447, "Focused" }, // https://wiki.guildwars2.com/wiki/Focused
+    { 73129, "Lightning Rod Charges" }, // https://wiki.guildwars2.com/wiki/Lightning_Rod_Charges
 
     //// Guardian
     { "Guardian" },
@@ -212,6 +222,11 @@ const auto g_Buffs = std::to_array<Buff>({
     { 62638, "Repose" },
     { 62509, "Lethal Tempo" },
 
+    { "Guardian/Spear" },
+    { 73101, "Illuminated" }, // https://wiki.guildwars2.com/wiki/Illuminated
+    { 73025, "Symbol of Luminance" }, // https://wiki.guildwars2.com/wiki/Symbol_of_Luminance_(effect)
+
+    //// Mesmer
     { "Mesmer" },
     { 10243, "Distortion" },                          // https://wiki.guildwars2.com/wiki/Distortion_(effect)
     { 10335, "Blur", "distortion" },                  // https://wiki.guildwars2.com/wiki/Blur
@@ -247,6 +262,9 @@ const auto g_Buffs = std::to_array<Buff>({
     { "Mesmer/Virtuoso" },
     { 63409, "Deadly Blades" },                       // https://wiki.guildwars2.com/wiki/Deadly_Blades_(effect)
 
+    { "Mesmer/Spear" },
+    { 73048, "Clarity" },                             // https://wiki.guildwars2.com/wiki/Clarity
+
     //// Necromancer
     { "Necromancer" },
     { 790, "Death Shroud" }, // https://wiki.guildwars2.com/wiki/Death_Shroud_(effect)
@@ -275,6 +293,9 @@ const auto g_Buffs = std::to_array<Buff>({
     { "Necromancer/Harbinger" },
     { 59964, "Harbinger Shroud" }, // https://wiki.guildwars2.com/wiki/Harbinger_Shroud_(effect)
     { 62653, "Blight", 25 }, // https://wiki.guildwars2.com/wiki/Blight
+
+    { "Necromancer/Spear" },
+    { 72975, "Soul Shards", 6 }, // https://wiki.guildwars2.com/wiki/Soul_Shards
 
     //// Ranger
     { "Ranger" },
@@ -335,6 +356,9 @@ const auto g_Buffs = std::to_array<Buff>({
     { 63191, "Ferocious Symbiosis" }, // https://wiki.guildwars2.com/wiki/Ferocious_Symbiosis_(effect)
     { 63404, "Unleashed Power" }, // https://wiki.guildwars2.com/wiki/Unleashed_Power
 
+    { "Ranger/Spear" },
+    { 73541, "Hunter's Prowess" }, // https://wiki.guildwars2.com/wiki/Hunter%27s_Prowess
+
     //// Revenant
     { "Revenant" },
     { 28557, "Enchanted Daggers", 6 },              // https://wiki.guildwars2.com/wiki/Enchanted_Daggers_(effect)
@@ -374,6 +398,9 @@ const auto g_Buffs = std::to_array<Buff>({
     { 62811, "Forerunner of Death" },               // https://wiki.guildwars2.com/wiki/Forerunner_of_Death_(effect)
     { 62994, "Saint of zu Heltzer" },               // https://wiki.guildwars2.com/wiki/Saint_of_zu_Heltzer_(effect)
 
+    { "Revenant/Spear" },
+    { 72962, "Crushing Abyss" }, //https://wiki.guildwars2.com/wiki/Crushing_Abyss
+
     //// Thief
     { "Thief" },
     { 13036, "Spider Venom" },           // https://wiki.guildwars2.com/wiki/Spider_Venom
@@ -408,6 +435,9 @@ const auto g_Buffs = std::to_array<Buff>({
     { "Thief/Specter" },
     { 63207, "Shrouded Ally" },    // https://wiki.guildwars2.com/wiki/Shrouded_Ally
     { 63168, "Rot Wallow Venom" }, // https://wiki.guildwars2.com/wiki/Rot_Wallow_Venom
+
+    { "Thief/Spear" },
+    { 73119, "Distracting Throw"}, // https://wiki.guildwars2.com/wiki/Distracting_Throw_(effect)
 
     //// Warrior
     { "Warrior" },
