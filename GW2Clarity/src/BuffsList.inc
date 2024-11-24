@@ -1026,6 +1026,10 @@ const auto g_Buffs = std::to_array<Buff>({
 
     { "Decima, the Stormsinger" },
     { 74659, "Galvanic Sensitivity" }, // https://wiki.guildwars2.com/images/4/42/Exposed_%28Statue_of_Darkness%29.png
+    { 74904, "Harmonic Sensitivity" }, // https://wiki.guildwars2.com/images/6/68/Tracked.png
+
+    { Greer, the Blightbringer },
+    { 44655, "Target" }, // https://wiki.guildwars2.com/images/0/09/Target.png
 
     { "Ura, the Steamshrieker" },
     { 75056, "Bloodstone Saturation" },  // https://wiki.guildwars2.com/images/4/4d/Heat_Level.png
