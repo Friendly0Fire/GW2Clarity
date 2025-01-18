@@ -90,6 +90,7 @@ const auto g_Buffs = std::to_array<Buff>({
     { 31337, "\"Rebound\"" },
     { 31487, "Static Charge" },
     { 31353, "Transcendent Tempest" },
+    { 69427, "Tempestuous Aria" }, // https://wiki.guildwars2.com/wiki/Tempestuous_Aria_(effect)
 
     { "Elementalist/Weaver" },
     { 43586, "Molten Armor" },
@@ -121,6 +122,21 @@ const auto g_Buffs = std::to_array<Buff>({
     { 62733, "Elemental Empowerment", 10 },
     { 62939, "Empowering Auras", 5 },
     { 62986, "Hardened Auras", 5 },
+
+    { "Elementalist/Pistol" },
+    { 71936, "Fire Bullet" },
+    { 71862, "Ice Bullet" },
+    { 71848, "Air Bullet" },
+    { 71881, "Earth Bullet" },
+    { 71811, "Raging Ricochet" }, // https://wiki.guildwars2.com/wiki/Raging_Ricochet_(effect)
+    { 72069, "Dazing Discharge" }, // https://wiki.guildwars2.com/wiki/Dazing_Discharge_(effect)
+    { 72046, "Shattering Stone" }, // https://wiki.guildwars2.com/wiki/Shattering_Stone_(effect)
+
+    { "Elementalist/Spear" },
+    { 73011, "Seethe" }, // https://wiki.guildwars2.com/wiki/Seethe
+    { 73117, "Ripple" }, // https://wiki.guildwars2.com/wiki/Ripple
+    { 73071, "Energize" }, // https://wiki.guildwars2.com/wiki/Energize
+    { 72963, "Harden" }, // https://wiki.guildwars2.com/wiki/Harden
 
     //// Engineer
     { "Engineer" },
@@ -155,6 +171,10 @@ const auto g_Buffs = std::to_array<Buff>({
     { 63243, "Force Signet" }, // https://wiki.guildwars2.com/wiki/Force_Signet_(effect)
     { 63322, "Superconducting Signet" }, // https://wiki.guildwars2.com/wiki/Superconducting_Signet_(effect)
     { { 63059, 63378 }, "Overclock Signet" }, // https://wiki.guildwars2.com/wiki/Overclock_Signet_(effect)
+
+    { "Engineer/Spear" },
+    { 74447, "Focused" }, // https://wiki.guildwars2.com/wiki/Focused
+    { 73129, "Lightning Rod Charges" }, // https://wiki.guildwars2.com/wiki/Lightning_Rod_Charges
 
     //// Guardian
     { "Guardian" },
@@ -202,6 +222,11 @@ const auto g_Buffs = std::to_array<Buff>({
     { 62638, "Repose" },
     { 62509, "Lethal Tempo" },
 
+    { "Guardian/Spear" },
+    { 73101, "Illuminated" }, // https://wiki.guildwars2.com/wiki/Illuminated
+    { 73025, "Symbol of Luminance" }, // https://wiki.guildwars2.com/wiki/Symbol_of_Luminance_(effect)
+
+    //// Mesmer
     { "Mesmer" },
     { 10243, "Distortion" },                          // https://wiki.guildwars2.com/wiki/Distortion_(effect)
     { 10335, "Blur", "distortion" },                  // https://wiki.guildwars2.com/wiki/Blur
@@ -237,6 +262,9 @@ const auto g_Buffs = std::to_array<Buff>({
     { "Mesmer/Virtuoso" },
     { 63409, "Deadly Blades" },                       // https://wiki.guildwars2.com/wiki/Deadly_Blades_(effect)
 
+    { "Mesmer/Spear" },
+    { 73048, "Clarity" },                             // https://wiki.guildwars2.com/wiki/Clarity
+
     //// Necromancer
     { "Necromancer" },
     { 790, "Death Shroud" }, // https://wiki.guildwars2.com/wiki/Death_Shroud_(effect)
@@ -251,6 +279,7 @@ const auto g_Buffs = std::to_array<Buff>({
     { { 10610, 40583 }, "Signet of Undeath" }, // https://wiki.guildwars2.com/wiki/Signet_of_Undeath
     { 30845, "Death's Carapace" }, // https://wiki.guildwars2.com/wiki/Death's_Carapace
     { 30285, "Vampiric Aura" }, // https://wiki.guildwars2.com/wiki/Vampiric_Aura
+    { 53489, "Soul Barbs" }, // https://wiki.guildwars2.com/wiki/Soul_Barbs_(effect)
 
     { "Necromancer/Reaper" },
     { 29446, "Reaper's Shroud" }, // https://wiki.guildwars2.com/wiki/Reaper%27s_Shroud
@@ -264,6 +293,9 @@ const auto g_Buffs = std::to_array<Buff>({
     { "Necromancer/Harbinger" },
     { 59964, "Harbinger Shroud" }, // https://wiki.guildwars2.com/wiki/Harbinger_Shroud_(effect)
     { 62653, "Blight", 25 }, // https://wiki.guildwars2.com/wiki/Blight
+
+    { "Necromancer/Spear" },
+    { 72975, "Soul Shards", 6 }, // https://wiki.guildwars2.com/wiki/Soul_Shards
 
     //// Ranger
     { "Ranger" },
@@ -280,16 +312,21 @@ const auto g_Buffs = std::to_array<Buff>({
     { 12536, "Sharpening Stone" }, // https://wiki.guildwars2.com/wiki/Sharpening_Stone_(effect)
     { 12554, "Strength of the Pack" }, // https://wiki.guildwars2.com/wiki/Strength_of_the_Pack_(effect)
     { 34281, "\"Guard!\"" }, // https://wiki.guildwars2.com/wiki/%22Guard!%22_(effect)
-
+    { 31865, "Clarion Bond" }, // https://wiki.guildwars2.com/wiki/Clarion_Bond_(effect)
     { 13988, "Opening Strike" }, // https://wiki.guildwars2.com/wiki/Opening_Strike_(effect)
     { 29703, "Quick Draw" }, // https://wiki.guildwars2.com/wiki/Quick_Draw_(effect)
     { 30673, "Light on your Feet" }, // https://wiki.guildwars2.com/wiki/Light_on_your_Feet_(effect)
     { 24371, "Poison Master" }, // https://wiki.guildwars2.com/wiki/Poison_Master_(effect)
 
+    { 71976, "Nature's Strength" }, // https://wiki.guildwars2.com/wiki/Nature%27s_Strength
+    { 12579, "Force of Nature" }, // https://wiki.guildwars2.com/wiki/Force_of_Nature
+    { 71979, "Tapped Out" }, // https://wiki.guildwars2.com/wiki/Tapped_Out
+
     { "Ranger/Druid" },
     { 31508, "Celestial Avatar" }, // https://wiki.guildwars2.com/wiki/Celestial_Avatar_(effect)
     { 30449, "Natural Healing" }, // https://wiki.guildwars2.com/wiki/Natural_Healing_(effect)
     { 32248, "Lingering Light" }, // https://wiki.guildwars2.com/wiki/Lingering_Light_(effect)
+    { 69314, "Natural Balance" }, // https://wiki.guildwars2.com/wiki/Natural_Balance_(effect)
     { 31556, "Glyph of Unity (CA)" }, // https://wiki.guildwars2.com/wiki/Glyph_of_Unity_(Celestial_Avatar_effect)
     { 55048, "Glyph of the Stars (normal)" }, // https://wiki.guildwars2.com/wiki/Glyph_of_the_Stars_(non-celestial)_(effect)
     { 55026, "Glyph of the Stars (CA)" }, // https://wiki.guildwars2.com/wiki/Glyph_of_the_Stars_(Celestial_Avatar)_(effect)
@@ -319,6 +356,9 @@ const auto g_Buffs = std::to_array<Buff>({
     { 63191, "Ferocious Symbiosis" }, // https://wiki.guildwars2.com/wiki/Ferocious_Symbiosis_(effect)
     { 63404, "Unleashed Power" }, // https://wiki.guildwars2.com/wiki/Unleashed_Power
 
+    { "Ranger/Spear" },
+    { 73541, "Hunter's Prowess" }, // https://wiki.guildwars2.com/wiki/Hunter%27s_Prowess
+
     //// Revenant
     { "Revenant" },
     { 28557, "Enchanted Daggers", 6 },              // https://wiki.guildwars2.com/wiki/Enchanted_Daggers_(effect)
@@ -345,6 +385,7 @@ const auto g_Buffs = std::to_array<Buff>({
     { 51704, "Facet of Nature-Demon" },             // https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Demon
     { 51677, "Facet of Nature-Dwarf" },             // https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Dwarf
     { 51674, "Facet of Nature-Dragon" },            // https://wiki.guildwars2.com/wiki/Facet_of_Nature%E2%80%94Dragon
+    { 51653, "Burst of Strength" },                 // https://wiki.guildwars2.com/wiki/Burst_of_Strength_(effect)
 
     { "Revenant/Renegade" },
     { { 42883, 45614 }, "Kalla's Fervor", 5 },      // https://wiki.guildwars2.com/wiki/Kalla%27s_Fervor
@@ -356,6 +397,9 @@ const auto g_Buffs = std::to_array<Buff>({
     { 62864, "Urn of Saint Viktor" },               // https://wiki.guildwars2.com/wiki/Urn_of_Saint_Viktor_(effect)
     { 62811, "Forerunner of Death" },               // https://wiki.guildwars2.com/wiki/Forerunner_of_Death_(effect)
     { 62994, "Saint of zu Heltzer" },               // https://wiki.guildwars2.com/wiki/Saint_of_zu_Heltzer_(effect)
+
+    { "Revenant/Spear" },
+    { 72962, "Crushing Abyss" }, //https://wiki.guildwars2.com/wiki/Crushing_Abyss
 
     //// Thief
     { "Thief" },
@@ -379,6 +423,7 @@ const auto g_Buffs = std::to_array<Buff>({
     { 50489, "Hooked Spear" },                    // https://wiki.guildwars2.com/wiki/Hooked_Spear
     { { 16435, 16437, 57031 }, "Shadow Portal" }, // https://wiki.guildwars2.com/wiki/Prepare_Shadow_Portal
     { 34659, "Lead Attacks" },                    // https://wiki.guildwars2.com/wiki/Lead_Attacks
+    { 71815, "Axe Counter" }, // https://wiki.guildwars2.com/wiki/Axe_Counter
 
     { "Thief/Daredevil" },
     { { 30313, 34081 }, "Weakening Strikes" },               // https://wiki.guildwars2.com/wiki/Weakening_Strikes
@@ -390,6 +435,9 @@ const auto g_Buffs = std::to_array<Buff>({
     { "Thief/Specter" },
     { 63207, "Shrouded Ally" },    // https://wiki.guildwars2.com/wiki/Shrouded_Ally
     { 63168, "Rot Wallow Venom" }, // https://wiki.guildwars2.com/wiki/Rot_Wallow_Venom
+
+    { "Thief/Spear" },
+    { 73119, "Distracting Throw"}, // https://wiki.guildwars2.com/wiki/Distracting_Throw_(effect)
 
     //// Warrior
     { "Warrior" },
@@ -518,6 +566,41 @@ const auto g_Buffs = std::to_array<Buff>({
     //{ 54719, "Mistlock Instability: We Bleed Fire" }, // https://wiki.guildwars2.com/images/2/24/Mistlock_Instability_We_Bleed_Fire.png
     //{ 47288, "Mistlock Instability: Toxic Sickness" }, // https://wiki.guildwars2.com/images/6/6f/Mistlock_Instability_Toxic_Sickness.png
     //
+
+    //// Sigils
+    { "Sigils" },
+    { 9398, "Sigil of Benevolence", 25 }, // https://wiki.guildwars2.com/wiki/Superior_Sigil_of_Benevolence
+    { 9286, "Sigil of Bloodlust", 25 }, // https://wiki.guildwars2.com/wiki/Superior_Sigil_of_Bloodlust
+    { 38588, "Sigil of Bounty", 25 }, // https://wiki.guildwars2.com/wiki/Superior_Sigil_of_Bounty
+    { 9374, "Sigil of Corruption", 25 }, // https://wiki.guildwars2.com/wiki/Superior_Sigil_of_Corruption
+    { 9441, "Sigil of Doom" }, // https://wiki.guildwars2.com/wiki/Superior_Sigil_of_Doom
+    { 9416, "Sigil of Leeching" }, // https://wiki.guildwars2.com/wiki/Superior_Sigil_of_Leeching
+    { 9386, "Sigil of Life", 25 }, // https://wiki.guildwars2.com/wiki/Superior_Sigil_of_Life
+    { 22144, "Sigil of Momentum", 25 }, // https://wiki.guildwars2.com/wiki/Superior_Sigil_of_Momentum
+    { 9385, "Sigil of Perception", 25 }, // https://wiki.guildwars2.com/wiki/Superior_Sigil_of_Perception
+    { 43930, "Sigil of Severance" }, // https://wiki.guildwars2.com/wiki/Superior_Sigil_of_Severance
+    { 46953, "Sigil of the Stars", 25 }, // https://wiki.guildwars2.com/wiki/Superior_Sigil_of_the_Stars
+    { 9422, "Sigil of Vision" }, // https://wiki.guildwars2.com/wiki/Superior_Sigil_of_Vision
+
+    //// Relics
+    { "Relics" },
+    { 69855, "Relic of Fireworks" }, // https://wiki.guildwars2.com/wiki/Relic_of_Fireworks
+    { 69992, "Relic of Mabon" }, // https://wiki.guildwars2.com/wiki/Relic_of_Mabon
+    { 69620, "Mabon's Strength", "relic_of_mabon", 10 }, // https://wiki.guildwars2.com/wiki/Mabon%27s_Strength
+    { 71431, "Relic of Nourys" }, // https://wiki.guildwars2.com/wiki/Relic_of_Nourys
+    { 71711, "Nourys's Hunger", "relic_of_nourys", 10 }, // https://wiki.guildwars2.com/wiki/Nourys%27s_Hunger_(stack)
+    { 69795, "Relic of the Aristocracy", 5 }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Aristocracy
+    { 71134, "Relic of the Astral Ward" }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Astral_Ward
+    { 70913, "Relic of the Brawler" }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Brawler
+    { 70839, "Relic of the Daredevil" }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Daredevil
+    { 70282, "Relic of the Deadeye" }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Deadeye
+    { 71217, "Relic of the Firebrand" }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Firebrand
+    { 69606, "Relic of the Herald", 10 }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Herald
+    { 71132, "Relic of the Monk", 10 }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Monk
+    { 70975, "Relic of the Scourge", 10 }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Scourge
+    { 70767, "Relic of the Thief" }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Thief
+    { 70390, "Relic of the Weaver" }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Weaver
+    { 69961, "Relic of Vass", 25 }, // https://wiki.guildwars2.com/wiki/Relic_of_Vass
 
     //// Boosters
     { "Boosters, Banners, Map Buffs" },
@@ -899,6 +982,16 @@ const auto g_Buffs = std::to_array<Buff>({
     //{ 63605, "Aerial Defense" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
     //{ 66800, "Void Immunity" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
     //{ 65563, "Void Shell" }, // https://wiki.guildwars2.com/images/6/65/Windfall.png
+
+    { "Decima, the Stormsinger" },
+    { 74659, "Galvanic Sensitivity" }, // https://wiki.guildwars2.com/images/4/42/Exposed_%28Statue_of_Darkness%29.png
+    { 74904, "Harmonic Sensitivity" }, // https://wiki.guildwars2.com/images/6/68/Tracked.png
+
+    { "Greer, the Blightbringer" },
+    { 44655, "Target" }, // https://wiki.guildwars2.com/images/0/09/Target.png
+
+    { "Ura, the Steamshrieker" },
+    { 75056, "Bloodstone Saturation" },  // https://wiki.guildwars2.com/images/4/4d/Heat_Level.png
 
     //// Fractals
     { "Fractals" },
