@@ -1026,11 +1026,11 @@ const auto g_Buffs = std::to_array<Buff>({
     { 69206, "Phantasmagoria" }, // https://wiki.guildwars2.com/wiki/Phantasmagoria
 
     { "Fractals/Lonely Tower" },
-    { 72658, "Despair Attunement", 20 }, https://wiki.guildwars2.com/wiki/Despair_Attunement
-    { 72403, "Envy Attunement", 20 }, https://wiki.guildwars2.com/wiki/Envy_Attunement
-    { 72591, "Gluttony Attunement", 20 }, https://wiki.guildwars2.com/wiki/Gluttony_Attunement
-    { 72762, "Malice Attunement", 20 }, https://wiki.guildwars2.com/wiki/Malice_Attunement
-    { 72781, "Rage Attunement", 20 }, https://wiki.guildwars2.com/wiki/Rage_Attunement
-    { 72519, "Consume", "scion's_absorption" }, https://wiki.guildwars2.com/wiki/Consume_(Eparch)
-    { 72680, "Consumed", "scion's_absorption", 20 }, https://wiki.guildwars2.com/wiki/Consumed
+    { 72658, "Despair Attunement", 20 }, // https://wiki.guildwars2.com/wiki/Despair_Attunement
+    { 72403, "Envy Attunement", 20 }, // https://wiki.guildwars2.com/wiki/Envy_Attunement
+    { 72591, "Gluttony Attunement", 20 }, // https://wiki.guildwars2.com/wiki/Gluttony_Attunement
+    { 72762, "Malice Attunement", 20 }, // https://wiki.guildwars2.com/wiki/Malice_Attunement
+    { 72781, "Rage Attunement", 20 }, // https://wiki.guildwars2.com/wiki/Rage_Attunement
+    { 72519, "Consume", "scion's_absorption" }, // https://wiki.guildwars2.com/wiki/Consume_(Eparch)
+    { 72680, "Consumed", "scion's_absorption", 20 }, // https://wiki.guildwars2.com/wiki/Consumed
 });
