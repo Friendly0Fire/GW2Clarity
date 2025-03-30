@@ -601,6 +601,10 @@ const auto g_Buffs = std::to_array<Buff>({
     { 70767, "Relic of the Thief" }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Thief
     { 70390, "Relic of the Weaver" }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Weaver
     { 69961, "Relic of Vass", 25 }, // https://wiki.guildwars2.com/wiki/Relic_of_Vass
+    { 73955, "Relic of the Claw" }, // https://wiki.guildwars2.com/wiki/Relic_of_the_Claw
+    { 74793, "Relic of Mount Balrior" }, // https://wiki.guildwars2.com/wiki/Relic_of_Mount_Balrior
+    { 75432, "Relic of Thorns", 10 }, // https://wiki.guildwars2.com/wiki/Relic_of_Thorns
+
 
     //// Boosters
     { "Boosters, Banners, Map Buffs" },
